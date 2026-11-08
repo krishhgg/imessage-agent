@@ -79,9 +79,9 @@ extension Planner {
     text("mom", .me, "2026-09-09 13:20:02", "हाँ माँ")
 
     text("mom", .person("mom"), "2026-11-05 20:41:17", "Are you coming for dinner Sunday? Papa is making biryani",
-         keys: ["unread", "reply_to_mom_target"]) { $0.unread = true }
-    text("mom", .person("mom"), "2026-11-05 20:42:02", "Also call Nani, she was asking about you",
          keys: ["unread"]) { $0.unread = true }
+    text("mom", .person("mom"), "2026-11-05 20:42:02", "Also call Nani, she was asking about you",
+         keys: ["unread", "reply_to_mom_target"]) { $0.unread = true }
   }
 
   // MARK: Dad, chat 9

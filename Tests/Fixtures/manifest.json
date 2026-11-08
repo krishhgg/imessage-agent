@@ -1162,7 +1162,7 @@
       41502
     ],
     "reply_to_mom_target" : [
-      41555
+      41556
     ],
     "rowid_gap" : [
       40004,
@@ -2341,7 +2341,7 @@
       "chat_guid" : "any;-;+14155550101",
       "chat_rowid" : 7,
       "handle" : "+14155550101",
-      "latest_from_mom_rowid" : 41555
+      "latest_from_mom_rowid" : 41556
     },
     "send_photo_to_group" : {
       "chat_guid" : "any;+;chat836828054889214904",
