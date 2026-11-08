@@ -118,6 +118,27 @@ final class SQLiteHardeningTests: XCTestCase {
         XCTAssertThrowsError(try conn.query("SELECT 1 LIMIT ?; SELECT 2", [.int(1)]) { _ in })
     }
 
+    /// A bridged NSString holding UTF-16 has no UTF-8 buffer, so `withCString` passes SQLite a temporary copy that
+    /// is freed when the closure returns. The second-statement check reads SQLite's tail pointer into that copy, so
+    /// it must run inside the closure. When it ran after the closure, a debug build missed the second statement and
+    /// `--sanitize=address` reported a heap-use-after-free.
+    func testOnlyOneStatementIsAcceptedFromSQLWithNoUTF8Buffer() throws {
+        let conn = try SQLiteConnection(readOnlyPath: Fixture.chatDB.path)
+        defer { conn.close() }
+        func bridged(_ s: String) -> String {
+            let units = Array(s.utf16)
+            return NSString(characters: units, length: units.count) as String
+        }
+        let two = bridged("SELECT 'é' LIMIT ?; SELECT 2")
+        XCTAssertNil(two.utf8.withContiguousStorageIfAvailable { _ in true }, "withCString must make a temporary copy")
+        XCTAssertThrowsError(try conn.query(two, [.int(1)]) { _ in }) { error in
+            XCTAssertEqual(error as? StoreError, .sqlite(code: SQLITE_MISUSE, message: "one statement per query"))
+        }
+        var rows = 0
+        try conn.query(bridged("SELECT 'é' LIMIT ?; \n "), [.int(1)]) { _ in rows += 1 }
+        XCTAssertEqual(rows, 1, "a trailing semicolon and whitespace are not a second statement")
+    }
+
     func testParameterCountMustMatch() throws {
         let conn = try SQLiteConnection(readOnlyPath: Fixture.chatDB.path)
         defer { conn.close() }

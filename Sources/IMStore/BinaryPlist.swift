@@ -90,7 +90,12 @@ enum BinaryPlist {
 
         func refs(at p: Int, _ n: Int) throws -> [Int] {
             guard n >= 0, n <= b.count, p >= 0, p <= b.count - n * refSize else { throw ParseError.corrupt }
-            return try (0..<n).map { Int(try read(p + $0 * refSize, refSize)) }
+            return try (0..<n).map {
+                let r = try read(p + $0 * refSize, refSize)
+                // Checked before the Int conversion, which traps on an 8-byte reference above Int.max.
+                guard r < UInt64(count) else { throw ParseError.corrupt }
+                return Int(r)
+            }
         }
 
         mutating func object(_ index: Int, depth: Int) throws -> Value {

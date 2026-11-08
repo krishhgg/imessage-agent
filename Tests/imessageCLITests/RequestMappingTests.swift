@@ -78,6 +78,10 @@ final class RequestMappingTests: XCTestCase {
                                                         since: "someday"), now: now, timeZone: la)) { e in
             XCTAssertEqual((e as? UsageError)?.message, "--since \"someday\" isn't a time")
         }
+        XCTAssertThrowsError(try CLI.request(for: .search(text: "x", inWho: nil, since: "9999-12-31", cursor: nil,
+                                                          limit: 20), now: now, timeZone: la)) { e in
+            XCTAssertEqual((e as? UsageError)?.message, "--since \"9999-12-31\" isn't a time")
+        }
     }
 
     func testHelpNeverBecomesARequest() {
