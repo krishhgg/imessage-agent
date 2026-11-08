@@ -91,4 +91,16 @@ final class TimeSpecTests: XCTestCase {
         let utc = TimeZone(identifier: "UTC")!
         XCTAssertEqual(TimeSpec.parseNanos("2001-01-01", now: now, timeZone: utc), 0)
     }
+
+    /// Int64 nanoseconds reach about 292 years either side of 2001. Times past that parse as dates but have no
+    /// wire value, so they return nil instead of trapping.
+    func testParseNanosRejectsTimesOutsideTheInt64Range() {
+        for s in ["9999-12-31", "2294-01-01", "1700-01-01", "0001-01-01", "999999w", "999999d"] {
+            XCTAssertNotNil(unix(s), s)
+            XCTAssertNil(TimeSpec.parseNanos(s, now: now, timeZone: la), s)
+        }
+        XCTAssertNotNil(TimeSpec.parseNanos("2292-12-31", now: now, timeZone: la))
+        XCTAssertNotNil(TimeSpec.parseNanos("1709-01-01", now: now, timeZone: la))
+        XCTAssertNotNil(TimeSpec.parseNanos("999999h", now: now, timeZone: la))
+    }
 }
