@@ -48,6 +48,11 @@ public enum BusyReason: Hashable, Sendable {
     /// `busy: screen locked`: the Mac's screen is locked, so AX reaches no Messages window. Nothing was launched or
     /// quit (docs/BUILD-PLAN.md entry 52). Comes with a fix.
     case screenLocked
+    /// `busy: chat not open in Messages`: the target chat isn't the one chat selected in Messages, and a row press
+    /// does nothing while Messages is hidden, so no row was pressed (research/chat-switch.md section 4). Comes with
+    /// a fix. After approval it still spends the approval, as the other busy results do, so the retry asks again.
+    /// The rule that keeps an approval for one retry when nothing reached `invoking` isn't built yet.
+    case chatNotOpen
 }
 
 /// `aborted` variants (section 4 steps 3 and 5).
@@ -63,7 +68,9 @@ public enum AbortReason: Hashable, Sendable {
 
 /// `error` variants. One line, `error: … fix: …` (section 5, Output).
 public enum ErrorReason: Hashable, Sendable {
-    /// `error: wrong chat`: the transcript didn't match the signature after the press (section 4).
+    /// `error: wrong chat`: the transcript didn't match the signature after a row press (section 4). Nothing returns
+    /// it now, since no action presses a row. It is kept for the chat switch flows, whose forward leg returns it on a
+    /// transcript mismatch (research/chat-switch.md section 3).
     case wrongChat
     /// `error: several matches`: a target argument matched more than one contact or conversation (section 5).
     case severalMatches
@@ -217,6 +224,7 @@ extension ResultCode {
             case .editInProgress: return "busy: edit in progress"
             case .userActive: return "busy: user active"
             case .screenLocked: return "busy: screen locked"
+            case .chatNotOpen: return "busy: chat not open in Messages"
             }
         case .notLoaded: return "not_loaded"
         case .notDownloaded: return "not_downloaded"
@@ -253,6 +261,7 @@ extension ResultCode {
             "busy: queue": .busy(.queue), "busy: Messages is open": .busy(.messagesOpen),
             "busy: draft in Messages": .busy(.draftInMessages), "busy: edit in progress": .busy(.editInProgress),
             "busy: user active": .busy(.userActive), "busy: screen locked": .busy(.screenLocked),
+            "busy: chat not open in Messages": .busy(.chatNotOpen),
             "not_loaded": .notLoaded, "not_downloaded": .notDownloaded, "unsupported": .unsupported,
             "unsupported_target": .unsupportedTarget, "untested": .untested, "no_hidden_window": .noHiddenWindow,
             "aborted: user took over": .aborted(.userTookOver), "aborted: parent changed": .aborted(.parentChanged),

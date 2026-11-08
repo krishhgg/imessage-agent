@@ -4,8 +4,8 @@ import IMStore
 @testable import IMUI
 import IMTestSupport
 
-/// Checklist items 6 to 10: groups, the lookalike checks, exact row matching, the post-press signature check and
-/// bubble matching.
+/// Checklist items 6 to 10: groups, the lookalike checks, exact row matching, the selected-row rule, the signature
+/// check and bubble matching.
 final class TargetingTests: XCTestCase {
     // Fixture.now is Friday 2026-11-06 00:30 in Los Angeles. The default summary's newest row is at 00:20.
     let expectedRow = "Jordan, see you, 12:20 AM"
@@ -18,15 +18,17 @@ final class TargetingTests: XCTestCase {
          Make.bubble(52, fromMe: false, text: "see you", minute: "12:20 AM")]
     }
 
+    /// By default the target's row is the one selected row and Messages shows its transcript.
     func rig(rows: [ConversationRowInfo]? = nil, others: [ConversationSummary] = []) -> (Rig, ChatTargeter) {
         let rig = Rig()
         rig.source.summaries = [Make.summary()] + others
-        rig.ax.rows = rows ?? [Make.row(1, "Taylor, hey, 12:05 AM"), Make.row(2, expectedRow)]
-        rig.ax.bubbles = { [unowned ax = rig.ax] in
-            ax.pressedRows.isEmpty ? [] : self.targetTranscript()
-        }
+        rig.ax.rows = rows ?? [Make.row(1, "Taylor, hey, 12:05 AM"), Make.row(2, expectedRow, selected: true)]
+        rig.ax.bubbles = { self.targetTranscript() }
         return (rig, rig.targeter())
     }
+
+    /// The busy result for `Make.chat()`, whose label is its handle.
+    let chatNotOpen = ActionResult(.busy(.chatNotOpen), fix: "open +15550001111 in Messages, hide it (⌘H), then retry")
 
     // MARK: - Row text
 
@@ -159,7 +161,7 @@ final class TargetingTests: XCTestCase {
                                    signature: [SignatureRow(fromMe: false, body: "see you")])
         let (rig, targeter) = rig(others: [oneOff, direction, shorter])
         XCTAssertEqual(targeter.selectChat(Make.chat()), .selected)
-        XCTAssertEqual(rig.ax.pressedRows, [AXRef(id: 2)])
+        XCTAssertNoPress(rig.log)
     }
 
     func testSignatureBodiesCompareAfterNFCAndTrim() {
@@ -181,11 +183,13 @@ final class TargetingTests: XCTestCase {
 
     // MARK: - Row matching (item 8)
 
-    func testExactlyOneMatchingRowIsPressedOnce() {
+    func testExactlyOneMatchingSelectedRowIsSelectedWithNoPress() {
         let (rig, targeter) = rig()
+        rig.ax.pressError = .axError(-25204)
         XCTAssertEqual(targeter.selectChat(Make.chat()), .selected)
-        XCTAssertEqual(rig.ax.pressedRows, [AXRef(id: 2)])
-        XCTAssertEqual(rig.log.count(of: "ax.pressRow"), 1)
+        XCTAssertTrue(rig.ax.pressedRows.isEmpty)
+        XCTAssertEqual(rig.log.count(of: "ax.pressRow"), 0)
+        XCTAssertNoPress(rig.log)
     }
 
     func testNoMatchingRowIsNotLoaded() {
@@ -206,9 +210,9 @@ final class TargetingTests: XCTestCase {
     func testRowWithNarrowOrNoBreakSpacesMatchesAsBubblesDo() {
         // Bubbles show U+202F before AM or PM. A row written the same way, or with U+00A0, is the same row text.
         for (i, shown) in ["Jordan, see you, 12:20\u{202F}AM", "Jordan, see\u{00A0}you, 12:20\u{00A0}AM"].enumerated() {
-            let (rig, targeter) = rig(rows: [Make.row(1, "Taylor, hey, 12:05 AM"), Make.row(2, shown)])
+            let (rig, targeter) = rig(rows: [Make.row(1, "Taylor, hey, 12:05 AM"), Make.row(2, shown, selected: true)])
             XCTAssertEqual(targeter.selectChat(Make.chat()), .selected, "case \(i)")
-            XCTAssertEqual(rig.ax.pressedRows, [AXRef(id: 2)], "case \(i)")
+            XCTAssertNoPress(rig.log)
         }
     }
 
@@ -218,10 +222,11 @@ final class TargetingTests: XCTestCase {
         rig.source.summaries = [Make.summary(name: "Jordan\u{00A0}Kim", preview: "see\u{202F}you",
                                              signature: [SignatureRow(fromMe: false, body: "see you"),
                                                          SignatureRow(fromMe: true, body: "on my way")])]
-        rig.ax.rows = [Make.row(1, "Taylor, hey, 12:05 AM"), Make.row(2, "Jordan Kim, see you, 12:20 AM")]
-        rig.ax.bubbles = { [unowned ax = rig.ax] in ax.pressedRows.isEmpty ? [] : self.targetTranscript() }
+        rig.ax.rows = [Make.row(1, "Taylor, hey, 12:05 AM"),
+                       Make.row(2, "Jordan Kim, see you, 12:20 AM", selected: true)]
+        rig.ax.bubbles = { self.targetTranscript() }
         XCTAssertEqual(rig.targeter().selectChat(Make.chat()), .selected)
-        XCTAssertEqual(rig.ax.pressedRows, [AXRef(id: 2)])
+        XCTAssertNoPress(rig.log)
     }
 
     func testRowsThatDifferOnlyInSpaceKindAreAmbiguous() {
@@ -262,23 +267,26 @@ final class TargetingTests: XCTestCase {
     }
 
     func testRowWithoutEnglishRowActionsIsUnsupportedWithNoPress() {
-        // Messages runs in French while the system is in English: the row text still matches.
+        // Messages runs in French while the system is in English: the row text still matches. The language check
+        // comes before the selected-row rule, so a row that isn't selected is `unsupported` too, not busy.
         let french = ["Désépingler", "Marquer comme non lu", "Masquer les alertes",
                       "Ouvrir dans une nouvelle fenêtre", "Supprimer…"]
-        let row = ConversationRowInfo(ref: AXRef(id: 2), description: expectedRow, isSelected: false,
-                                      actionNames: french)
-        let (rig, targeter) = rig(rows: [row])
-        let result = targeter.selectChat(Make.chat())
-        XCTAssertEqual(result, .refused(UIResults.messagesNotEnglish))
+        for selected in [true, false] {
+            let row = ConversationRowInfo(ref: AXRef(id: 2), description: expectedRow, isSelected: selected,
+                                          actionNames: french)
+            let (rig, targeter) = rig(rows: [row])
+            let result = targeter.selectChat(Make.chat())
+            XCTAssertEqual(result, .refused(UIResults.messagesNotEnglish), "selected: \(selected)")
+            XCTAssertNoPress(rig.log)
+            XCTAssertTrue(rig.ax.pressedRows.isEmpty)
+        }
         XCTAssertEqual(UIResults.messagesNotEnglish.code, .unsupported)
         XCTAssertFalse(UIResults.messagesNotEnglish.notes.contains(.mayHaveMarkedRead))
         XCTAssertEqual(UIResults.messagesNotEnglish.rendered,
                        "unsupported fix: set Messages' language to English and retry")
-        XCTAssertNoPress(rig.log)
-        XCTAssertTrue(rig.ax.pressedRows.isEmpty)
     }
 
-    func testEnglishRowActionsOfEveryRowShapeAllowThePress() {
+    func testEnglishRowActionsOfEveryRowShapeAllowTheAction() {
         XCTAssertTrue(UINames.showsEnglishRowActions(UINames.englishRowActions))
         XCTAssertFalse(UINames.showsEnglishRowActions([]))
         XCTAssertFalse(UINames.showsEnglishRowActions(["Open in New Window"]))
@@ -286,11 +294,11 @@ final class TargetingTests: XCTestCase {
         for actions in [["AXPress", "AXShowMenu", "Pin Jordan", "Mark as Read", "Hide Alerts", "Open in New Window",
                          "Delete…"],
                         ["Unpin", "Mark as Unread", "Hide Alerts", "Open in New Window", "Delete…"]] {
-            let row = ConversationRowInfo(ref: AXRef(id: 2), description: expectedRow, isSelected: false,
+            let row = ConversationRowInfo(ref: AXRef(id: 2), description: expectedRow, isSelected: true,
                                           actionNames: actions)
             let (rig, targeter) = rig(rows: [row])
             XCTAssertEqual(targeter.selectChat(Make.chat()), .selected, "\(actions)")
-            XCTAssertEqual(rig.ax.pressedRows, [AXRef(id: 2)])
+            XCTAssertNoPress(rig.log)
         }
     }
 
@@ -305,39 +313,87 @@ final class TargetingTests: XCTestCase {
         XCTAssertNoPress(rig.log)
     }
 
-    func testPressErrorsThatProveNoPressCarryNoMarkReadNote() {
-        let (rig, targeter) = rig()
-        rig.ax.pressError = .staleReference
-        XCTAssertEqual(targeter.selectChat(Make.chat()), .refused(ActionResult(.notLoaded)))
-        rig.ax.pressError = .axError(-25204)
-        XCTAssertEqual(targeter.selectChat(Make.chat()),
-                       .refused(ActionResult(.notLoaded, notes: [.mayHaveMarkedRead])))
+    // MARK: - The selected row (item 9)
+
+    func testTargetThatIsNotSelectedIsBusyWithItsFixAndNoPress() {
+        // Another chat is selected, or no chat is. A row press would do nothing while Messages is hidden.
+        for other in [true, false] {
+            let (rig, targeter) = rig(rows: [Make.row(1, "Taylor, hey, 12:05 AM", selected: other),
+                                             Make.row(2, expectedRow)])
+            let start = rig.clock.uptime
+            XCTAssertEqual(targeter.selectChat(Make.chat()), .refused(chatNotOpen), "other selected: \(other)")
+            XCTAssertNoPress(rig.log)
+            XCTAssertTrue(rig.ax.pressedRows.isEmpty)
+            XCTAssertFalse(rig.log.contains("ax.bubbles"), "no transcript wait")
+            XCTAssertEqual(rig.clock.uptime, start)
+        }
+        XCTAssertEqual(chatNotOpen.notes, [])
+        XCTAssertFalse(chatNotOpen.holdsIdempotencyKey)
+        XCTAssertEqual(chatNotOpen.rendered,
+                       "busy: chat not open in Messages fix: open +15550001111 in Messages, hide it (⌘H), then retry")
     }
 
-    // MARK: - After the press (item 9)
+    func testTwoSelectedRowsAreBusyWithNoPress() {
+        let (rig, targeter) = rig(rows: [Make.row(1, "Taylor, hey, 12:05 AM", selected: true),
+                                         Make.row(2, expectedRow, selected: true)])
+        XCTAssertEqual(targeter.selectChat(Make.chat()), .refused(chatNotOpen))
+        XCTAssertNoPress(rig.log)
+        XCTAssertFalse(rig.log.contains("ax.bubbles"))
+    }
 
-    func testWrongTranscriptAfterThePressIsWrongChat() {
+    func testUnknownSelectionReadIsBusyWithNoPress() {
+        // `AXSelected` that reads unknown, on the target's row or on another row, can't show that the target is the
+        // one selected chat.
+        let unknownTarget = [Make.row(1, "Taylor, hey, 12:05 AM"), Make.row(2, expectedRow, selected: nil)]
+        let unknownOther = [Make.row(1, "Taylor, hey, 12:05 AM", selected: nil),
+                            Make.row(2, expectedRow, selected: true)]
+        for (i, rows) in [unknownTarget, unknownOther].enumerated() {
+            let (rig, targeter) = rig(rows: rows)
+            XCTAssertEqual(targeter.selectChat(Make.chat()), .refused(chatNotOpen), "case \(i)")
+            XCTAssertNoPress(rig.log)
+            XCTAssertTrue(rig.ax.pressedRows.isEmpty)
+            XCTAssertFalse(rig.log.contains("ax.bubbles"), "case \(i): no transcript wait")
+        }
+    }
+
+    func testChatNotOpenFixNamesTheChatByItsLabel() {
+        var chat = Make.chat()
+        chat.label = "Jordan Kim"
+        XCTAssertEqual(UIResults.chatNotOpen(chat).fix, "open Jordan Kim in Messages, hide it (⌘H), then retry")
+        chat.label = "Jordan\nKim"
+        XCTAssertEqual(UIResults.chatNotOpen(chat).fix, "open Jordan / Kim in Messages, hide it (⌘H), then retry")
+        chat.label = ""
+        XCTAssertEqual(UIResults.chatNotOpen(chat),
+                       ActionResult(.busy(.chatNotOpen), fix: "open the chat in Messages, hide it (⌘H), then retry"))
+        chat.label = " \n "
+        XCTAssertEqual(UIResults.chatNotOpen(chat).fix, "open the chat in Messages, hide it (⌘H), then retry")
+    }
+
+    func testSelectedTargetWithAMismatchedTranscriptIsNotLoadedWithNoNote() {
         let (rig, targeter) = rig()
         rig.ax.bubbles = { [Make.bubble(9, fromMe: false, text: "someone else's chat", minute: "12:00 AM")] }
         let start = rig.clock.uptime
-        XCTAssertEqual(targeter.selectChat(Make.chat()),
-                       .refused(UIResults.wrongChat))
-        XCTAssertEqual(UIResults.wrongChat.rendered, "error: wrong chat, chat opened, may be marked read fix: retry")
-        XCTAssertFalse(UIResults.wrongChat.holdsIdempotencyKey)
+        XCTAssertEqual(targeter.selectChat(Make.chat()), .refused(ActionResult(.notLoaded)))
         XCTAssertEqual(rig.clock.uptime - start, targeter.settleTimeout, accuracy: 0.0001)
+        XCTAssertNoPress(rig.log)
+        XCTAssertTrue(rig.ax.pressedRows.isEmpty)
     }
 
-    func testTranscriptGetsTheSettleTimeToShowThePressedChat() {
-        func run(showAfter delay: TimeInterval) -> ChatSelection {
+    func testTranscriptGetsTheSettleTimeToShowTheSelectedChat() {
+        func run(showAfter delay: TimeInterval) -> (ChatSelection, EventLog) {
             let (rig, targeter) = rig()
             targeter.pollInterval = 0.25
             let clock = rig.clock
             let start = clock.uptime
             rig.ax.bubbles = { clock.uptime - start >= delay ? self.targetTranscript() : [] }
-            return targeter.selectChat(Make.chat())
+            return (targeter.selectChat(Make.chat()), rig.log)
         }
-        XCTAssertEqual(run(showAfter: 2.0), .selected)
-        XCTAssertEqual(run(showAfter: 2.01), .refused(UIResults.wrongChat))
+        let shown = run(showAfter: 2.0)
+        XCTAssertEqual(shown.0, .selected)
+        XCTAssertNoPress(shown.1)
+        let late = run(showAfter: 2.01)
+        XCTAssertEqual(late.0, .refused(ActionResult(.notLoaded)))
+        XCTAssertNoPress(late.1)
     }
 
     func testZeroPollIntervalStillEndsTheSettleWait() {
@@ -345,7 +401,7 @@ final class TargetingTests: XCTestCase {
         targeter.pollInterval = 0
         rig.ax.bubbles = { [] }
         let start = rig.clock.uptime
-        XCTAssertEqual(targeter.selectChat(Make.chat()), .refused(UIResults.wrongChat))
+        XCTAssertEqual(targeter.selectChat(Make.chat()), .refused(ActionResult(.notLoaded)))
         XCTAssertEqual(rig.clock.uptime - start, targeter.settleTimeout, accuracy: 0.0001)
         XCTAssertFalse(rig.clock.sleeps.contains { $0 <= 0 })
     }
@@ -355,8 +411,8 @@ final class TargetingTests: XCTestCase {
         rig.ax.bubbles = {
             [Make.bubble(51, fromMe: true, text: "on my way"), Make.bubble(52, fromMe: true, text: "see you")]
         }
-        XCTAssertEqual(targeter.selectChat(Make.chat()),
-                       .refused(UIResults.wrongChat))
+        XCTAssertEqual(targeter.selectChat(Make.chat()), .refused(ActionResult(.notLoaded)))
+        XCTAssertNoPress(rig.log)
     }
 
     func testNewestMatchIgnoresNonTextBubbles() {

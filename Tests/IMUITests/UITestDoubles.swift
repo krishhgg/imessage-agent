@@ -38,13 +38,10 @@ final class ScriptedAX: MessagesAXDriving {
     var onWindowCount: (() -> Void)?
     var rows: [ConversationRowInfo] = []
     var rowsError: AXDriveError?
-    /// Returns the loaded bubbles. Tests switch on `pressedRows` or a clock to script the transcript after a press.
+    /// Returns the loaded bubbles. Tests can switch on a clock to script a transcript that settles late.
     var bubbles: () -> [BubbleInfo] = { [] }
     var bubblesError: AXDriveError?
     var pressError: AXDriveError?
-    /// Runs inside `press(row:)` where the live driver checks the window rules, before the final check. A throw
-    /// refuses the press.
-    var beforeRowPress: (() throws -> Void)?
     var performError: AXDriveError?
     var onPerform: ((String, AXRef) -> Void)?
     /// Runs inside `perform`, where the live driver rereads the bubble's description and action names, before the
@@ -71,7 +68,6 @@ final class ScriptedAX: MessagesAXDriving {
     func press(row: AXRef, finalCheck: AXFinalCheck) throws {
         log.add("ax.pressRow:\(row.id)")
         if let pressError { throw pressError }
-        try beforeRowPress?()
         try finalCheck()
         pressedRows.append(row)
     }
@@ -345,7 +341,7 @@ enum Make {
                    actionNames: actions)
     }
 
-    static func row(_ id: UInt64, _ description: String, selected: Bool = false) -> ConversationRowInfo {
+    static func row(_ id: UInt64, _ description: String, selected: Bool? = false) -> ConversationRowInfo {
         ConversationRowInfo(ref: AXRef(id: id), description: description, isSelected: selected)
     }
 

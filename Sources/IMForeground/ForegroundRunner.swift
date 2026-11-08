@@ -82,6 +82,8 @@ final class ForegroundRunner {
     private var earlierApp: FrontApp?
     private var snapshot = SendSnapshot(maxRowID: 0, requestedAt: Date(timeIntervalSince1970: 0))
     private var dateEditedBefore: AppleNanos = 0
+    /// Set right before `open -b`. Every result from then on carries the mark-read note, since the chat step 1
+    /// found selected is the one Messages shows in front. Step 1 presses nothing, so its refusals carry no note.
     private var chatOpened = false
     /// Notes from the window rules, such as `error: Messages became visible`, added to every result after them.
     private var windowNotes: [ResultNote] = []
@@ -212,13 +214,9 @@ final class ForegroundRunner {
         guard state.isHidden, !state.isFrontmost else { return .messagesOpen }
         pid = messagesPID
 
-        switch env.targeting.selectChat(run.chat) {
-        case .selected:
-            chatOpened = true
-        case .refused(let early):
-            if early.code == .error(.wrongChat) { chatOpened = true }
-            return early
-        }
+        // `selectChat` presses no row. A chat that isn't the one selected chat is `busy: chat not open in Messages`,
+        // returned like the other step 1 refusals, with nothing pressed and no mark-read note.
+        if case .refused(let early) = env.targeting.selectChat(run.chat) { return early }
 
         do {
             guard let composer = try env.ax.composer() else { return .abortedCheck(ForegroundCheck.axRead) }
@@ -293,6 +291,7 @@ final class ForegroundRunner {
     private func activate() -> ForegroundOutcome {
         enter(.activating)
         let tOpen = env.clock.uptime
+        chatOpened = true
         // `activateForeground` returns once `open` has started, so the front app is polled while `open` runs.
         // `t_front` is when the first read that shows Messages frontmost started. A read that ends after the 1 s
         // doesn't count, so a call or read that blocked can't move either limit.

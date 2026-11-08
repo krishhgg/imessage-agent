@@ -45,8 +45,8 @@ final class PreconditionTests: XCTestCase {
         h.windowRules.notes = [.messagesBecameVisible]
         h.ax.values[ScriptedAX.composerRef] = "half a thought"
         let outcome = h.runReply()
-        XCTAssertEqual(outcome.result, ActionResult(.busy(.draftInMessages),
-                                                    notes: [.messagesBecameVisible, .mayHaveMarkedRead]))
+        XCTAssertEqual(outcome.result, ActionResult(.busy(.draftInMessages), notes: [.messagesBecameVisible]),
+                       "step 1 presses nothing, so no mark-read note")
         assertNothingActivated(h)
     }
 
@@ -88,11 +88,34 @@ final class PreconditionTests: XCTestCase {
         assertNothingActivated(h)
     }
 
-    func testWrongChatAfterThePressSaysTheChatMayBeMarkedRead() {
+    func testChatNotOpenIsBusyWithNothingPressedAndNoNote() {
+        let busy = ActionResult(.busy(.chatNotOpen), fix: "open Sam in Messages, hide it (⌘H), then retry")
+        for reply in [false, true] {
+            let h = Harness()
+            h.targeting.selection = .refused(busy)
+            var composerReads = 0
+            h.ax.onComposerRead = { composerReads += 1 }
+            let outcome = reply ? h.runReply() : h.runEdit()
+            XCTAssertEqual(outcome.result, busy, "reply: \(reply)")
+            XCTAssertFalse(outcome.result.holdsIdempotencyKey)
+            XCTAssertEqual(h.log.count(.selectChat), 1)
+            XCTAssertEqual(h.log.count(.findBubble), 0)
+            XCTAssertEqual(composerReads, 0, "no composer read")
+            assertNothingActivated(h)
+        }
+    }
+
+    func testChatNotOpenOnTheRetakeHasNoNote() {
+        // Input at the activation check sends the run back to step 1, and by then another chat is selected.
+        let busy = ActionResult(.busy(.chatNotOpen), fix: "open Sam in Messages, hide it (⌘H), then retry")
         let h = Harness()
-        h.targeting.selection = .refused(ActionResult(.error(.wrongChat)))
-        let outcome = h.runEdit()
-        XCTAssertEqual(outcome.result, ActionResult(.error(.wrongChat), notes: [.mayHaveMarkedRead]))
+        h.log.onEvent = { [unowned h] event in
+            if event == .selectChat, h.log.count(.selectChat) == 1 { h.input.inject() }
+            if event == .findBubble, h.log.count(.findBubble) == 1 { h.targeting.selection = .refused(busy) }
+        }
+        let outcome = h.runEdit(queueDeadline: 1100)
+        XCTAssertEqual(h.log.count(.selectChat), 2, "step 1 ran twice")
+        XCTAssertEqual(outcome.result, busy, "no mark-read note")
         assertNothingActivated(h)
     }
 
@@ -101,7 +124,7 @@ final class PreconditionTests: XCTestCase {
         h.ax.values[ScriptedAX.composerRef] = "half a thought"
         let outcome = h.runReply()
         XCTAssertEqual(outcome.result.code, .busy(.draftInMessages))
-        XCTAssertEqual(outcome.result.notes, [.mayHaveMarkedRead])
+        XCTAssertEqual(outcome.result.notes, [], "step 1 presses nothing, so no mark-read note")
         assertNothingActivated(h)
     }
 

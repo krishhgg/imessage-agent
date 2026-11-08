@@ -284,6 +284,43 @@ final class UIPipelineTests: XCTestCase {
         XCTAssertTrue(holdsKey(h, entry))
     }
 
+    // MARK: - A chat that isn't open in Messages
+
+    private static let chatNotOpen = ActionResult(.busy(.chatNotOpen),
+                                                  fix: "open Mom in Messages, hide it (⌘H), then retry")
+
+    func testAReactionOnAChatThatIsNotOpenIsAnEarlyBusyRefusal() throws {
+        let h = try Harness()
+        try h.allowMom()
+        h.targeting.selection = .refused(UIPipelineTests.chatNotOpen)
+        let outcome = try XCTUnwrap(react(h).uiOutcome)
+        XCTAssertEqual(outcome.result, UIPipelineTests.chatNotOpen)
+        XCTAssertEqual(outcome.result.rendered,
+                       "busy: chat not open in Messages fix: open Mom in Messages, hide it (⌘H), then retry")
+        XCTAssertTrue(h.ax.performed.isEmpty)
+        XCTAssertEqual(h.targeting.selected.count, 1)
+        let entry = try h.onlyEntry()
+        XCTAssertEqual(try states(h, entry.id), [.received, .final])
+        XCTAssertNil(entry.facts)
+        XCTAssertFalse(holdsKey(h, entry))
+        XCTAssertFalse(h.queue.isHeld)
+    }
+
+    func testAnUnsendOnAChatThatIsNotOpenIsAnEarlyBusyRefusal() throws {
+        let h = try Harness()
+        let rowid = try h.insertOwnMessage(62_013, text: "running late", age: 10)
+        h.targeting.selection = .refused(UIPipelineTests.chatNotOpen)
+        let outcome = try XCTUnwrap(h.call(.ui(UIArgs(action: .unsend(rowid: rowid)))).uiOutcome)
+        XCTAssertEqual(outcome.result, UIPipelineTests.chatNotOpen)
+        XCTAssertTrue(outcome.approved)
+        XCTAssertTrue(h.ax.performed.isEmpty)
+        let entry = try h.onlyEntry()
+        XCTAssertEqual(try states(h, entry.id), [.received, .received, .approved, .final])
+        XCTAssertNil(entry.facts)
+        XCTAssertFalse(holdsKey(h, entry))
+        XCTAssertFalse(h.queue.isHeld)
+    }
+
     // MARK: - Edit
 
     func testEditChecksItsTextAndForegroundModeBeforeTheJournal() throws {

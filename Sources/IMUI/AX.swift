@@ -15,12 +15,14 @@ public struct ConversationRowInfo: Hashable, Sendable {
     public var ref: AXRef
     /// The row's full AX description: name, preview and time as Messages renders them.
     public var description: String
-    public var isSelected: Bool
+    /// `AXSelected`, or nil when it reads unknown: the row lacks the attribute, has no value, or holds something
+    /// other than a Bool.
+    public var isSelected: Bool?
     /// The row's action names as Messages lists them, for example "Mark as Unread" and "Open in New Window".
-    /// `ChatTargeter` presses a row only if they include Messages' English row actions.
+    /// `ChatTargeter` acts on a row's chat only if they include Messages' English row actions.
     public var actionNames: [String]
 
-    public init(ref: AXRef, description: String, isSelected: Bool,
+    public init(ref: AXRef, description: String, isSelected: Bool?,
                 actionNames: [String] = UINames.englishRowActions) {
         self.ref = ref
         self.description = description
@@ -122,7 +124,8 @@ public protocol MessagesAXDriving: AnyObject {
     func conversationRows() throws -> [ConversationRowInfo]
     /// `AXPress` on a conversation row. Live, it checks the window rules after its description read and throws
     /// `messagesVisible` (or `notRunning`) instead of pressing if Messages isn't hidden with one window. Then
-    /// `finalCheck`, then the press.
+    /// `finalCheck`, then the press. Nothing calls it now, since `ChatTargeter.selectChat` acts only on a chat that is
+    /// already selected. It is kept for the chat switch flows, which wait for probes (research/chat-switch.md).
     func press(row: AXRef, finalCheck: AXFinalCheck) throws
     func loadedBubbles() throws -> [BubbleInfo]
     /// `AXUIElementPerformAction` with the full `Name:<action>` string, after the description and action-name reads
@@ -446,11 +449,12 @@ public final class LiveMessagesAX: MessagesAXDriving {
             let description = try Self.string(row, "AXDescription")
             let ref = refs.register(AXElement(raw: row), kind: .row, fingerprint: description)
             return ConversationRowInfo(ref: ref, description: description,
-                                       isSelected: try Self.bool(row, "AXSelected") ?? false,
+                                       isSelected: try Self.bool(row, "AXSelected"),
                                        actionNames: try Self.actionNamesOrThrow(row).map(shortActionName))
         }
     }
 
+    /// Unused for now and kept for the chat switch flows, which wait for probes. See the protocol requirement.
     public func press(row: AXRef, finalCheck: AXFinalCheck) throws {
         try requireTrust()
         let entry = try refs.entry(for: row, kind: .row)

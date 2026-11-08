@@ -121,16 +121,27 @@ final class CapabilitiesTests: XCTestCase {
         XCTAssertEqual(try registry(macOS: "26.20").status(.unsend), .untested)
     }
 
-    func testFailedChatSwitchOrTargetingTurnsOffEveryUIAction() throws {
-        for prerequisite in ["hidden-chat-switch", "targeting"] {
-            let caps = try registry(records(except: [prerequisite]))
-            for capability in Self.allCapabilities where capability.isUIAction {
-                XCTAssertEqual(caps.status(capability), .untested, "\(prerequisite): \(capability.name)")
-            }
-            for capability: Capability in [.imageSend, .attachmentConversion, .groupSend, .foregroundMode] {
-                XCTAssertEqual(caps.status(capability), .supported, "\(prerequisite): \(capability.name)")
-            }
+    func testFailedTargetingTurnsOffEveryUIAction() throws {
+        let caps = try registry(records(except: ["targeting"]))
+        for capability in Self.allCapabilities where capability.isUIAction {
+            XCTAssertEqual(caps.status(capability), .untested, capability.name)
         }
+        for capability: Capability in [.hiddenChatSwitch, .imageSend, .attachmentConversion, .groupSend,
+                                       .foregroundMode] {
+            XCTAssertEqual(caps.status(capability), .supported, capability.name)
+        }
+    }
+
+    func testFailedChatSwitchTurnsOffNoUIAction() throws {
+        let caps = try registry(records(except: ["hidden-chat-switch"]))
+        XCTAssertEqual(caps.status(.hiddenChatSwitch), .untested)
+        for capability in Self.allCapabilities where capability != .hiddenChatSwitch {
+            XCTAssertEqual(caps.status(capability), .supported, capability.name)
+        }
+        let report = caps.report(accessibilityTrusted: true, foregroundMode: true)
+        XCTAssertEqual(report.entries.first { $0.name == "hidden-chat-switch" }?.status, .untested)
+        XCTAssertEqual(report.entries.first { $0.name == "unsend" }?.status, .supported)
+        XCTAssertEqual(report.entries.first { $0.name == "edit" }?.status, .supported)
     }
 
     func testForegroundEvidenceNeedsBothTests() throws {

@@ -110,6 +110,7 @@ final class JournalLookupTests: XCTestCase {
             ActionResult(.failed(.bridgeRestarted)), ActionResult(.denied(.approvalExpired)),
             ActionResult(.busy(.queue)), ActionResult(.aborted(.userTookOver)), ActionResult(.timeout),
             ActionResult(.error(.wrongChat)), ActionResult(.failed(.messagesNotReady)),
+            ActionResult(.busy(.chatNotOpen), fix: "open Sam in Messages, hide it (⌘H), then retry"),
         ]
         for (i, result) in notHeld.enumerated() {
             let key = T.sendKey(text: "not held \(i)")

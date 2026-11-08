@@ -127,7 +127,8 @@ final class UnsendRunnerTests: XCTestCase {
         let clock = rig.clock
         targeting.onSelect = { clock.advance(2) }
         let result = run(runner, rig, target(age: 119))
-        XCTAssertEqual(result.result, ActionResult(.expired, notes: [.mayHaveMarkedRead]))
+        XCTAssertEqual(result.result, ActionResult(.expired))
+        XCTAssertFalse(result.pressed)
         XCTAssertFalse(rig.log.contains("journal.willInvoke"))
         XCTAssertFalse(rig.log.contains("ax.perform"))
     }
@@ -138,7 +139,8 @@ final class UnsendRunnerTests: XCTestCase {
         let clock = rig.clock
         rig.recorder.onWillInvoke = { clock.advance(2) }
         let result = run(runner, rig, target(age: 119))
-        XCTAssertEqual(result.result, ActionResult(.expired, notes: [.mayHaveMarkedRead]))
+        XCTAssertEqual(result.result, ActionResult(.expired))
+        XCTAssertFalse(result.pressed)
         XCTAssertTrue(rig.ax.performed.isEmpty, "Undo Send pressed after the window closed")
         XCTAssertEqual(rig.recorder.facts.count, 1, "the entry reached invoking")
         XCTAssertEqual(rig.recorder.didInvokeCount, 0, "nothing was pressed, so the entry never reaches invoked")
@@ -159,7 +161,7 @@ final class UnsendRunnerTests: XCTestCase {
         }
         let result = run(runner, rig, target(age: 119.5))
         XCTAssertTrue(slowed)
-        XCTAssertEqual(result.result, ActionResult(.expired, notes: [.mayHaveMarkedRead]))
+        XCTAssertEqual(result.result, ActionResult(.expired))
         XCTAssertTrue(rig.ax.performed.isEmpty)
         XCTAssertEqual(rig.recorder.didInvokeCount, 0)
     }
@@ -168,23 +170,23 @@ final class UnsendRunnerTests: XCTestCase {
         let noUndo = Make.bubble(51, text: "on my way", minute: "12:29 AM", actions: ["Heart", "Edit"])
         let (rig, targeting, runner) = setup()
         targeting.lookup = .found(noUndo)
-        XCTAssertEqual(run(runner, rig, target(age: 30)).result,
-                       ActionResult(.unsupported, notes: [.mayHaveMarkedRead]))
+        XCTAssertEqual(run(runner, rig, target(age: 30)).result, ActionResult(.unsupported))
         XCTAssertNoPressAfterSelect(rig)
 
         let (rig2, targeting2, runner2) = setup()
         targeting2.lookup = .found(noUndo)
         let clock = rig2.clock
         targeting2.onSelect = { clock.advance(5) }
-        XCTAssertEqual(run(runner2, rig2, target(age: 118)).result,
-                       ActionResult(.expired, notes: [.mayHaveMarkedRead]))
+        XCTAssertEqual(run(runner2, rig2, target(age: 118)).result, ActionResult(.expired))
         XCTAssertNoPressAfterSelect(rig2)
     }
 
     func testUndoSendVanishingAtThePress() {
         let (rig, _, runner) = setup()
         rig.ax.performError = .actionMissing("Undo Send")
-        XCTAssertEqual(run(runner, rig, target()).result, ActionResult(.unsupported, notes: [.mayHaveMarkedRead]))
+        let result = run(runner, rig, target())
+        XCTAssertEqual(result.result, ActionResult(.unsupported), "Undo Send didn't run, so no mark-read note")
+        XCTAssertFalse(result.pressed)
         XCTAssertEqual(rig.log.count(of: "db.editState"), 1, "only the already check before the press reads the row")
     }
 
@@ -192,7 +194,7 @@ final class UnsendRunnerTests: XCTestCase {
         // 119.5 s old at the press: the action is gone, and the window has closed by the time the result is built.
         let (rig, _, runner) = setup()
         rig.ax.performError = .actionMissing("Undo Send")
-        XCTAssertEqual(run(runner, rig, target(age: 119.5)).result, ActionResult(.expired, notes: [.mayHaveMarkedRead]))
+        XCTAssertEqual(run(runner, rig, target(age: 119.5)).result, ActionResult(.expired))
     }
 
     func testAXErrorsThatProveNoPressMapToTheirOwnResults() {
@@ -204,7 +206,7 @@ final class UnsendRunnerTests: XCTestCase {
         for (error, expected) in cases {
             let (rig, _, runner) = setup()
             rig.ax.performError = error
-            XCTAssertEqual(run(runner, rig, target()).result, expected.adding([.mayHaveMarkedRead]), "\(error)")
+            XCTAssertEqual(run(runner, rig, target()).result, expected, "\(error): nothing ran, so no mark-read note")
             XCTAssertEqual(rig.log.count(of: "db.editState"), 1, "\(error): nothing ran, so nothing to verify")
         }
     }
@@ -248,6 +250,35 @@ final class UnsendRunnerTests: XCTestCase {
         rig.app.current = Make.state(hidden: true, ax: 2)
         XCTAssertEqual(run(runner, rig, target()).result, ActionResult(.busy(.messagesOpen)))
         XCTAssertFalse(rig.log.contains("target.select"))
+    }
+
+    func testChatNotOpenIsAnEarlyRefusalWithNothingPressed() {
+        let busy = ActionResult(.busy(.chatNotOpen), fix: "open Jordan in Messages, hide it (⌘H), then retry")
+        let (rig, _, runner) = setup { _, targeting in targeting.selection = .refused(busy) }
+        let start = rig.clock.uptime
+        let result = run(runner, rig, target())
+        XCTAssertEqual(result, UIActionResult(result: busy, currentReaction: nil, pressed: false))
+        XCTAssertFalse(result.result.holdsIdempotencyKey)
+        XCTAssertEqual(rig.clock.uptime, start, "no visibility poll")
+        XCTAssertFalse(rig.log.contains("target.find"))
+        XCTAssertFalse(rig.log.contains("journal.willInvoke"))
+        XCTAssertTrue(rig.recorder.facts.isEmpty)
+        XCTAssertNoPress(rig.log)
+    }
+
+    func testChatNotOpenWithTheRealTargeterPressesNothing() {
+        let rig = Rig()
+        rig.source.summaries = [Make.summary()]
+        rig.ax.rows = [Make.row(2, "Jordan, see you, 12:20 AM")]
+        rig.ax.bubbles = { [self.bubble] }
+        let runner = UnsendRunner(ax: rig.ax, windows: rig.windows, targeting: rig.targeter(), source: rig.source,
+                                  clock: rig.clock)
+        let result = run(runner, rig, target())
+        XCTAssertEqual(result.result,
+                       ActionResult(.busy(.chatNotOpen), fix: "open +15550001111 in Messages, hide it (⌘H), then retry"))
+        XCTAssertFalse(result.pressed)
+        XCTAssertNoPress(rig.log)
+        XCTAssertTrue(rig.recorder.facts.isEmpty)
     }
 
     // MARK: - Reconciliation

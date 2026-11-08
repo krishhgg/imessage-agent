@@ -220,4 +220,35 @@ final class ForegroundPipelineTests: XCTestCase {
         XCTAssertFalse(h.queue.isHeld)
         XCTAssertFalse(try h.onlyEntry().foreground)
     }
+
+    func testAnEditOrThreadedReplyOnAChatThatIsNotOpenIsAnEarlyBusyRefusal() throws {
+        let busy = ActionResult(.busy(.chatNotOpen), fix: "open Mom in Messages, hide it (⌘H), then retry")
+        for reply in [false, true] {
+            let h = try foregroundHarness()
+            h.targeting.selection = .refused(busy)
+            let result: ActionResult?
+            if reply {
+                let outcome = try XCTUnwrap(h.send("Yes!", thread: true).sendOutcome)
+                XCTAssertTrue(outcome.approved)
+                result = outcome.parts.first?.result
+            } else {
+                let rowid = try h.insertOwnMessage(62_011, text: "see you at 5", age: 30)
+                let outcome = try XCTUnwrap(h.call(.ui(UIArgs(action: .edit(rowid: rowid, text: "see you at 6"))))
+                    .uiOutcome)
+                XCTAssertTrue(outcome.approved)
+                result = outcome.result
+            }
+            XCTAssertEqual(result, busy, "reply: \(reply)")
+            XCTAssertEqual(h.targeting.selected.count, 1)
+            XCTAssertTrue(h.ax.performed.isEmpty)
+            XCTAssertEqual(h.app.calls.filter { $0 == "activateForeground" }, [])
+            let entry = try h.onlyEntry()
+            XCTAssertEqual(entry.state, .final)
+            XCTAssertNil(entry.facts)
+            XCTAssertFalse(entry.foreground)
+            XCTAssertEqual(h.journal.lookup(entry.key, again: false), .fresh, "the key isn't held")
+            XCTAssertFalse(h.queue.isHeld)
+            XCTAssertEqual(h.queue.acquisitions, 1)
+        }
+    }
 }
