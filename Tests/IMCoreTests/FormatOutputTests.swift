@@ -163,6 +163,32 @@ final class FormatOutputTests: XCTestCase {
         XCTAssertEqual(recs[2]["chat"] as? Int, 12)
     }
 
+    /// Mom's SMS chat 90 merges into her iMessage chat 7, and only chat 7 prints. Every message record names chat 7,
+    /// so a script can find the chat record for each message in the same output.
+    func testNDJSONMessagesInAMergedChatNameTheChatRecordTheyPrintUnder() throws {
+        let sms = B.msg(41600, "by sms", chat: 90)
+        let imessage = B.msg(41601, "by imessage")
+        let mom = B.chat(7, "Mom", last: sms)
+        func chatIDs(_ p: ResponsePayload) throws -> [Int?] {
+            try records(p).filter { ["message", "change"].contains($0["type"] as? String) }.map { $0["chat"] as? Int }
+        }
+        XCTAssertEqual(try chatIDs(.messages(MessagesPage(chat: mom, messages: [sms, imessage], totalVisible: 2,
+                                                          olderExists: false))), [7, 7])
+        XCTAssertEqual(try chatIDs(.search(SearchPage(query: "by", inChat: nil, hits: [
+            SearchHit(chat: B.mom, message: sms), SearchHit(chat: B.mom, message: imessage),
+        ], scannedBackToNs: Fixture.nowNs, windowStartNs: 0, nextCursor: nil, budgetExhausted: false))), [7, 7])
+        XCTAssertEqual(try chatIDs(.changes(ChangesPage(cursor: "1:2", changes: [
+            ChangeRecord(kind: .new, chat: B.mom, message: sms), ChangeRecord(kind: .read, chat: B.mom, message: imessage),
+        ], truncated: false))), [7, 7])
+        XCTAssertEqual(try chatIDs(.unread(UnreadPage(groups: [UnreadGroup(chat: mom, entries: [
+            UnreadEntry(message: sms, isUnread: true, gapBefore: false),
+        ], unreadCount: 1)], totalUnread: 1))), [7])
+        XCTAssertEqual(try chatIDs(.message(MessageDetail(message: sms, chat: B.mom, fromByte: 0, totalBytes: 6))), [7])
+        XCTAssertEqual(try chatIDs(.wait(WaitOutcome(chat: B.mom, message: sms, timedOut: false))), [7])
+        let last = try records(.chats(ChatsPage(chats: [mom], hasMore: false, limit: 20))).first?["last"]
+        XCTAssertEqual((last as? [String: Any])?["chat"] as? Int, 7)
+    }
+
     func testNDJSONMessageRecord() throws {
         var m = B.msg(100, String(repeating: "z", count: 500), at: Fixture.nowNs)
         m.replyTo = ReplyRef(rowid: 50, senderName: "Dad", text: "q")
@@ -210,6 +236,8 @@ final class FormatOutputTests: XCTestCase {
     func testNDJSONOtherRecords() throws {
         XCTAssertEqual(try records(.chats(ChatsPage(chats: [], hasMore: true, limit: 20))).first?["next"] as? String,
                        "imessage chats -n 40")
+        XCTAssertEqual(try records(.chats(ChatsPage(chats: [], hasMore: true, limit: 2, unreadOnly: true))).first?["next"]
+                       as? String, "imessage chats --unread -n 22")
         XCTAssertEqual(try records(.wait(WaitOutcome(chat: nil, message: nil, timedOut: true))).map { $0["type"] as? String },
                        ["timeout"])
         let failure = try records(.failure(WireError(result: ActionResult(.error(.severalMatches), fix: "pick"),
@@ -284,7 +312,7 @@ final class FormatOutputTests: XCTestCase {
         XCTAssertEqual(types(recs), ["chat"] + Array(repeating: "message", count: kept.count) + ["more"])
         XCTAssertEqual(kept, Array((1300 - kept.count)...1299), "the newest, oldest first")
         XCTAssertEqual(recs.last?["next"] as? String, "imessage read 7 --before \(kept[0])")
-        assertFull(payload, sample: NDJSON.message(msgs[0]))
+        assertFull(payload, sample: NDJSON.message(msgs[0], chat: 7))
 
         // 600-character bodies stay whole, so fewer of them fit.
         let long = (0..<40).map { B.msg(Int64(1000 + $0), String(repeating: "x", count: 600)) }

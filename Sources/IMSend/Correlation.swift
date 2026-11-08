@@ -53,9 +53,10 @@ public struct PartCorrelation: Hashable, Sendable {
 ///
 /// Details the rules leave open:
 /// - The recipient's handles are `chat.handles` plus `chat.sendHandle`, compared after `HandleNormalizer.normalize`
-///   (emails lowercased, phones as `+<digits>` with a leading 1 added to 10 digits, a handle with a letter kept as it
-///   is). The rule is applied to both sides, so it gives the same answer whether or not the row source already
-///   normalized them, and a letter handle such as `urn:biz:...` never matches the phone number with its digits.
+///   (emails lowercased, phones as `+<digits>` with a leading 1 added to 10 digits written without a `+`, a handle
+///   with a letter kept as it is). The rule is applied to both sides, so it gives the same answer whether or not
+///   the row source already normalized them, and a letter handle such as `urn:biz:...` never matches the phone
+///   number with its digits.
 /// - The chat is confirmed when the join row names one of `chat.chatRowIDs`. A row first seen with no join row that
 ///   later joins another chat drops out, and the part keeps waiting for a match inside the 10 s.
 /// - A chat with no chat.db chats yet (`chatRowIDs` empty, a new direct target) gets its chat from this send, so a

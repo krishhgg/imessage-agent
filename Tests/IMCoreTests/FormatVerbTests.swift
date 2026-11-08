@@ -40,6 +40,17 @@ final class FormatVerbTests: XCTestCase {
         XCTAssertEqual(Format.chats(ChatsPage(chats: [], hasMore: false, limit: 20), ctx), "no chats\n")
     }
 
+    func testAnUnreadChatsPageAsksForMoreUnreadChats() {
+        let page = ChatsPage(chats: [B.chat(9, "Dad", unread: 1, last: B.msg(5, "call me", at: B.ns(2026, 11, 6, 0, 15), from: "Dad"))],
+                             hasMore: true, limit: 2, unreadOnly: true)
+        XCTAssertTrue(Format.chats(page, ctx).hasSuffix("more: imessage chats --unread -n 22\n"))
+        let decoded = try? JSONDecoder().decode(ChatsPage.self, from: JSONEncoder().encode(page))
+        XCTAssertEqual(decoded, page, "unreadOnly survives the wire")
+        let old = #"{"chats":[],"hasMore":true,"limit":20}"#
+        XCTAssertEqual(try? JSONDecoder().decode(ChatsPage.self, from: Data(old.utf8)).unreadOnly, false,
+                       "a page without the key reads as the full list")
+    }
+
     // MARK: unread
 
     func testUnreadBlockMarkers() {

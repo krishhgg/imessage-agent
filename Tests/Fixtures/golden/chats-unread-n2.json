@@ -89,5 +89,6 @@
   }
  ],
  "hasMore": true,
- "limit": 2
+ "limit": 2,
+ "unreadOnly": true
 }

@@ -26,7 +26,7 @@ public final class ReadService {
             let records = try eligible.prefix(limit).map {
                 try s.chatRecord($0, unreadCount: unread[$0.canonical] ?? 0)
             }
-            return ChatsPage(chats: records, hasMore: eligible.count > limit, limit: limit)
+            return ChatsPage(chats: records, hasMore: eligible.count > limit, limit: limit, unreadOnly: args.unreadOnly)
         }
     }
 
@@ -613,7 +613,8 @@ public enum TapbackFolder {
 
     /// Net reactions per target GUID, in first-reaction order. `name` turns an actor handle into a short name.
     /// Rows outside 2000 to 3999, and adds or removes with an unknown kind, are skipped. A remove takes away the
-    /// actor's reaction of that kind (and, for emoji tapbacks, that emoji) on that part.
+    /// actor's reaction of that kind on that part. An emoji remove that names an emoji takes away only that emoji.
+    /// One with a nil emoji, which `TapbackRunner` accepts as a removal, takes away whichever emoji the actor has.
     public static func fold(_ rows: [Row], name: (String?) -> String) -> [String: [ReactionRecord]] {
         struct Entry {
             var actor: String
@@ -635,7 +636,7 @@ public enum TapbackFolder {
                 guard (0...6).contains(offset) else { continue }
                 if let i = list.firstIndex(where: { e in
                     e.actor == actor && e.record.kind.typeOffset == offset
-                        && (offset != 6 || e.record.kind == .emoji(row.emoji ?? ""))
+                        && (offset != 6 || row.emoji.map { e.record.kind == .emoji($0) } ?? true)
                 }) {
                     list.remove(at: i)
                 }

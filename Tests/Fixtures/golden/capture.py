@@ -125,7 +125,10 @@ def chat_ref(fx, c):
 
 def chats_page(fx, n=20, unread=False):
     rows = [c for c in fx.chats_by_recent() if not (unread and not fx.unread(c.rowid))]
-    return {"chats": [chat_record(fx, c) for c in rows[:n]], "hasMore": len(rows) > n, "limit": n}
+    page = {"chats": [chat_record(fx, c) for c in rows[:n]], "hasMore": len(rows) > n, "limit": n}
+    if unread:
+        page["unreadOnly"] = True
+    return page
 
 
 def unread_page(fx, context=2):
