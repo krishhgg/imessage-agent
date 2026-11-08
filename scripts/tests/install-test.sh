@@ -267,6 +267,21 @@ check "uninstall leaves a .. entry" out_has "left in place (outside HOME): $H/..
 check "uninstall leaves a folder that isn't a shape it creates" grep -q -x keep "$H/notes/todo.txt"
 check "uninstall never removes HOME" test -d "$H"
 
+# A skill copy that fails after another one worked. The manifest keeps the one made, so a retry refreshes it
+# instead of refusing it as a folder install.sh didn't create.
+H="$(new_home partial)"
+mkdir -p "$H/locked"
+chmod 555 "$H/locked"
+run "$H" "$H" "$TARBALL" "$PINNED" --skill-dir '~/.agents/skills' --skill-dir '~/locked/skills'
+check "a skill copy into a folder that can't be written fails the install" test "$RC" != 0
+check "the manifest lists the skill copy made before the failure" \
+    grep -q -x -F "$H/.agents/skills/imessage" "$H/Library/Application Support/$APP_NAME/install-manifest.txt"
+chmod 755 "$H/locked"
+run "$H" "$H" "$TARBALL" "$PINNED" --skill-dir '~/.agents/skills' --skill-dir '~/locked/skills'
+check "a retry after the failed skill copy exits 0" test "$RC" = 0
+[[ "$RC" == 0 ]] || sed 's/^/      /' "$ERR_FILE"
+check "the retry copied the skill into the folder that failed" test -f "$H/locked/skills/imessage/SKILL.md"
+
 # A long HOME uses the fallback socket folder, which uninstall removes. A 60-byte HOME makes the primary path 115
 # bytes and the fallback 88.
 L="$T/$(printf 'l%.0s' $(seq 1 $((60 - ${#T} - 1))))"

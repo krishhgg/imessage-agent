@@ -95,6 +95,12 @@ inside_home() {
 
 manifest_lines() { [[ -f "$MANIFEST" ]] && grep -v '^[[:space:]]*$' "$MANIFEST" || true; }
 in_manifest() { [[ -f "$MANIFEST" ]] && grep -q -x -F -- "$1" "$MANIFEST"; }
+# Adds paths to the manifest, each once.
+add_to_manifest() {
+    { manifest_lines; printf '%s\n' "$@"; } | awk '!seen[$0]++' > "$MANIFEST.tmp"
+    mv "$MANIFEST.tmp" "$MANIFEST"
+    chmod 600 "$MANIFEST"
+}
 
 # A skill copy is a folder named imessage that holds SKILL.md.
 is_skill_copy() { [[ "$(basename "$1")" == imessage && -f "$1/SKILL.md" ]]; }
@@ -268,14 +274,13 @@ do_install() {
     /usr/bin/install -m 0755 "$src/install.sh" "$INSTALLED_SCRIPT"
     created+=("$INSTALLED_SCRIPT")
 
+    add_to_manifest "${created[@]}"
+    # Each skill copy goes into the manifest as soon as it is made, so a later copy that fails doesn't leave it
+    # unlisted, where a retry would refuse it and --uninstall would miss it.
     for d in ${skill_targets[@]+"${skill_targets[@]}"}; do
         install_skill "$src/skill/imessage" "$d"
-        created+=("$d/imessage")
+        add_to_manifest "$d/imessage"
     done
-
-    { manifest_lines; printf '%s\n' "${created[@]}"; } | awk '!seen[$0]++' > "$MANIFEST.tmp"
-    mv "$MANIFEST.tmp" "$MANIFEST"
-    chmod 600 "$MANIFEST"
     say "wrote $MANIFEST"
 
     system "$LSREGISTER" -f "$APP"
