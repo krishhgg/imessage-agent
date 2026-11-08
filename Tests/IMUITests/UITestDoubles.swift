@@ -294,12 +294,19 @@ enum Make {
     /// on the current Space and each of those is also in the window server's full list. A test that puts a window on
     /// another Space, or shows only the menu bar strips, passes it. `onSpace` is how many of those the window server
     /// puts on a Space, and defaults to `anySpace`; a test with the 500 x 500 window Messages never shows passes it.
+    /// `locked` is the screen lock, read whether or not Messages runs.
     static func state(running: Bool = true, frontmost: Bool = false, hidden: Bool = true, ax: Int = 1,
-                      onScreen: Int = 0, anySpace: Int? = nil, onSpace: Int? = nil) -> MessagesAppState {
-        guard running else { return .notRunning }
+                      onScreen: Int = 0, anySpace: Int? = nil, onSpace: Int? = nil,
+                      locked: Bool = false) -> MessagesAppState {
+        guard running else {
+            var state = MessagesAppState.notRunning
+            state.isScreenLocked = locked
+            return state
+        }
         return MessagesAppState(isRunning: true, pid: pid, isFrontmost: frontmost, isHidden: hidden,
                                 axWindowCount: ax, onScreenWindowCount: onScreen,
-                                allSpacesWindowCount: anySpace ?? ax, spaceWindowCount: onSpace)
+                                allSpacesWindowCount: anySpace ?? ax, spaceWindowCount: onSpace,
+                                isScreenLocked: locked)
     }
 
     static let readyState = state()

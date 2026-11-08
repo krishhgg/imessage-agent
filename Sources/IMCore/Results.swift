@@ -45,6 +45,9 @@ public enum BusyReason: Hashable, Sendable {
     case editInProgress
     /// `busy: user active`: the idle gate ran out (section 4 steps 2 and 3).
     case userActive
+    /// `busy: screen locked`: the Mac's screen is locked, so AX reaches no Messages window. Nothing was launched or
+    /// quit (docs/BUILD-PLAN.md entry 52). Comes with a fix.
+    case screenLocked
 }
 
 /// `aborted` variants (section 4 steps 3 and 5).
@@ -129,6 +132,8 @@ public struct ActionResult: Hashable, Sendable {
 
     /// `busy: Messages is open` with its fixed fix text (section 4, Window rules).
     public static let messagesOpen = ActionResult(.busy(.messagesOpen), fix: "hide Messages (⌘H) and retry")
+    /// `busy: screen locked` with its fix text (docs/BUILD-PLAN.md entry 52).
+    public static let screenLocked = ActionResult(.busy(.screenLocked), fix: "unlock the Mac and retry")
 
     // Error lines docs/BUILD-PLAN.md adds ("Items DESIGN.md doesn't settle", item 8).
 
@@ -211,6 +216,7 @@ extension ResultCode {
             case .draftInMessages: return "busy: draft in Messages"
             case .editInProgress: return "busy: edit in progress"
             case .userActive: return "busy: user active"
+            case .screenLocked: return "busy: screen locked"
             }
         case .notLoaded: return "not_loaded"
         case .notDownloaded: return "not_downloaded"
@@ -246,7 +252,7 @@ extension ResultCode {
             "denied": .denied(.user), "denied: approval expired": .denied(.approvalExpired),
             "busy: queue": .busy(.queue), "busy: Messages is open": .busy(.messagesOpen),
             "busy: draft in Messages": .busy(.draftInMessages), "busy: edit in progress": .busy(.editInProgress),
-            "busy: user active": .busy(.userActive),
+            "busy: user active": .busy(.userActive), "busy: screen locked": .busy(.screenLocked),
             "not_loaded": .notLoaded, "not_downloaded": .notDownloaded, "unsupported": .unsupported,
             "unsupported_target": .unsupportedTarget, "untested": .untested, "no_hidden_window": .noHiddenWindow,
             "aborted: user took over": .aborted(.userTookOver), "aborted: parent changed": .aborted(.parentChanged),

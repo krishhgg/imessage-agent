@@ -105,7 +105,12 @@ final class SourceGuardTests: XCTestCase {
         // The Space count reads the same list, so the two counts describe one moment.
         XCTAssertTrue(state.contains(
             "spaceWindowCount = Self.spaceWindowCount(pid: pid, in: allWindows, spaces: WindowSpaces.count(of:))"), state)
-        XCTAssertTrue(state.contains("spaceWindowCount: spaceWindowCount)"), state)
+        XCTAssertTrue(state.contains("spaceWindowCount: spaceWindowCount,"), state)
+        // The lock is read before the not-running return, so a quit Messages on a locked screen isn't launched
+        // (docs/BUILD-PLAN.md entry 52), and both returns carry it.
+        XCTAssertTrue(state.trimmingCharacters(in: .whitespaces).hasPrefix("let screenLocked = ScreenLock.isLocked()"), state)
+        XCTAssertTrue(state.contains("state.isScreenLocked = screenLocked"), state)
+        XCTAssertTrue(state.contains("isScreenLocked: screenLocked)"), state)
         let normal = body(of: "private static func hasNormalWindow(pid: pid_t)", in: lines).joined()
         XCTAssertTrue(normal.contains("realWindowCount(pid: pid, in: allWindows()) > 0"), normal)
         XCTAssertFalse(normal.contains("CGWindowListCopyWindowInfo"), normal)

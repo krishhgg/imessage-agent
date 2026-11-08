@@ -48,10 +48,15 @@ public struct MessagesAppState: Hashable, Sendable {
     /// it (docs/BUILD-PLAN.md entry 51). Only the hidden rule's one-window test uses it. Equal to
     /// `allSpacesWindowCount` when the Space lookup isn't available, and -1 when the window server gives no list.
     public var spaceWindowCount: Int
+    /// The session's screen is locked (`CGSSessionScreenIsLocked`). AX then lists no Messages window, hidden or not,
+    /// so no UI action can run, and a quit and relaunch would find no window either (docs/BUILD-PLAN.md entry 52).
+    /// Read whether or not Messages runs.
+    public var isScreenLocked: Bool
 
     /// `spaceWindowCount` defaults to `allSpacesWindowCount`.
     public init(isRunning: Bool, pid: Int32?, isFrontmost: Bool, isHidden: Bool, axWindowCount: Int,
-                onScreenWindowCount: Int, allSpacesWindowCount: Int, spaceWindowCount: Int? = nil) {
+                onScreenWindowCount: Int, allSpacesWindowCount: Int, spaceWindowCount: Int? = nil,
+                isScreenLocked: Bool = false) {
         self.isRunning = isRunning
         self.pid = pid
         self.isFrontmost = isFrontmost
@@ -60,6 +65,7 @@ public struct MessagesAppState: Hashable, Sendable {
         self.onScreenWindowCount = onScreenWindowCount
         self.allSpacesWindowCount = allSpacesWindowCount
         self.spaceWindowCount = spaceWindowCount ?? allSpacesWindowCount
+        self.isScreenLocked = isScreenLocked
     }
 
     public static let notRunning = MessagesAppState(isRunning: false, pid: nil, isFrontmost: false, isHidden: false,

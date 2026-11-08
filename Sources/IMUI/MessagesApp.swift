@@ -34,7 +34,12 @@ public final class LiveMessagesApp: MessagesAppControl, ActivationEnding {
     private let activation = StartedProcess()
 
     public func state() -> MessagesAppState {
-        guard let running = runningApp() else { return .notRunning }
+        let screenLocked = ScreenLock.isLocked()
+        guard let running = runningApp() else {
+            var state = MessagesAppState.notRunning
+            state.isScreenLocked = screenLocked
+            return state
+        }
         let pid = running.processIdentifier
         // The AX count (2 s timeout) and both window lists first, and `isHidden` and frontmost last, so a hidden
         // action's final check sees an unhide or activation that happened during those reads.
@@ -47,7 +52,8 @@ public final class LiveMessagesApp: MessagesAppControl, ActivationEnding {
         let frontmost = NSWorkspace.shared.frontmostApplication?.processIdentifier == pid
         return MessagesAppState(isRunning: true, pid: pid, isFrontmost: frontmost, isHidden: isHidden,
                                 axWindowCount: axWindowCount, onScreenWindowCount: onScreenWindowCount,
-                                allSpacesWindowCount: allSpacesWindowCount, spaceWindowCount: spaceWindowCount)
+                                allSpacesWindowCount: allSpacesWindowCount, spaceWindowCount: spaceWindowCount,
+                                isScreenLocked: screenLocked)
     }
 
     /// The front app's pid against the running Messages' pid. No AX read and no window list, so it can't block on
@@ -290,5 +296,34 @@ func isPlainBundleID(_ id: String) -> Bool {
     guard !id.isEmpty, id.utf8.count <= 255, !id.hasPrefix("-"), !id.hasPrefix(".") else { return false }
     return id.unicodeScalars.allSatisfy {
         ("a"..."z").contains($0) || ("A"..."Z").contains($0) || ("0"..."9").contains($0) || $0 == "." || $0 == "-"
+    }
+}
+
+/// Whether the login session's screen is locked, from `CGSessionCopyCurrentDictionary`. Owner: IMUI.
+///
+/// Measured on macOS 26.2 (research/live-tests/2026-11-07-sends.md, Screen locked): `CGSSessionScreenIsLocked` is 1
+/// while the lock screen shows, and AX lists no Messages window then. A session that isn't on the console
+/// (`kCGSSessionOnConsoleKey` false, another user switched in) counts as locked too, since the bridge's user can't
+/// see or reach Messages then either. That case is assumed, not measured. A missing key, or no session dictionary at
+/// all, reads as unlocked, so the window rules decide as before.
+public enum ScreenLock {
+    public static func isLocked() -> Bool {
+        guard let session = CGSessionCopyCurrentDictionary() as? [String: Any] else { return false }
+        return isLocked(session)
+    }
+
+    static func isLocked(_ session: [String: Any]) -> Bool {
+        if flag(session["CGSSessionScreenIsLocked"]) == true { return true }
+        if flag(session[kCGSessionOnConsoleKey as String]) == false { return true }
+        return false
+    }
+
+    /// A Bool, or a number read as nonzero. Nil for a missing key or any other type.
+    private static func flag(_ value: Any?) -> Bool? {
+        switch value {
+        case let flag as Bool: return flag
+        case let number as NSNumber: return number.intValue != 0
+        default: return nil
+        }
     }
 }

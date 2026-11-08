@@ -132,6 +132,97 @@ final class WindowRulesTests: XCTestCase {
 
     // MARK: - Manager paths
 
+    // MARK: - Locked screen (docs/BUILD-PLAN.md entry 52)
+
+    func testALockedScreenOverridesEveryOtherState() {
+        let states: [(String, MessagesAppState)] = [
+            ("hidden, one window", Make.state(locked: true)),
+            ("hidden, no AX window", Make.state(hidden: true, ax: 0, anySpace: 2, onSpace: 1, locked: true)),
+            ("not hidden, no AX window", Make.state(hidden: false, ax: 0, anySpace: 2, locked: true)),
+            ("not running", Make.state(running: false, locked: true)),
+            ("frontmost", Make.state(frontmost: true, hidden: false, locked: true)),
+            ("unknown AX count", Make.state(hidden: true, ax: -1, locked: true)),
+        ]
+        for (name, state) in states {
+            XCTAssertEqual(WindowRules.decide(state), .screenLocked, name)
+            XCTAssertFalse(WindowRules.allowsHiddenAction(state), name)
+            XCTAssertEqual(WindowRules.busyResult(for: state), .screenLocked, name)
+        }
+    }
+
+    func testTheLockedHiddenStateMeasuredLiveNoLongerQuitsMessages() {
+        // research/live-tests/2026-11-07-sends.md, Screen locked: hidden, AX 0, two real windows, one on a Space.
+        let measured = Make.state(hidden: true, ax: 0, anySpace: 2, onSpace: 1)
+        XCTAssertEqual(WindowRules.decide(measured), .quitAndRelaunch)
+        var locked = measured
+        locked.isScreenLocked = true
+        XCTAssertEqual(WindowRules.decide(locked), .screenLocked)
+        // Not hidden, the same reads were already busy, and the lock now names the cause.
+        XCTAssertEqual(WindowRules.decide(Make.state(hidden: false, ax: 0, anySpace: 2, onSpace: 1)), .busyMessagesOpen)
+    }
+
+    func testALockedScreenLaunchesQuitsAndWaitsForNothing() {
+        let states: [(String, MessagesAppState)] = [
+            ("hidden, no AX window", Make.state(hidden: true, ax: 0, anySpace: 2, onSpace: 1, locked: true)),
+            ("not running", Make.state(running: false, locked: true)),
+            ("ready but locked", Make.state(locked: true)),
+            ("not hidden, no window", Make.state(hidden: false, ax: 0, anySpace: 0, locked: true)),
+        ]
+        for (name, state) in states {
+            let rig = Rig(state: state)
+            let start = rig.clock.uptime
+            let prep = rig.windows.prepare(queueDeadline: start + 30)
+            XCTAssertEqual(prep, WindowPreparation(early: .screenLocked, notes: []), name)
+            XCTAssertTrue(rig.app.calls.isEmpty, "\(name): no launch, quit or hide: \(rig.app.calls)")
+            XCTAssertEqual(rig.clock.uptime - start, 0, accuracy: 0.001, "\(name): no wait")
+            XCTAssertEqual(rig.windows.recheck(), .screenLocked, name)
+        }
+    }
+
+    func testAScreenThatLocksDuringTheTransferWaitIsNotQuit() {
+        let rig = Rig(state: Make.state(hidden: true, ax: 0))
+        let clock = rig.clock
+        let transfers = TimedTransfers(clock: clock, clearAt: clock.uptime + 1)
+        let manager = HiddenWindowManager(app: rig.app, ax: rig.ax, transfers: transfers, clock: clock)
+        rig.app.onState = { state in
+            if transfers.checks > 0 { state.isScreenLocked = true }
+        }
+        XCTAssertEqual(manager.ensureHiddenWindow(queueDeadline: clock.uptime + 30), .screenLocked)
+        XCTAssertTrue(rig.app.calls.isEmpty, "quit on a locked screen: \(rig.app.calls)")
+    }
+
+    func testAScreenThatLocksDuringTheLaunchWaitStopsTheWait() {
+        let rig = Rig(state: .notRunning)
+        rig.app.onCall = { call, state in
+            if call == .launchHidden { state = Make.state(hidden: true, ax: 0, locked: true) }
+        }
+        let start = rig.clock.uptime
+        let prep = rig.windows.prepare(queueDeadline: start + 30)
+        XCTAssertEqual(prep, WindowPreparation(early: .screenLocked, notes: []))
+        XCTAssertEqual(rig.app.calls, [.launchHidden])
+        // No 10 s window wait. Only the 1 s visibility poll after a launch.
+        XCTAssertEqual(rig.clock.uptime - start, Limits.visibilityPoll, accuracy: 0.06)
+    }
+
+    func testALaunchThatShowedAWindowBeforeTheLockKeepsTheNote() {
+        let rig = Rig(state: .notRunning)
+        let clock = rig.clock
+        var launchedAt: TimeInterval?
+        rig.app.onCall = { call, state in
+            if call == .launchHidden {
+                launchedAt = clock.uptime
+                state = Make.state(hidden: false, ax: 1, onScreen: 1)
+            }
+        }
+        rig.app.onState = { state in
+            if let launchedAt, clock.uptime >= launchedAt + 0.5 { state = Make.state(hidden: true, ax: 0, locked: true) }
+        }
+        let prep = rig.windows.prepare(queueDeadline: clock.uptime + 30)
+        XCTAssertEqual(prep.early?.code, .busy(.screenLocked))
+        XCTAssertEqual(prep.early?.notes, [.messagesBecameVisible])
+        XCTAssertEqual(prep.early?.fix, ActionResult.screenLocked.fix)
+    }
+
     func testReadyStateDoesNothing() {
         let rig = Rig()
         let prep = rig.windows.prepare(queueDeadline: rig.clock.uptime + 30)

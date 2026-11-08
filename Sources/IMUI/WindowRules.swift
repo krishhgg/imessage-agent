@@ -12,10 +12,15 @@ public enum WindowDecision: Hashable, Sendable {
     case quitAndRelaunch
     /// Frontmost (with or without a window), visible window, or hidden with more than one window.
     case busyMessagesOpen
+    /// The screen is locked. AX lists no Messages window, so nothing is launched, quit or pressed.
+    case screenLocked
 }
 
 /// Pure decision from a `MessagesAppState`. Owner: IMUI.
 ///
+/// - Screen locked: `screenLocked`, whatever else the state shows. AX lists no Messages window on a locked screen,
+///   hidden or not, so the hidden-with-no-window case below would otherwise quit and relaunch Messages and still find
+///   no window (docs/BUILD-PLAN.md entry 52).
 /// - Frontmost: `busyMessagesOpen`.
 /// - Not running: `launchHidden`.
 /// - No AX window, not hidden, and a real window on some Space (or an unknown count): `busyMessagesOpen` with the
@@ -37,6 +42,7 @@ public enum WindowDecision: Hashable, Sendable {
 /// Messages would close it.
 public enum WindowRules {
     public static func decide(_ state: MessagesAppState) -> WindowDecision {
+        if state.isScreenLocked { return .screenLocked }
         if state.isFrontmost { return .busyMessagesOpen }
         if !state.isRunning { return .launchHidden }
         if state.axWindowCount < 0 { return .busyMessagesOpen }
@@ -60,7 +66,9 @@ public enum WindowRules {
     /// The `busy: Messages is open` result for a busy state. It carries `fix: hide Messages (⌘H) and retry` only
     /// when a window is showing, that is Messages isn't hidden and has a window, on any Space or of an unknown
     /// count there. Hiding doesn't help when Messages is already hidden with two windows, or frontmost with none.
+    /// A locked screen gives `busy: screen locked` instead.
     public static func busyResult(for state: MessagesAppState) -> ActionResult {
+        if state.isScreenLocked { return .screenLocked }
         let windowShowing = state.isRunning && !state.isHidden
             && (state.axWindowCount > 0 || state.onScreenWindowCount > 0 || state.allSpacesWindowCount != 0)
         return windowShowing ? .messagesOpen : ActionResult(.busy(.messagesOpen))
@@ -137,6 +145,7 @@ public final class HiddenWindowManager {
     /// - No Accessibility grant (`AXDriveError.notTrusted`): `UIResults.accessibilityMissing`, nothing launched.
     /// - `proceed`: ready, nothing pressed or launched.
     /// - `busyMessagesOpen`: `WindowRules.busyResult`.
+    /// - `screenLocked`: `busy: screen locked`, nothing launched or quit.
     /// - `launchHidden`: `open -g -j -b`, then one hidden window within `Limits.relaunchWindowWait`, then the 1 s
     ///   visibility poll.
     /// - `quitAndRelaunch`: waits until no staged file is pending, up to `queueDeadline` (`busy: queue`), reads the
@@ -156,6 +165,8 @@ public final class HiddenWindowManager {
             return WindowPreparation(early: nil, notes: [])
         case .busyMessagesOpen:
             return WindowPreparation(early: WindowRules.busyResult(for: state), notes: [])
+        case .screenLocked:
+            return WindowPreparation(early: .screenLocked, notes: [])
         case .launchHidden:
             return launchAndWait()
         case .quitAndRelaunch:
@@ -164,11 +175,12 @@ public final class HiddenWindowManager {
     }
 
     /// The window rules again, launching and quitting nothing: nil while Messages is still hidden with one window,
-    /// `no_hidden_window` if it quit, otherwise `WindowRules.busyResult`. Hidden actions call it right before the
+    /// `busy: screen locked` on a locked screen, `no_hidden_window` if it quit, otherwise `WindowRules.busyResult`. Hidden actions call it right before the
     /// named action, because the user may have shown Messages since `prepare`.
     public func recheck() -> ActionResult? {
         let state = currentState()
         if WindowRules.allowsHiddenAction(state) { return nil }
+        if state.isScreenLocked { return .screenLocked }
         return state.isRunning ? WindowRules.busyResult(for: state) : ActionResult(.noHiddenWindow)
     }
 
@@ -193,13 +205,16 @@ public final class HiddenWindowManager {
             if left <= 0 { return WindowPreparation(early: ActionResult(.busy(.queue)), notes: []) }
             sleepPollStep(clock, interval: pollInterval, left: left)
         }
-        // Time passed while waiting, so the user may have opened Messages. Decide again before quitting.
+        // Time passed while waiting, so the user may have opened Messages or locked the screen. Decide again before
+        // quitting.
         let state = currentState()
         switch WindowRules.decide(state) {
         case .proceed:
             return WindowPreparation(early: nil, notes: [])
         case .busyMessagesOpen:
             return WindowPreparation(early: WindowRules.busyResult(for: state), notes: [])
+        case .screenLocked:
+            return WindowPreparation(early: .screenLocked, notes: [])
         case .launchHidden:
             return launchAndWait()
         case .quitAndRelaunch:
@@ -221,10 +236,13 @@ public final class HiddenWindowManager {
             while true {
                 let state = currentState()
                 if WindowRules.showsWindow(state) { sawWindow = true }
-                if WindowRules.decide(state) == .proceed {
+                let decision = WindowRules.decide(state)
+                if decision == .proceed {
                     ready = true
                     break
                 }
+                // A screen that locks during the wait won't show a window to AX before the deadline.
+                if decision == .screenLocked { break }
                 let left = deadline - clock.uptime
                 if left <= 0 { break }
                 sleepPollStep(clock, interval: pollInterval, left: left)
@@ -233,8 +251,12 @@ public final class HiddenWindowManager {
         // The 1 s poll after every cold launch and relaunch. A window already seen is enough for the note.
         if !sawWindow, visibilityCheck().becameVisible { sawWindow = true }
         let notes: [ResultNote] = sawWindow ? [.messagesBecameVisible] : []
-        guard ready, WindowRules.decide(currentState()) == .proceed else {
-            return WindowPreparation(early: ActionResult(.noHiddenWindow, notes: notes), notes: [])
+        let final = currentState()
+        guard ready, WindowRules.decide(final) == .proceed else {
+            let early = final.isScreenLocked
+                ? ActionResult(.busy(.screenLocked), notes: notes, fix: ActionResult.screenLocked.fix)
+                : ActionResult(.noHiddenWindow, notes: notes)
+            return WindowPreparation(early: early, notes: [])
         }
         return WindowPreparation(early: nil, notes: notes)
     }

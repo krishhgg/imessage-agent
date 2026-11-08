@@ -12,7 +12,7 @@ final class ResultsTests: XCTestCase {
         (.failed(.messagesNotReady), false), (.failed(.bridgeRestarted), false), (.ambiguous(.target), false),
         (.already, false), (.expired, false), (.denied(.approvalExpired), false), (.pending(id: "ab12"), false),
         (.busy(.queue), false), (.busy(.messagesOpen), false), (.busy(.draftInMessages), false),
-        (.busy(.editInProgress), false), (.busy(.userActive), false), (.notLoaded, false), (.notDownloaded, false),
+        (.busy(.editInProgress), false), (.busy(.userActive), false), (.busy(.screenLocked), false), (.notLoaded, false), (.notDownloaded, false),
         (.unsupported, false), (.unsupportedTarget, false), (.untested, false), (.noHiddenWindow, false),
         (.aborted(.userTookOver), false), (.aborted(.parentChanged), false), (.aborted(.lateActivation), false),
         (.aborted(.activation), false), (.aborted(.deadline), false), (.aborted(.check("view")), false),
@@ -42,7 +42,7 @@ final class ResultsTests: XCTestCase {
             "failed: sent with wrong parent none", "ghost", "ambiguous: two rows matched", "may_have_completed", "ok",
             "denied", "failed: Messages not ready", "failed: bridge restarted", "ambiguous", "already", "expired",
             "denied: approval expired", "pending ab12", "busy: queue", "busy: Messages is open",
-            "busy: draft in Messages", "busy: edit in progress", "busy: user active", "not_loaded", "not_downloaded",
+            "busy: draft in Messages", "busy: edit in progress", "busy: user active", "busy: screen locked", "not_loaded", "not_downloaded",
             "unsupported", "unsupported_target", "untested", "no_hidden_window", "aborted: user took over",
             "aborted: parent changed", "aborted: late activation", "aborted: activation", "aborted: deadline",
             "aborted: view", "timeout", "error: wrong chat", "error: several matches", "error: journal write failed",
@@ -57,6 +57,7 @@ final class ResultsTests: XCTestCase {
     func testRenderedJoinsNotesAndFixWithOneSpace() {
         XCTAssertEqual(ActionResult(.submitted, notes: [.chatUnconfirmed]).rendered, "submitted, chat unconfirmed")
         XCTAssertEqual(ActionResult.messagesOpen.rendered, "busy: Messages is open fix: hide Messages (⌘H) and retry")
+        XCTAssertEqual(ActionResult.screenLocked.rendered, "busy: screen locked fix: unlock the Mac and retry")
         let r = ActionResult(.error(.message("no chat or contact matches \"zz\"")), fix: "imessage chats")
         XCTAssertEqual(r.rendered, "error: no chat or contact matches \"zz\" fix: imessage chats")
         XCTAssertFalse(r.rendered.contains(". fix:"))
