@@ -26,7 +26,7 @@ public final class ReadService {
             let records = try eligible.prefix(limit).map {
                 try s.chatRecord($0, unreadCount: unread[$0.canonical] ?? 0)
             }
-            return ChatsPage(chats: records, hasMore: eligible.count > limit, limit: limit)
+            return ChatsPage(chats: records, hasMore: eligible.count > limit, limit: limit, unreadOnly: args.unreadOnly)
         }
     }
 

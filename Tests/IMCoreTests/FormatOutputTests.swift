@@ -236,6 +236,8 @@ final class FormatOutputTests: XCTestCase {
     func testNDJSONOtherRecords() throws {
         XCTAssertEqual(try records(.chats(ChatsPage(chats: [], hasMore: true, limit: 20))).first?["next"] as? String,
                        "imessage chats -n 40")
+        XCTAssertEqual(try records(.chats(ChatsPage(chats: [], hasMore: true, limit: 2, unreadOnly: true))).first?["next"]
+                       as? String, "imessage chats --unread -n 22")
         XCTAssertEqual(try records(.wait(WaitOutcome(chat: nil, message: nil, timedOut: true))).map { $0["type"] as? String },
                        ["timeout"])
         let failure = try records(.failure(WireError(result: ActionResult(.error(.severalMatches), fix: "pick"),

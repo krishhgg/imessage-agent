@@ -466,7 +466,7 @@ struct Renderer {
     }
 
     func chats(_ page: ChatsPage) -> String {
-        let pageFooter = page.hasMore ? "more: imessage chats -n \(page.limit + 20)" : nil
+        let pageFooter = page.hasMore ? "more: \(page.nextCommand)" : nil
         func capFooter(_ c: ChatRecord) -> String { "more: imessage read \(c.rowid)" }
         var lines: [String] = []
         var size = 0
@@ -1170,7 +1170,7 @@ enum NDJSON {
                 if let last = c.last { o["last"] = message(last, chat: c.rowid, type: false) }
                 return [o]
             }
-            let tail = p.hasMore ? [more("imessage chats -n \(p.limit + 20)")] : []
+            let tail = p.hasMore ? [more(p.nextCommand)] : []
             lines = page(head: { _ in [] }, units: units, more: { more("imessage read \(p.chats[$0].rowid)") }, tail: tail)
         case .unread(let p):
             let summary: [String: Any] = ["type": "unread", "total": p.totalUnread, "chats": p.groups.count]
