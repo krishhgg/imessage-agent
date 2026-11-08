@@ -1,0 +1,37 @@
+{
+  "imsg": {
+    "chars": 7557,
+    "license": "MIT",
+    "sha256": "5c74857098e05ceb6cba733d2b73c4f0693b864d1af3dcbb81bda84652d71ef7",
+    "tokens": 1906,
+    "what": "openclaw/imsg .agents/skills/imsg/SKILL.md"
+  },
+  "jeffhuber": {
+    "chars": 18212,
+    "license": "MIT",
+    "sha256": "5705c37345f365784d01bbc6a0ad5067514d29ca08d93aa86e6bbcfebf56a59c",
+    "tokens": 4627,
+    "what": "jeffhuber/grokbot-imessage-skill SKILL.md"
+  },
+  "jimmyliu03_skill": {
+    "chars": 3923,
+    "license": "MIT",
+    "sha256": "9c05968603e8bea0fc52467491ab7cc080052edb1047fb183c959fdd599e5a84",
+    "tokens": 826,
+    "what": "jimmyliu03/grok-bot-imessage apple-messages-reminders SKILL.md"
+  },
+  "ryannewsom": {
+    "chars": 2607,
+    "license": "MIT",
+    "sha256": "965453486e11d7b302d590e40439a9585bedaaca41bad5282f76cea2c8e86f7e",
+    "tokens": 618,
+    "what": "RyanNewsom/grokbot-imessage-reader SKILL.md"
+  },
+  "steve228uk": {
+    "chars": 5137,
+    "license": "no license file",
+    "sha256": "b9d95e918aedb21c1fdd53ff35ea325208ad75da49bb395e7ffe846b45d75149",
+    "tokens": 1341,
+    "what": "steve228uk/grok-bot-imessage skills/imessage-on-mac.md"
+  }
+}
