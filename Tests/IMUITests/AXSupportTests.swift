@@ -576,6 +576,11 @@ final class AXSupportTests: XCTestCase {
         XCTAssertFalse(ScreenLock.isLocked([console: 1]), "unlocked: the lock key is missing")
         XCTAssertFalse(ScreenLock.isLocked([:]), "no keys reads as unlocked")
         XCTAssertFalse(ScreenLock.isLocked(["CGSSessionScreenIsLocked": "1"]), "a string isn't a flag")
+        XCTAssertTrue(ScreenLock.isLocked([console: 1], frontBundleID: "com.apple.loginwindow"),
+                      "the lock key missing while the lock screen is in front")
+        XCTAssertTrue(ScreenLock.isLocked([:], frontBundleID: "com.apple.loginwindow"))
+        XCTAssertFalse(ScreenLock.isLocked([console: 1], frontBundleID: "com.apple.finder"))
+        XCTAssertFalse(ScreenLock.isLocked([console: 1], frontBundleID: nil), "no front app reads as unlocked")
         XCTAssertEqual(console, kCGSessionOnConsoleKey as String)
     }
 }

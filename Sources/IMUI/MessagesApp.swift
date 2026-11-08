@@ -307,18 +307,26 @@ func isPlainBundleID(_ id: String) -> Bool {
 /// Measured on macOS 26.2 (research/live-tests/2026-11-07-sends.md, Screen locked): `CGSSessionScreenIsLocked` is 1
 /// while the lock screen shows, and AX lists no Messages window then. A session that isn't on the console
 /// (`kCGSSessionOnConsoleKey` false, another user switched in) counts as locked too, since the bridge's user can't
-/// see or reach Messages then either. That case is assumed, not measured. A missing key, or no session dictionary at
-/// all, reads as unlocked, so the window rules decide as before.
+/// see or reach Messages then either. That case is assumed, not measured. The front app being loginwindow counts as
+/// locked too: it was the front app the whole time the screen was locked, and once in that time the lock key read
+/// missing. loginwindow also owns the Force Quit window, so that window reads as a lock and gives busy, which fails
+/// closed. A missing key with any other front app, or no session dictionary at all, reads as unlocked, so the window
+/// rules decide as before.
 public enum ScreenLock {
+    static let loginWindowBundleID = "com.apple.loginwindow"
+
     public static func isLocked() -> Bool {
-        guard let session = CGSessionCopyCurrentDictionary() as? [String: Any] else { return false }
-        return isLocked(session)
+        let front = NSWorkspace.shared.frontmostApplication?.bundleIdentifier
+        guard let session = CGSessionCopyCurrentDictionary() as? [String: Any] else {
+            return front == loginWindowBundleID
+        }
+        return isLocked(session, frontBundleID: front)
     }
 
-    static func isLocked(_ session: [String: Any]) -> Bool {
+    static func isLocked(_ session: [String: Any], frontBundleID: String? = nil) -> Bool {
         if flag(session["CGSSessionScreenIsLocked"]) == true { return true }
         if flag(session[kCGSessionOnConsoleKey as String]) == false { return true }
-        return false
+        return frontBundleID == loginWindowBundleID
     }
 
     /// A Bool, or a number read as nonzero. Nil for a missing key or any other type.
