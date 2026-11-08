@@ -170,7 +170,11 @@ def _run_bin(fx, binary, args):
     })
     p = subprocess.run([binary] + list(args), env=env, stdout=subprocess.PIPE, stderr=subprocess.STDOUT,
                        timeout=60)
-    return p.stdout.decode("utf-8", "replace")
+    out = p.stdout.decode("utf-8", "replace")
+    if p.returncode != 0:
+        # An error message is not a read result. Counting it would make a broken CLI look cheap.
+        raise SystemExit("%s %s exited %d:\n%s" % (binary, " ".join(args), p.returncode, out))
+    return out
 
 
 def _opt(args, name, default=None, cast=str):
