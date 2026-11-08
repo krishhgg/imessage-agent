@@ -296,4 +296,30 @@ final class DecodingTests: XCTestCase {
         let plain = try record(Manifest.first("nfc_text"))
         XCTAssertFalse(plain.edited || plain.unsent || plain.partUnsent)
     }
+
+    // MARK: URL balloon payload_data
+
+    /// A framed `bplist00` with two objects: a one-element array whose 8-byte object reference is `ref`, then `true`.
+    private func oneElementArrayPlist(ref: UInt64) -> Data {
+        func be(_ v: UInt64) -> [UInt8] { (0..<8).reversed().map { UInt8(truncatingIfNeeded: v >> (8 * UInt64($0))) } }
+        var b = Array("bplist00".utf8)
+        b += [0xA1] + be(ref) // object 0 at offset 8
+        b += [0x09] // object 1 at offset 17
+        let table = UInt64(b.count)
+        b += [8, 17]
+        b += [0, 0, 0, 0, 0, 0, 1, 8] + be(2) + be(0) + be(table) // offset size 1, reference size 8
+        return Data(b)
+    }
+
+    /// A reference above Int.max is corrupt data, not a trap. `LinkMetadataDecoder` reads incoming payloads with
+    /// `try?`, which only catches a thrown error.
+    func testObjectReferencesAboveIntMaxAreCorrupt() throws {
+        XCTAssertEqual(try BinaryPlist.parse(oneElementArrayPlist(ref: 1)), .array([.bool(true)]))
+        for ref in [UInt64.max, UInt64(Int.max) + 1, 2] {
+            XCTAssertThrowsError(try BinaryPlist.parse(oneElementArrayPlist(ref: ref)), "\(ref)") { e in
+                XCTAssertEqual(e as? BinaryPlist.ParseError, .corrupt)
+            }
+            XCTAssertNil(LinkMetadataDecoder.decode(oneElementArrayPlist(ref: ref)))
+        }
+    }
 }
