@@ -48,12 +48,15 @@ public final class LiveMessagesApp: MessagesAppControl, ActivationEnding {
         let allWindows = Self.allWindows()
         let allSpacesWindowCount = Self.realWindowCount(pid: pid, in: allWindows)
         let spaceWindowCount = Self.spaceWindowCount(pid: pid, in: allWindows, spaces: WindowSpaces.count(of:))
+        // A screen that locks during those reads hides every Messages window from AX, so read the lock again and count
+        // either read. A lock that ended during them gives busy, and the caller retries.
+        let lockedAfterReads = ScreenLock.isLocked()
         let isHidden = running.isHidden
         let frontmost = NSWorkspace.shared.frontmostApplication?.processIdentifier == pid
         return MessagesAppState(isRunning: true, pid: pid, isFrontmost: frontmost, isHidden: isHidden,
                                 axWindowCount: axWindowCount, onScreenWindowCount: onScreenWindowCount,
                                 allSpacesWindowCount: allSpacesWindowCount, spaceWindowCount: spaceWindowCount,
-                                isScreenLocked: screenLocked)
+                                isScreenLocked: screenLocked || lockedAfterReads)
     }
 
     /// The front app's pid against the running Messages' pid. No AX read and no window list, so it can't block on

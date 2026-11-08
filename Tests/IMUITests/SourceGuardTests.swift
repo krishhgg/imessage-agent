@@ -106,11 +106,6 @@ final class SourceGuardTests: XCTestCase {
         XCTAssertTrue(state.contains(
             "spaceWindowCount = Self.spaceWindowCount(pid: pid, in: allWindows, spaces: WindowSpaces.count(of:))"), state)
         XCTAssertTrue(state.contains("spaceWindowCount: spaceWindowCount,"), state)
-        // The lock is read before the not-running return, so a quit Messages on a locked screen isn't launched
-        // (docs/BUILD-PLAN.md entry 52), and both returns carry it.
-        XCTAssertTrue(state.trimmingCharacters(in: .whitespaces).hasPrefix("let screenLocked = ScreenLock.isLocked()"), state)
-        XCTAssertTrue(state.contains("state.isScreenLocked = screenLocked"), state)
-        XCTAssertTrue(state.contains("isScreenLocked: screenLocked)"), state)
         let normal = body(of: "private static func hasNormalWindow(pid: pid_t)", in: lines).joined()
         XCTAssertTrue(normal.contains("realWindowCount(pid: pid, in: allWindows()) > 0"), normal)
         XCTAssertFalse(normal.contains("CGWindowListCopyWindowInfo"), normal)
@@ -133,6 +128,29 @@ final class SourceGuardTests: XCTestCase {
         let samples = try ["running.isHidden", "NSWorkspace.shared.frontmostApplication?.processIdentifier"]
             .map(position)
         XCTAssertLessThan(try XCTUnwrap(reads.max()), try XCTUnwrap(samples.min()), state)
+    }
+
+    func testTheLiveStateReadsTheLockBeforeAndAfterTheWindowReads() throws {
+        // `state()` reads the lock before the not-running return, so a quit Messages on a locked screen isn't launched
+        // (docs/BUILD-PLAN.md entry 52). A screen that locks during the AX read (2 s timeout) hides every Messages
+        // window from AX, so a running snapshot reads the lock again after the reads that can block, before
+        // `isHidden` and frontmost, and either read saying locked counts.
+        let lines = try codeLines().first { $0.0 == "MessagesApp.swift" }!.1
+        let state = body(of: "public func state() -> MessagesAppState", in: lines).joined(separator: "\n")
+        XCTAssertTrue(state.trimmingCharacters(in: .whitespacesAndNewlines)
+            .hasPrefix("let screenLocked = ScreenLock.isLocked()"), state)
+        XCTAssertEqual(state.components(separatedBy: "ScreenLock.isLocked()").count, 3, "two lock reads: \(state)")
+        func position(_ text: String) throws -> String.Index {
+            XCTAssertEqual(state.components(separatedBy: text).count, 2, "\(text) once in state()")
+            return try XCTUnwrap(state.range(of: text)?.lowerBound, text)
+        }
+        let order = try ["let screenLocked = ScreenLock.isLocked()", "guard let running = runningApp()",
+                         "state.isScreenLocked = screenLocked\n",
+                         "Self.axWindowCount(pid: pid)", "Self.onScreenWindowCount(pid: pid)", "Self.allWindows()",
+                         "WindowSpaces.count(of:)", "let lockedAfterReads = ScreenLock.isLocked()",
+                         "running.isHidden", "NSWorkspace.shared.frontmostApplication?.processIdentifier",
+                         "isScreenLocked: screenLocked || lockedAfterReads)"].map(position)
+        XCTAssertEqual(order, order.sorted(), state)
     }
 
     func testTheRowPressFillsAnUnknownAXCountAsTheManagerDoes() throws {
