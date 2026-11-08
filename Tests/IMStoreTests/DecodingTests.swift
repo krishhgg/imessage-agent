@@ -224,6 +224,18 @@ final class DecodingTests: XCTestCase {
         XCTAssertEqual(names([add, row(2, "p:0/G", 3006, "+14155550101", emoji: "🪔")]), [])
     }
 
+    /// `TapbackRunner` accepts a 3006 row with no emoji as the removal, so the fold must take the reaction away too.
+    func testEmojiRemoveWithoutAnEmojiTakesAwayTheActorsEmoji() {
+        let add = row(1, "p:0/G", 2006, "+14155550101", emoji: "🪔")
+        XCTAssertEqual(names([add, row(2, "p:0/G", 3006, "+14155550101")]), [])
+        XCTAssertEqual(names([add, row(2, "p:1/G", 3006, "+14155550101")]), ["0 🪔 Mom"])
+        XCTAssertEqual(names([add, row(2, "p:0/G", 3006, nil, me: true)]), ["0 🪔 Mom"])
+        XCTAssertEqual(names([row(1, "p:0/G", 2000, "+14155550101"), row(2, "p:0/G", 3006, "+14155550101")]),
+                       ["0 ❤️ Mom"])
+        XCTAssertEqual(names([row(1, "p:0/G", 2006, nil, me: true, emoji: "🪔"), row(2, "p:0/G", 3006, nil, me: true),
+                              row(3, "p:0/G", 2006, nil, me: true, emoji: "🪔")]), ["0 🪔 You"])
+    }
+
     func testRowsReplayInRowIDOrderAndBadKindsAreSkipped() {
         XCTAssertEqual(names([row(5, "p:0/G", 3000, "+14155550101"), row(4, "p:0/G", 2000, "+14155550101")]), [])
         XCTAssertEqual(names([row(1, "p:0/G", 2007, "+14155550101"), row(2, "p:0/G", 2006, "+14155550101"),
@@ -283,5 +295,31 @@ final class DecodingTests: XCTestCase {
         XCTAssertFalse(partial.unsent)
         let plain = try record(Manifest.first("nfc_text"))
         XCTAssertFalse(plain.edited || plain.unsent || plain.partUnsent)
+    }
+
+    // MARK: URL balloon payload_data
+
+    /// A framed `bplist00` with two objects: a one-element array whose 8-byte object reference is `ref`, then `true`.
+    private func oneElementArrayPlist(ref: UInt64) -> Data {
+        func be(_ v: UInt64) -> [UInt8] { (0..<8).reversed().map { UInt8(truncatingIfNeeded: v >> (8 * UInt64($0))) } }
+        var b = Array("bplist00".utf8)
+        b += [0xA1] + be(ref) // object 0 at offset 8
+        b += [0x09] // object 1 at offset 17
+        let table = UInt64(b.count)
+        b += [8, 17]
+        b += [0, 0, 0, 0, 0, 0, 1, 8] + be(2) + be(0) + be(table) // offset size 1, reference size 8
+        return Data(b)
+    }
+
+    /// A reference above Int.max is corrupt data, not a trap. `LinkMetadataDecoder` reads incoming payloads with
+    /// `try?`, which only catches a thrown error.
+    func testObjectReferencesAboveIntMaxAreCorrupt() throws {
+        XCTAssertEqual(try BinaryPlist.parse(oneElementArrayPlist(ref: 1)), .array([.bool(true)]))
+        for ref in [UInt64.max, UInt64(Int.max) + 1, 2] {
+            XCTAssertThrowsError(try BinaryPlist.parse(oneElementArrayPlist(ref: ref)), "\(ref)") { e in
+                XCTAssertEqual(e as? BinaryPlist.ParseError, .corrupt)
+            }
+            XCTAssertNil(LinkMetadataDecoder.decode(oneElementArrayPlist(ref: ref)))
+        }
     }
 }

@@ -5,14 +5,32 @@ import Foundation
 /// `chats [-n 20] [--unread]`.
 public struct ChatsPage: Hashable, Codable, Sendable {
     public var chats: [ChatRecord]
-    /// More chats exist past `limit`. Footer: `more: imessage chats -n <n + 20>`.
+    /// More chats exist past `limit`. Footer: `more: imessage chats -n <n + 20>`, with `--unread` when `unreadOnly`.
     public var hasMore: Bool
     public var limit: Int
+    /// The page lists only chats with unread messages (`--unread`), so its footer asks for more of those.
+    public var unreadOnly: Bool
 
-    public init(chats: [ChatRecord], hasMore: Bool, limit: Int) {
+    public init(chats: [ChatRecord], hasMore: Bool, limit: Int, unreadOnly: Bool = false) {
         self.chats = chats
         self.hasMore = hasMore
         self.limit = limit
+        self.unreadOnly = unreadOnly
+    }
+
+    private enum CodingKeys: String, CodingKey { case chats, hasMore, limit, unreadOnly }
+
+    public init(from decoder: Decoder) throws {
+        let c = try decoder.container(keyedBy: CodingKeys.self)
+        chats = try c.decode([ChatRecord].self, forKey: .chats)
+        hasMore = try c.decode(Bool.self, forKey: .hasMore)
+        limit = try c.decode(Int.self, forKey: .limit)
+        unreadOnly = try c.decodeIfPresent(Bool.self, forKey: .unreadOnly) ?? false
+    }
+
+    /// The command the `more:` footer names: the same list, 20 chats longer.
+    public var nextCommand: String {
+        "imessage chats" + (unreadOnly ? " --unread" : "") + " -n \(limit + 20)"
     }
 }
 

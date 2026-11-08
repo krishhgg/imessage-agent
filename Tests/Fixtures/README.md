@@ -130,7 +130,7 @@ manifest.json has the complete ROWID lists under `edge_cases`. Long lists are cu
 | `rcs_tapback` | 41001 | Tapback inside the RCS chat. |
 | `read_receipt_on_my_message` | 40003, 40007, 40018, 40045, 40047, 40056, 40059, 40061 and 212 more | Outgoing rows with date_read set, in chats that send read receipts. |
 | `recently_deleted` | 41502 | Row in Recently Deleted. It has chat_recoverable_message_join and recoverable_message_part rows but no chat_message_join row. |
-| `reply_to_mom_target` | 41555 | The newest message from Mom. It is the target for the reply task. |
+| `reply_to_mom_target` | 41556 | The newest message from Mom. It is the target for the reply task. |
 | `rowid_gap` | 40004, 40146, 40161, 40166, 40225, 40227, 40252, 40293 and 16 more | ROWIDs that no longer exist. Messages deleted them for good, and their guids are in deleted_messages. |
 | `self_echo_assumed` | 40002, 40043, 40108, 40272, 40277, 40324, 40367, 40402 and 9 more | In the self-chat, an is_from_me 0 copy of a note with handle_id 1 and the same text. S2 found no such copy for sends made from the Mac itself on macOS 26.2 (research/spikes/S2.md). It stays as a defensive dedupe case. |
 | `self_echo_original` | 40001, 40042, 40107, 40271, 40276, 40323, 40366, 40401 and 9 more | The is_from_me 1 row that has an echo copy. |
@@ -194,7 +194,7 @@ Replaying every add and remove in ROWID order leaves these reactions.
 ## Benchmark task answers
 
 1. Summarize unread messages. The unread rows are chat 7: 41555, 41556; chat 12: 41552, 41553, 41554; chat 19: 41557; chat 31: 41550; chat 56: 41549.
-2. Reply to Mom. Mom's chat is ROWID 7 and her newest message is ROWID 41555.
+2. Reply to Mom. Mom's chat is ROWID 7 and her newest message is ROWID 41556.
 3. Find the address Dad sent last month. ROWID 41381 has 2219 Juniper Hollow Rd, Santa Rosa, CA 95404. ROWID 40850 is an older address from June.
 4. React to the last message. The newest row is ROWID 41558, which you sent. The newest incoming message is ROWID 41557 in chat 19.
 5. Send a photo to a group. Family 🏡 is chat 12. `Attachments/76/09/CBF6F44C-5BD1-4B89-9C7E-1D3801BC9BAD/IMG_4420.HEIC` is a photo you can send.

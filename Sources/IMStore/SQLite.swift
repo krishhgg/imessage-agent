@@ -276,14 +276,20 @@ public final class SQLiteConnection {
     private func statement(for sql: String, db: OpaquePointer) throws -> (OpaquePointer, Bool) {
         if let s = statements[sql], sqlite3_stmt_busy(s) == 0 { return (s, true) }
         var stmt: OpaquePointer?
-        var tail: UnsafePointer<CChar>?
-        let rc = sql.withCString { sqlite3_prepare_v3(db, $0, -1, UInt32(SQLITE_PREPARE_PERSISTENT), &stmt, &tail) }
+        var trailing = false
+        // `tail` points into the C string, which is valid only inside this closure, so it is read here.
+        let rc = sql.withCString { text -> Int32 in
+            var tail: UnsafePointer<CChar>?
+            let rc = sqlite3_prepare_v3(db, text, -1, UInt32(SQLITE_PREPARE_PERSISTENT), &stmt, &tail)
+            if let tail { trailing = !String(cString: tail).trimmingCharacters(in: .whitespacesAndNewlines).isEmpty }
+            return rc
+        }
         guard rc == SQLITE_OK, let stmt else {
             let message = String(cString: sqlite3_errmsg(db))
             sqlite3_finalize(stmt)
             throw StoreError.sqlite(code: rc, message: message)
         }
-        if let tail, !String(cString: tail).trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
+        if trailing {
             sqlite3_finalize(stmt)
             throw StoreError.sqlite(code: SQLITE_MISUSE, message: "one statement per query")
         }

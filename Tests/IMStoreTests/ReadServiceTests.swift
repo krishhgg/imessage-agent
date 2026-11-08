@@ -391,6 +391,39 @@ final class ReadServiceTests: XCTestCase {
         }
     }
 
+    /// A number written with `+` has its country code, even when it is 10 digits long like Singapore +65 9123 4567
+    /// or Denmark +45 32 12 34 56. A leading 1 would turn it into the +1 number +16591234567 (Alabama), so a send
+    /// would go to a stranger and that stranger's chat would merge with the real one.
+    func testTenDigitNumberWithAPlusKeepsItsCountryCode() throws {
+        let copy = try FixtureCopy()
+        try copy.exec("INSERT INTO handle (ROWID, id, service) VALUES (41, '+6591234567', 'iMessage')")
+        try copy.exec("INSERT INTO handle (ROWID, id, service) VALUES (42, '+16591234567', 'iMessage')")
+        try copy.insertChat(rowid: 98, guid: "iMessage;-;+6591234567", identifier: "+6591234567",
+                            service: "iMessage", handles: [41])
+        try copy.insertChat(rowid: 99, guid: "iMessage;-;+16591234567", identifier: "+16591234567",
+                            service: "iMessage", handles: [42])
+        try copy.insertMessage(rowid: 41600, guid: "SG-1", chat: 98, handle: 41, text: "from Singapore", fromMe: false,
+                               date: Fixture.nowNs - 120_000_000_000)
+        try copy.insertMessage(rowid: 41601, guid: "US-1", chat: 99, handle: 42, text: "from Alabama", fromMe: false,
+                               date: Fixture.nowNs - 60_000_000_000)
+        let lars = try contactsFile(people: [("Lars", "Holm", nil, ["+45 32 12 34 56"])])
+        let db = try copy.database(contacts: lars)
+
+        let singapore = try db.resolve("+65 9123 4567")
+        XCTAssertEqual(singapore.canonical, .direct(handle: "+6591234567"))
+        XCTAssertEqual(singapore.chatRowIDs, [98])
+        XCTAssertEqual(singapore.sendHandle, "+6591234567")
+        XCTAssertEqual(try db.resolve("+1 659 123 4567").chatRowIDs, [99])
+        XCTAssertEqual(try db.resolve("(659) 123-4567").chatRowIDs, [99], "a number with no + is still a +1 number")
+
+        for who in ["Lars", "+45 32 12 34 56"] {
+            let denmark = try db.resolve(who)
+            XCTAssertEqual(denmark.canonical, .direct(handle: "+4532123456"), who)
+            XCTAssertEqual(denmark.sendHandle, "+4532123456", who)
+            XCTAssertEqual(denmark.chatRowIDs, [], who)
+        }
+    }
+
     /// Two Juans in Mexico: Perez saved as 55 1234 5678, Lopez as +525511112222. Under several matches Perez is
     /// listed with his number as saved, so passing it back asks for the country code instead of making a new
     /// direct target to the stranger at +15512345678 labeled Juan Perez. A card with a chat, a + number or an

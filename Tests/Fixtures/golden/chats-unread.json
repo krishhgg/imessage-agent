@@ -221,5 +221,6 @@
   }
  ],
  "hasMore": false,
- "limit": 20
+ "limit": 20,
+ "unreadOnly": true
 }

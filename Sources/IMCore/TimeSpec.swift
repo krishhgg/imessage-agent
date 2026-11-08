@@ -31,9 +31,11 @@ public enum TimeSpec {
         return absolute(text, cal: cal)
     }
 
-    /// `parse` converted to Apple-epoch nanoseconds for the wire.
+    /// `parse` converted to Apple-epoch nanoseconds for the wire. A time about 292 years or more from 2001, such as
+    /// `9999-12-31` or `999999w`, doesn't fit in an Int64 count and returns nil instead of trapping.
     public static func parseNanos(_ s: String, now: Date, timeZone: TimeZone) -> AppleNanos? {
-        parse(s, now: now, timeZone: timeZone).map(AppleTime.nanos(from:))
+        guard let date = parse(s, now: now, timeZone: timeZone) else { return nil }
+        return Int64(exactly: ((date.timeIntervalSince1970 - AppleTime.epochOffset) * 1e9).rounded())
     }
 
     private static func relative(_ s: String, now: Date, cal: Calendar) -> Date? {
