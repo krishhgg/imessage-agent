@@ -217,7 +217,7 @@ One skill, `imessage`. The listing description is 40 tokens or fewer, the body 4
 - on `busy: Messages is open`, ask the user to hide Messages (⌘H)
 - on `busy: chat not open in Messages`, ask the user to open that chat in Messages, hide it (⌘H) and retry
 - use `--again` to repeat the same action within 10 minutes, and only when the user asks for it
-- `edit` and `send --thread` show Messages for a few seconds, which may mark the selected chat read and send a read receipt
+- `react`, `unsend`, `edit` and `send --thread` act on the chat Messages already has selected, which may mark it read and send a read receipt. `edit` and `send --thread` also show Messages for a few seconds
 
 Where it goes:
 - Grok Bot: its skill tool (see Facts).
