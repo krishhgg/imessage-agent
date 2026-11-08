@@ -311,7 +311,7 @@ Each run counts every call, skill load, retry and Grok Bot approval card. Tokens
 
 ## Not in v1
 
-- A SIP-off tier. A README sentence says private APIs exist and that this repo doesn't call them.
+- A SIP-off tier. A README sentence says private Messages APIs exist and that this repo doesn't call them. The one private call it makes is read-only and outside Messages: `CGSCopySpacesForWindows`, looked up at run time to count Messages' windows on a Space (BUILD-PLAN entry 51).
 - MCP.
 - The push relay. It comes in v1.1, behind S4.
 - Remote approval.

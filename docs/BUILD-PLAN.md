@@ -485,7 +485,7 @@ Owner files:
 ### INSTALL.md, README.md and the skill
 
 - `INSTALL.md` is the Grok Bot prompt for install flow steps 1 to 7. It pins the `install.sh` SHA-256 for the tag.
-- `README.md` states the honest limit from section 2, what Grok Bot's "always allow" for Shell means, that private APIs exist and this repo doesn't call them, the tested macOS versions (only after release tests pass), and only measured token numbers.
+- `README.md` states the honest limit from section 2, what Grok Bot's "always allow" for Shell means, that private Messages APIs exist and this repo doesn't call them, that its one private call is the read-only window-server lookup in entry 51, the tested macOS versions (only after release tests pass), and only measured token numbers.
 - `skill/imessage/SKILL.md` has a listing description of 40 tokens or fewer and a body of 400 tokens or fewer, counted with o200k. The body covers the six points in section 6 and calls the CLI by absolute path.
 - `skill/imessage/reference.md` holds the rare details, including that a case difference outside ASCII can miss in search.
 - A check script, `scripts/check-skill-tokens.sh`, fails the build when either cap is exceeded.
