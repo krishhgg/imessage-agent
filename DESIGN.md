@@ -124,7 +124,7 @@ Design rule: reads, search, sends, files, `wait` and `changes` never show the Me
 - UI actions match English action names. `caps` checks those names, and on any other UI language reports UI actions as unsupported.
 
 **Targeting.** Only named AX actions are used, plus value writes to the composer or edit field in foreground mode. No arbitrary AX paths or apps and no System Events. Key events exist only in foreground mode (Return and Escape, posted to the Messages pid).
-- **Chat.** v1 UI actions work on 1:1 chats only. A group chat returns `unsupported_target` and nothing is pressed. "The target chat" means every 1:1 chat.db chat with the same participant handle, because Messages shows a contact's iMessage and SMS chats as one conversation. The bridge never presses a conversation row. On Messages 26 a row press does nothing while Messages is hidden, so v1 acts only on the chat Messages already has selected (research/chat-switch.md).
+- **Chat.** v1 UI actions work on 1:1 chats only. A group chat returns `unsupported_target` and nothing is pressed. "The target chat" means every 1:1 chat.db chat with the same participant handle, because Messages shows a contact's iMessage and SMS chats as one conversation. The bridge never presses a conversation row. On Messages 26 a row press does nothing while Messages is hidden, so v1 acts only on the chat Messages already has selected. S3 saw a hidden row press work; the 2026-11-08 probes in research/chat-switch.md and research/live-tests/2026-11-07-sends.md found it changes nothing.
   - From chat.db and Contacts, the bridge builds the expected row description (display name, newest message preview, time) and the target's signature, its newest text rows by direction and body (5, or all of them if it has fewer). Tapback rows, unsent messages and other rows without a text bubble are skipped. If any other conversation in chat.db (each group chat on its own, 1:1 chats grouped by handle, the target left out) gives the same description, or the same signature when its newest rows are cut to the target signature's length, the bridge returns `ambiguous`. A chat with no text rows returns `not_loaded`.
   - Exactly one loaded row's full description must equal the expected one. If no row or several rows match, it returns `not_loaded` or `ambiguous`. Right after the bridge's own launch, it first waits up to 6 s for the conversation list to load. Rebuilding Messages' own row text (relative times such as Yesterday, tapback and attachment previews) is untested, and a mismatch fails safe as `not_loaded`. Rows are never matched by a name prefix, and there is no scrolling in v1.
   - That row must be the one selected row. Otherwise the action returns `busy: chat not open in Messages` with `fix: open <chat> in Messages, hide it (⌘H), then retry`.
@@ -279,12 +279,12 @@ What a failure does:
    - a warm text send on an unlocked screen
    - the no-window quit-and-relaunch path
 2. **Tapback kinds, sampled.** Each of the other five classic tapbacks and one recent emoji: add, then remove, verified in chat.db (2000 to 2006, 3000 to 3006). Also a Heart on a loaded message from an earlier day, and on the chat's newest message. With a consenting sender, a Heart on an incoming message.
-3. **Targeting**, with consenting participants and unread incoming rows in every chat the test could press.
+3. **Targeting**, with consenting participants and unread incoming rows in every chat the bridge could act on.
    - Same text in the same minute on different days returns `ambiguous`.
    - Same text at different minutes hits the right GUID, checked in chat.db.
    - Two chats with the same display name, newest preview and time: the bridge presses nothing, returns `ambiguous` and no chat's read state changes.
-   - Two chats with the same display name and different previews: the right chat is selected.
-   - Row matching selects the right chat when its newest row is from an earlier day, a tapback or an attachment.
+   - Two chats with the same display name and different previews: with the target selected in Messages the bridge acts on it, and with the other one selected it returns `busy: chat not open in Messages` and presses nothing.
+   - Row matching finds the selected target chat when its newest row is from an earlier day, a tapback or an attachment.
    - A group chat returns `unsupported_target`, with no press.
    - Two chats whose newest text rows are the same: `ambiguous`, with no press.
    - A contact with merged iMessage and SMS chats passes the chat check.
