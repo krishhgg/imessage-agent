@@ -272,7 +272,7 @@ Flows used in the cells. Every UI flow runs the G2 preconditions before its firs
 
 ## 5. The restore contract
 
-Before the first effect, the bridge records a restore plan from its state sample. When AX can read the window only after the hide, as in state 12, the bridge adds the selected chat to the plan after the hide and before the first press (G1). After the last press, it puts back each item it changed, in this order:
+Before the first effect, the bridge records a restore plan from its state sample. When AX can read the window only after the hide, as in state 12, the bridge adds the selected chat to the plan and the journal after the hide and before the first press (G1, G12). After the last press, it puts back each item it changed, in this order:
 1. the chat
 2. hidden or shown
 3. the front app
@@ -422,9 +422,10 @@ The final-check rule in BUILD-PLAN entry 50 still holds for every new press, wri
 **G11. Result notes.** `error: Messages became visible` is replaced by a comparison of the end state against the plan. A difference the bridge caused, such as a window it showed that wasn't showing before, gets an error note. A change the user made gets none.
 
 **G12. Journal and crash.**
-- Before the first hide or press, the journal records the Messages pid, because the plan lives in memory and recovery needs it to tell whether Messages is the same process. With the `hid` and `launched` flags and their times, the journal also records the earlier chat's chat.db ROWID and a digest of the captured row description. It records no text.
+- Before the first hide or press, the journal records the Messages pid with the `hid` and `launched` flags and their times, because the plan lives in memory and recovery needs the pid to tell whether Messages is the same process.
+- Before the first press, the journal also records the earlier chat's chat.db ROWID and a digest of the captured row description. When the capture runs after the hide, as in state 12, the bridge writes them after the hide and before the first press (G1). The journal records no text.
 - After a crash, recovery never unhides or quits Messages on its own, because the user may have moved on.
-- If Messages is still hidden, its pid matches the one the journal recorded, and its selected row resolves to the target chat, recovery runs the G3 restore once while Messages is hidden. Otherwise, including when the entry has no recorded pid, it leaves Messages alone and shows G15's notice.
+- If Messages is still hidden, its pid matches the one the journal recorded, and its selected row resolves to the target chat, recovery runs the G3 restore once while Messages is hidden. Otherwise, including when the entry has no recorded pid or no earlier chat, it leaves Messages alone and shows G15's notice.
 - `doctor` says Messages may be hidden and showing another chat.
 - A quit-later timer lost in a crash leaves Messages running hidden, which is harmless.
 
