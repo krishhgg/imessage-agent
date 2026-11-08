@@ -204,6 +204,22 @@ final class WindowRulesTests: XCTestCase {
         XCTAssertEqual(rig.clock.uptime - start, Limits.visibilityPoll, accuracy: 0.06)
     }
 
+    func testAScreenThatLocksDuringTheExitWaitGetsOneHiddenLaunchAndNoWindowWait() {
+        // The bridge already quit Messages, so the one hidden launch puts back the running Messages the user had.
+        // The launch wait then stops on the lock.
+        let rig = Rig(state: Make.state(hidden: true, ax: 0))
+        rig.app.onCall = { call, state in
+            if call == .waitForExit { state = Make.state(running: false, locked: true) }
+            if call == .launchHidden { state = Make.state(hidden: true, ax: 0, locked: true) }
+        }
+        let start = rig.clock.uptime
+        let prep = rig.windows.prepare(queueDeadline: start + 30)
+        XCTAssertEqual(prep, WindowPreparation(early: .screenLocked, notes: []))
+        XCTAssertEqual(rig.app.calls, [.quit, .waitForExit, .launchHidden])
+        // No 10 s window wait. Only the 1 s visibility poll after a launch.
+        XCTAssertEqual(rig.clock.uptime - start, Limits.visibilityPoll, accuracy: 0.06)
+    }
+
     func testALaunchThatShowedAWindowBeforeTheLockKeepsTheNote() {
         let rig = Rig(state: .notRunning)
         let clock = rig.clock

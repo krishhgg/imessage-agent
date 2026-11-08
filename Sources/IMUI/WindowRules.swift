@@ -224,6 +224,7 @@ public final class HiddenWindowManager {
         guard app.waitForExit(timeout: Limits.quitWait) else {
             return WindowPreparation(early: ActionResult(.noHiddenWindow), notes: [])
         }
+        // Even if the screen locked during the exit wait, launch hidden to restore the Messages the bridge quit.
         return launchAndWait()
     }
 
