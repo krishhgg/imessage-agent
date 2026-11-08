@@ -54,6 +54,7 @@ Details the skill body leaves out. The CLI is `$HOME/.local/bin/imessage`.
 - They can't reach pinned chats in v1 and return `not_loaded`. Unpinning the chat in Messages makes them work.
 - `ambiguous` means the target couldn't be told apart from another chat or message, so nothing was pressed.
 - `busy: Messages is open` means the user has Messages open. Ask them to hide it (⌘H) and retry. Sends still work.
+- `busy: screen locked` means the Mac is locked, and the bridge leaves Messages alone until it is unlocked. Retry after the user unlocks it. Sends still work.
 - Results after a press add `chat opened, may be marked read`.
 
 ## Foreground mode
