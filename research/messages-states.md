@@ -2,6 +2,8 @@
 
 Scope: macOS 26.2, DESIGN.md v5.4. Messages' Info.plist reads CFBundleShortVersionString 26.0, build 1450.300.41.1.4, and its version.plist names the project Messages_iosmac. Messages is a Mac Catalyst app whose scene manifest allows several scenes, one of them a PosterBoard editor overlay (`ChatKit.PosterEditorOverlaySceneDelegate`). Notes that call it Messages 14.0 are wrong. Paths are relative to /Users/krishgarg/Documents/Projects/grokbotimessages/ unless they start with `~` or `/`.
 
+On Messages 26 a row press does nothing while Messages is hidden or minimized (research/live-tests/2026-11-07-sends.md). research/chat-switch.md revises how the bridge switches chats, and it wins where the two differ.
+
 Evidence labels:
 - **Measured** means seen on this Mac. The source file is named.
 - **Reported** means a third-party report. The source is named.
