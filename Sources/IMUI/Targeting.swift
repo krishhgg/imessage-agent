@@ -138,7 +138,8 @@ public protocol ChatTargeting: AnyObject {
 ///    had just replaced (`AXDriveError.staleReference`). Within `listLoadTimeout` of the bridge's last launch of
 ///    Messages (`lastLaunch`) it is also still loading while no list shows, or while a placeholder child sits next
 ///    to the rows (`ConversationListState.partlyLoaded`). A loaded list, or a missing or part-loaded one with no
-///    recent launch, is read once with no wait.
+///    recent launch, gets no polling wait. When its first read has no match, its rows are read once more, since
+///    Messages can replace its placeholders between the row read and the state read.
 /// 4. Exactly one loaded row whose full description equals the expected one (`sameRowText`). None is `not_loaded`,
 ///    several are `ambiguous`. No prefix matching and no scrolling. A row without the English row actions
 ///    (`UINames.requiredRowActions`) is `unsupported`: Messages isn't running in English.
