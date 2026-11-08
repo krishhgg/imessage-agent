@@ -36,6 +36,7 @@ say() { echo "$*"; }
 
 [[ -n "${HOME:-}" && "$HOME" == /* && -d "$HOME" ]] || die "HOME must be an existing absolute path"
 HOME="${HOME%/}"
+HOME_REAL="$(cd "$HOME" && pwd -P)" || die "can't read HOME"
 
 APP="$HOME/Applications/$APP_NAME.app"
 CLI="$HOME/.local/bin/imessage"
@@ -93,6 +94,15 @@ inside_home() {
     case "$1" in "$HOME"|"$HOME"/*) return 0 ;; *) return 1 ;; esac
 }
 
+# True when the deepest folder of the path that exists, with symlinks followed, is HOME or inside it. Skill folders
+# get this check as well as inside_home, so a skills folder that links out of HOME is never written or removed.
+resolves_inside_home() {
+    local d="$1" real
+    while [[ ! -d "$d" ]]; do d="$(dirname "$d")"; done
+    real="$(cd "$d" && pwd -P)" || return 1
+    case "$real" in "$HOME_REAL"|"$HOME_REAL"/*) return 0 ;; *) return 1 ;; esac
+}
+
 manifest_lines() { [[ -f "$MANIFEST" ]] && grep -v '^[[:space:]]*$' "$MANIFEST" || true; }
 in_manifest() { [[ -f "$MANIFEST" ]] && grep -q -x -F -- "$1" "$MANIFEST"; }
 # Adds paths to the manifest, each once.
@@ -117,6 +127,10 @@ safe_remove() {
         *)
             if ! is_skill_copy "$p"; then
                 if [[ -e "$p" ]]; then say "left in place (not a path this script creates): $p"; fi
+                return 0
+            fi
+            if ! resolves_inside_home "$(dirname "$p")"; then
+                say "left in place (outside HOME through a symlink): $p"
                 return 0
             fi
             ;;
@@ -165,6 +179,8 @@ check_skill_dir() {
     [[ "$dir" != *$'\n'* ]] || die "--skill-dir has a newline in it. Nothing was installed"
     inside_home "$dir" \
         || die "--skill-dir $arg is outside $HOME or has a .. part. Nothing was installed fix: pass a folder inside $HOME, such as ~/.agents/skills"
+    resolves_inside_home "$dir" \
+        || die "--skill-dir $arg leads outside $HOME through a symlink. Nothing was installed fix: pass a folder inside $HOME, such as ~/.agents/skills"
 }
 
 # A skill folder this script didn't create is never replaced.
@@ -225,7 +241,9 @@ do_install() {
     # before anything changes.
     local d dirs=() skill_targets=()
     while IFS= read -r d; do
-        if is_skill_copy "$d" && inside_home "$d"; then dirs+=("$(dirname "$d")"); fi
+        if is_skill_copy "$d" && inside_home "$d" && resolves_inside_home "$(dirname "$d")"; then
+            dirs+=("$(dirname "$d")")
+        fi
     done < <(manifest_lines)
     local arg
     for arg in ${skill_dirs[@]+"${skill_dirs[@]}"}; do

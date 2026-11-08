@@ -282,6 +282,38 @@ check "a retry after the failed skill copy exits 0" test "$RC" = 0
 [[ "$RC" == 0 ]] || sed 's/^/      /' "$ERR_FILE"
 check "the retry copied the skill into the folder that failed" test -f "$H/locked/skills/imessage/SKILL.md"
 
+# A skills folder that became a symlink out of HOME after the install. The imessage folder behind it isn't the copy
+# install.sh made, so neither an upgrade nor an uninstall touches it.
+H="$(new_home relink)"
+run "$H" "$H" "$TARBALL" "$PINNED" --skill-dir '~/.claude/skills'
+check "the relink install exits 0" test "$RC" = 0
+rm -rf "$H/.claude/skills"
+mkdir -p "$T/moved/skills/imessage"
+echo foreign >"$T/moved/skills/imessage/SKILL.md"
+ln -s "$T/moved/skills" "$H/.claude/skills"
+run "$H" "$H" "$TARBALL" "$PINNED"
+check "an upgrade exits 0 with a skills folder that links out of HOME" test "$RC" = 0
+check "an upgrade leaves a skill folder whose parent links out of HOME" grep -q -x foreign "$T/moved/skills/imessage/SKILL.md"
+run "$H" "$H" "$TARBALL" "$H/Library/Application Support/$APP_NAME/install.sh" --uninstall
+check "uninstall leaves a skill folder whose parent links out of HOME" grep -q -x foreign "$T/moved/skills/imessage/SKILL.md"
+check "uninstall reports the entry that links out of HOME" \
+    out_has "left in place (outside HOME through a symlink): $H/.claude/skills/imessage"
+
+# A --skill-dir that leads out of HOME through a symlink is refused. One that links inside HOME is fine.
+H="$(new_home link-refuse)"
+mkdir -p "$T/link-target"
+ln -s "$T/link-target" "$H/linked"
+run "$H" "$H" "$TARBALL" "$PINNED" --skill-dir '~/linked/skills'
+check "a --skill-dir that leads out of HOME through a symlink is refused" test "$RC" = 1
+check "the symlink refusal names the rule" err_has "leads outside $H through a symlink"
+check "the symlink refusal changes nothing" untouched "$H"
+check "the symlink refusal creates no folder there" test ! -e "$T/link-target/skills"
+mkdir -p "$H/dotfiles/skills"
+ln -s "$H/dotfiles/skills" "$H/inlink"
+run "$H" "$H" "$TARBALL" "$PINNED" --skill-dir '~/inlink'
+check "a --skill-dir that links to a folder inside HOME installs" test "$RC" = 0
+check "the skill copy behind an inside-HOME link is there" test -f "$H/dotfiles/skills/imessage/SKILL.md"
+
 # A long HOME uses the fallback socket folder, which uninstall removes. A 60-byte HOME makes the primary path 115
 # bytes and the fallback 88.
 L="$T/$(printf 'l%.0s' $(seq 1 $((60 - ${#T} - 1))))"
