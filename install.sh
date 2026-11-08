@@ -98,7 +98,8 @@ inside_home() {
 # get this check as well as inside_home, so a skills folder that links out of HOME is never written or removed.
 resolves_inside_home() {
     local d="$1" real
-    while [[ ! -d "$d" ]]; do d="$(dirname "$d")"; done
+    # A symlink that leads nowhere could point out of HOME once its target exists, so it counts as outside.
+    while [[ ! -d "$d" ]]; do [[ -L "$d" ]] && return 1; d="$(dirname "$d")"; done
     real="$(cd "$d" && pwd -P)" || return 1
     case "$real" in "$HOME_REAL"|"$HOME_REAL"/*) return 0 ;; *) return 1 ;; esac
 }

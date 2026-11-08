@@ -308,6 +308,15 @@ check "a --skill-dir that leads out of HOME through a symlink is refused" test "
 check "the symlink refusal names the rule" err_has "leads outside $H through a symlink"
 check "the symlink refusal changes nothing" untouched "$H"
 check "the symlink refusal creates no folder there" test ! -e "$T/link-target/skills"
+# A dangling symlink could point out of HOME once its target exists, so a --skill-dir through one is refused before
+# anything changes.
+H2="$(new_home dangle)"
+ln -s "$T/dangle-target/skills" "$H2/dangle"
+run "$H2" "$H2" "$TARBALL" "$PINNED" --skill-dir '~/dangle'
+check "a --skill-dir through a dangling symlink is refused" test "$RC" = 1
+check "the dangling-symlink refusal names the rule" err_has "leads outside $H2 through a symlink"
+check "the dangling-symlink refusal changes nothing" untouched "$H2"
+check "the dangling-symlink refusal creates no folder there" test ! -e "$T/dangle-target"
 mkdir -p "$H/dotfiles/skills"
 ln -s "$H/dotfiles/skills" "$H/inlink"
 run "$H" "$H" "$TARBALL" "$PINNED" --skill-dir '~/inlink'
