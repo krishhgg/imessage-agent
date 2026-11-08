@@ -176,10 +176,12 @@ public final class JSONContacts: ContactsSource {
 }
 
 /// Handle normalization (bench/reader.py `normalize_handle`): emails lowercased, phones to `+<digits>` with a
-/// leading 1 added to 10-digit numbers.
+/// leading 1 added to 10-digit numbers written without a `+`.
 ///
-/// One difference from the bench: a handle with letters and no `@` (a business chat id such as `urn:biz:…`) is
-/// kept as it is, so its digits can never turn it into somebody's phone number.
+/// Two differences from the bench. A handle with letters and no `@` (a business chat id such as `urn:biz:…`) is
+/// kept as it is, so its digits can never turn it into somebody's phone number. A number with a `+` before its
+/// first digit already has its country code, so `+45 32 12 34 56` stays `+4532123456` and never becomes the +1
+/// number `+14532123456`.
 public enum HandleNormalizer {
     public static func normalize(_ handle: String) -> String {
         let h = handle.trimmingCharacters(in: .whitespacesAndNewlines)
@@ -187,7 +189,8 @@ public enum HandleNormalizer {
         if h.unicodeScalars.contains(where: { CharacterSet.letters.contains($0) }) { return h }
         var digits = String(h.unicodeScalars.filter { $0.isASCII && CharacterSet.decimalDigits.contains($0) })
         if digits.isEmpty { return h }
-        if digits.count == 10 { digits = "1" + digits }
+        let hasCountryCode = h.unicodeScalars.first { $0 == "+" || ("0"..."9").contains($0) } == "+"
+        if digits.count == 10, !hasCountryCode { digits = "1" + digits }
         return "+" + digits
     }
 
