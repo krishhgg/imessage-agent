@@ -48,7 +48,9 @@ It opens the Full Disk Access pane in System Settings and returns at once. End y
 
 When the user says "done", run `"$HOME/.local/bin/imessage" doctor`, or `"$HOME/.local/bin/imessage" doctor --ui` if they chose tapbacks, unsend and edit in step 2.
 
-`doctor` checks that the bridge can read messages and restarts it if it can't. Then macOS asks whether iMessage Agent may control Messages, and the user clicks OK. With `--ui`, macOS also asks for Accessibility, and the user turns on iMessage Agent in that pane. If `doctor` prints an `error:` line, show it to the user and follow its `fix:`.
+`doctor` checks that the bridge can read messages and restarts it if it can't. Then macOS asks whether iMessage Agent may control Messages, and the user clicks OK. With `--ui`, macOS also asks for Accessibility, and the user turns on iMessage Agent in that pane.
+
+`doctor` exits 0 even when a check fails, so read its lines. If a line starts with `fail` or `error:`, show it to the user and follow its `fix:`. When the fix is something the user does on the Mac, such as turning on iMessage Agent in a System Settings pane, end your turn and ask them to reply "done". Then run the same `doctor` command again. Go on to step 6 only when no line starts with `fail` or `error:`.
 
 ## Step 6: save the skill
 
