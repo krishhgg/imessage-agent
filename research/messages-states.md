@@ -53,8 +53,8 @@ So the proposal may still refuse this Heart if the window was a phantom. The fix
 
 **Proposal.** Replace "act only if Messages is hidden" with "leave a visible Messages where it is, hide it only when nothing of it is on screen, and put back what changed". The steps:
 1. Before any panel, the bridge reads a state sample. If the state is one that waiting can't fix, it returns busy with no panel (G13).
-2. After approval, it reads the sample again, resolves the selected chat to one chat.db chat and records a restore plan.
-3. It picks the flow for the state (section 4). Every flow runs the G2 checks before its first press or hide.
+2. After approval, it reads the sample again, resolves the selected chat to one chat.db chat and records a restore plan. When AX can read the window only after a hide, as in state 12, it resolves the selected chat right after that hide (G1).
+3. It picks the flow for the state (section 4). Every flow runs the G2 checks before its first press, and before its hide when AX already lists the window (G1).
 4. It acts, restores the plan in reverse order, and names anything it couldn't restore.
 
 Limits on what the bridge does to the user's window:
@@ -169,7 +169,7 @@ Each row lists what the user is doing, the race it creates under the proposal, t
 | A6 | Input the monitor can't see: dictation, Voice Control, Screen Sharing, Universal Control, events another tool posts at the session tap. Also input that doesn't reset the timer: a held modifier, a held button with a still pointer, trackpad gestures | No effect on hidden flows. In view, a click through Screen Sharing can land mid-press. In front and in foreground mode, dictated text can land in the target field | G1 also requires no modifier held and no button pressed. G5 presses only a bubble, never a row, and stays off until probe 13 shows which sources reset the HID idle time. The field checks run before Return | Probe 13 |
 | A7 | Looking at a visible Messages while another app is in front | The visible chat switches to the target and back | Act in view keeps the window in place. G3 restores in view. G2 refuses a switch while the user is scrolled back | A brief visible switch |
 | A8 | Typing in a frontmost Messages, in their own chat or in the target chat | A row press would move their keys into the target chat's composer, where a Return sends them | The bridge never presses a row on a frontmost Messages. By default it waits for Messages to leave the front. Under the in-front opt-in it presses only a bubble in the chat already selected, after probe 7 shows focus stays put | Monitored input is covered only if probe 7 holds. Input the monitor can't see (A6) isn't covered, which is why G5 waits for probe 13 |
-| A9 | A draft, a new message, search, a thread view, edit mode, a picker, a sheet or a recording open | A chat switch or an Escape loses or changes it | G2 refuses before anything is pressed or hidden, on every path, including foreground step 1 before `selectChat` | The user has to finish or clear it. The result says which one |
+| A9 | A draft, a new message, search, a thread view, edit mode, a picker, a sheet or a recording open | A chat switch or an Escape loses or changes it | G2 refuses before anything is pressed on every path, including foreground step 1 before `selectChat`. It also refuses before the hide when AX already lists the window (G1) | The user has to finish or clear it. The result says which one |
 | A10 | Sending from the Mac at the same moment | A user Return while the bridge's text sits in the reply field sends it, and a retry sends it again | G10: after any takeover that follows a field write, the key is held on any new from_me row in the target chat | None for monitored input |
 | A11 | Changing Messages mid-action: showing, hiding, minimizing, closing or quitting it, switching chat, Space or app | The bridge's next press lands in a window the user now uses. Its unhide fights the user's hide. A relaunch undoes their quit. The user shows Messages while it holds the target chat | The recheck before each press. Restore steps run only if the state is still what the bridge left. No relaunch to restore anything. G8 cancels on any show. G15's notice names the chat Messages shows | Whatever was already done stays done: one tapback, a selected chat |
 | A12 | Other devices and senders: an iPhone reply, reaction, edit or unsend, an incoming message, Share, Siri, a banner inline reply | The target row text changes. The earlier chat's row text changes. An iPhone reaction between the reread and the press gets toggled off. New messages arrive in the earlier chat | P2 and P3 as today. G3 holds the earlier chat by its chat.db ROWID and rebuilds its row text at restore time. G3 skips the restore press when new unread messages arrived there | The toggle window, small as today |
@@ -179,12 +179,12 @@ Each row lists what the user is doing, the race it creates under the proposal, t
 
 ## 4. The matrix
 
-Flows used in the cells. Every UI flow runs the G2 preconditions before its first press or hide, and the G3 chat restore after its last press.
+Flows used in the cells. Every UI flow runs the G2 preconditions before its first press, and before its hide when AX already lists the window (G1). Every UI flow runs the G3 chat restore after its last press.
 
 - **As today.** No change.
 - **Act hidden.** Today's hidden path, with the press skipped when the target is already selected, then the earlier chat restored while hidden.
 - **Act in view.** Messages stays shown and not frontmost. The G16 gate and final checks run before every press, then G3 restores the chat in view. Waits for probe 4.
-- **Hide, act, unhide.** Only where nothing of Messages is on screen. Chat.db work and the AX reads that reach the window run before the hide. Then the G1 gate, the hide, the recheck, act hidden, G3, and the G4 gated unhide. Every exit after the hide, refusals and AX errors included, runs G3 and G4.
+- **Hide, act, unhide.** Only where nothing of Messages is on screen. Chat.db work and the checks that make the hide safe run before the hide, and so do the reads of the window's contents when AX already lists the window. Then the G1 gate, the hide, the recheck, the content reads if AX reaches the window only now, act hidden, G3, and the G4 gated unhide. Every exit after the hide, refusals and AX errors included, runs G3 and G4.
 - **Launch hidden, act, quit later.** `open -g -j -b`, capture the chat Messages reopened on, act hidden, G3, then the G8 quit.
 - **Relaunch hidden, act.** Today's no-window path, with the no-window checks from state 8. Capture the chat Messages reopened on, act, G3, leave hidden. No quit later.
 - **Act in front (separate opt-in).** Messages is frontmost and the target chat is already selected. Only the bubble action runs, under G5.
@@ -272,7 +272,7 @@ Flows used in the cells. Every UI flow runs the G2 preconditions before its firs
 
 ## 5. The restore contract
 
-Before the first effect, the bridge records a restore plan from its state sample. After the last press, it puts back each item it changed, in this order:
+Before the first effect, the bridge records a restore plan from its state sample. When AX can read the window only after the hide, as in state 12, the bridge adds the selected chat to the plan after the hide and before the first press (G1). After the last press, it puts back each item it changed, in this order:
 1. the chat
 2. hidden or shown
 3. the front app
@@ -329,14 +329,14 @@ The final-check rule in BUILD-PLAN entry 50 still holds for every new press, wri
   - a frontmost Messages
   - a full-screen or Split View Messages, by `AXFullScreen` through `AXMainWindow` or the full-height bounds test
   - any Messages while Stage Manager is on
-- Before the hide, the bridge does all chat.db work and every AX read that reaches the window: the G2 checks, the target row and bubble lookups, and the earlier chat's capture. The driver repeats its fingerprint read before each press anyway.
+- Before the hide, the bridge does all chat.db work and the checks that make the hide safe. Those come from the state sample: the window counts, `AXMainWindow`, `AXFullScreen`, Stage Manager and the front app. The reads of the window's contents are the G2 checks, the target row and bubble lookups, and the earlier chat's capture. When AX already lists the window, as reported for state 11, they run before the hide, so a refusal there hides nothing. When AX lists no window until the hide, as in state 12, they run after the recheck and the reachability test below, and before any press. In that case they count toward the 2 s cap. The driver repeats its fingerprint read before each press anyway.
 - The bridge journals the `hid` flag (G12), hides, and polls `isHidden` for up to 1 s. It then reads the state again. Messages must be hidden, not frontmost, with exactly one conversation window and nothing on screen, and the front app must be the one recorded before.
 - The span from the hide to the target press is capped at 2 s. On overrun the bridge skips the effect, restores the chat if it changed, and unhides.
 - If AX shows 0 windows after the bridge's own hide while the all-Spaces count is 1 or more, the bridge reads `AXMainWindow` and `AXFocusedWindow`. If both are nil, it unhides through G4 and returns state 17's result.
 - It never quits a Messages it hid, or a Messages that may have a window. That covers an all-Spaces count of 1 or more, an unknown count, Stage Manager on, a non-nil `AXMainWindow` or `AXFocusedWindow`, and a launch not finished. That window may hold the user's draft.
 - Every exit after the hide, including refusals and AX errors, runs G3 if a row was pressed, then G4.
 
-**G2. Preconditions before any UI press or hide, on every path.** These are new on the hidden path. Foreground step 1 gets them too, before `selectChat`, because today it presses the target row before it reads the composer, the edit field and the thread view (ForegroundRunner.swift:206-226).
+**G2. Preconditions before any UI press on every path, and before the hide when AX already lists the window (G1).** These are new on the hidden path. Foreground step 1 gets them too, before `selectChat`, because today it presses the target row before it reads the composer, the edit field and the thread view (ForegroundRunner.swift:206-226).
 - No edit field, thread view, new message, search text, sheet, popover, alert, open menu, Quick Look, poster editor or audio recording.
 - Exactly one row reads `AXSelected`, and it resolves to exactly one chat.db chat (G3). A cold launch or relaunch by the bridge isn't exempt: the bridge captures the chat Messages reopened on. If no row is selected after a launch, there is nothing to restore.
 - If the target isn't the selected chat:
