@@ -78,7 +78,7 @@ The allowed chats, the approval dialog and the rate limits stop a confused or pr
 
 Grok Bot's "always allow" for Shell is one grant for every command. Grok Bot's permission for running commands is global, not per command, so "always" lets Grok Bot run any shell command on your Mac without a card, not only `imessage`. With it on, Grok Bot is an agent with unrestricted shell access in the sense above. The dialog still guards everything sent through `imessage`, but nothing stops another shell command from going around it. With "ask", every shell call shows a card, which is why the skill tells the agent to combine steps into one call.
 
-Private Messages APIs exist, and some tools call them with System Integrity Protection turned off. This repo doesn't call them and never asks you to turn SIP off. It uses the Messages AppleScript dictionary to send, named Accessibility actions for tapbacks, unsend and edit, and read-only SQLite for `chat.db`.
+Private Messages APIs exist, and some tools call them with System Integrity Protection turned off. This repo doesn't call them and never asks you to turn SIP off. It uses the Messages AppleScript dictionary to send, named Accessibility actions for tapbacks, unsend and edit, and read-only SQLite for `chat.db`. Its one private call is outside Messages and read-only: it looks up `CGSCopySpacesForWindows` at run time to count the Messages windows on a Space, and counts every window instead on a macOS without it.
 
 Releases are signed with a self-signed certificate and aren't notarized. install.sh downloads the tarball with curl and checks its pinned SHA-256, so macOS shows no Gatekeeper prompt. Check the hash in INSTALL.md against the release page if you want to confirm what you run.
 
