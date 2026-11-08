@@ -190,7 +190,7 @@ Flows used in the cells. Every UI flow runs the G2 preconditions before its firs
 - **Act in front (separate opt-in).** Messages is frontmost and the target chat is already selected. Only the bubble action runs, under G5.
 - **Wait for front.** Wait up to 30 s, without holding the queue, for Messages to leave the front, then pick the flow for the new state. Otherwise refuse with `busy: Messages is in use` and `fix: switch to <target> in Messages, or leave Messages`. The approval stays valid for one retry (G13).
 - **Foreground.** Today's steps 1 to 7 from a hidden start, with the G2 checks before `selectChat`, then the chat restored while hidden after the finish hides Messages.
-- **Foreground from view.** G6: no hide, the step 1 checks and the row press in view, activation, a finish that restores the chat while frontmost, then focus back to the earlier app with Messages left showing behind it.
+- **Foreground from view.** G6: no hide, the step 1 checks and the row press in view, activation, a finish that returns focus to the earlier app with Messages left showing behind it, then the G3 chat restore in view under G16.
 - **Hide, foreground, unhide.** G1, then foreground, then G3 while hidden, then G4. Only once probe 12 passes. On a fail the cell refuses, with no activation fallback.
 - **Foreground in front.** Messages is already frontmost and the target chat is already selected, so there is no activation, no hide at the end and no focus restore (G6).
 
@@ -277,6 +277,8 @@ Before the first effect, the bridge records a restore plan from its state sample
 2. hidden or shown
 3. the front app
 4. later, running or quit
+
+Foreground mode is the exception. Its finish first takes Messages out of the front, by today's hide or by returning focus, and only then restores the chat, because the bridge never presses a row on a frontmost Messages (G6).
 
 It restores an item only if the item still has the value the bridge left. If the user changed it, the user's choice stands. It unhides only if the chat restore succeeded or had nothing to do. The restore runs before the chat.db verification wait, so the user's state comes back within the action span, not after it. The result names each item that wasn't restored. The plan lives in memory. The journal holds only flags, the earlier chat's ROWID and a digest of its row description (G12), because it never stores message text, and row descriptions contain message previews.
 
@@ -393,7 +395,7 @@ The final-check rule in BUILD-PLAN entry 50 still holds for every new press, wri
 
 **G6. Foreground actions from any state**
 - **Hidden start.** Today's steps 1 to 7, with G2 before `selectChat`. The finish hides Messages as today, then runs G3 while hidden. Messages stays hidden, as it started.
-- **From view** (states 10 and 13, once probes 4 and 12 pass). There is no G1 hide. Step 1's checks and the row press run in view behind G16, then activation runs behind the full gate. At the finish, the bridge presses Escape as today, then restores the user's chat while Messages is frontmost, with the ownership check as the final check. It then returns focus with `open -b <earlier app>` and leaves Messages showing behind it. Only if the earlier app doesn't come to the front within 2 s does it fall back to today's finish hide, with `Messages left hidden`. On a takeover it presses nothing more, so the user sees the target chat they are typing in.
+- **From view** (states 10 and 13, once probes 4 and 12 pass). There is no G1 hide. Step 1's checks and the row press run in view behind G16, then activation runs behind the full gate. At the finish, the bridge presses Escape as today, then returns focus with `open -b <earlier app>` and leaves Messages showing behind it. Once the earlier app is in front, Messages is shown and not frontmost again, and G3 restores the user's chat in view under G16's gate and final check. So no row is pressed while Messages is frontmost. Only if the earlier app doesn't come to the front within 2 s does it fall back to today's finish hide, then G3 while hidden, with `Messages left hidden`. On a takeover it presses nothing more, so the user sees the target chat they are typing in.
 - **Nothing on screen** (states 11, 12 and 18). G1, then the hidden start, then G3 while hidden, then G4. Probe 12 must pass first. A pass means no deminimize, no Space switch, no exit from the user's full-screen Space, and a Return that still lands within 3 s of `t_front`. On a fail the cell stays a refusal, with `busy: Messages is minimized` or `busy: Messages is on another Space`, and no activation fallback.
 - **Frontmost start**, only when the target is already selected. The bridge calls `markActivationCheck` and requires 2 s with no input right before step 1. `t_front` is that moment, so the 3 s Return deadline still holds. Every press passes the ownership check as its final check, which needs a `finalCheck` parameter on `ChatTargeting.selectChat` and a mode on `LiveMessagesAX.press(row:)` that runs the caller's check in place of `requireHiddenWindow`. The finish presses Escape as today. It doesn't hide Messages or restore focus. In every other frontmost case the bridge waits for front.
 - Foreground refuses any state with more than one real window, because Messages decides which window `open -b` brings forward and the posted Return could go to it.
