@@ -275,7 +275,7 @@ def chats(fx, n=20, unread=False):
         out.append(line)
     if len(rows) > n:
         # Section 5 gives `chats` no paging flag, so the footer asks for a longer list.
-        out.append("more: imessage chats -n %d" % (n + 20))
+        out.append("more: imessage chats %s-n %d" % ("--unread " if unread else "", n + 20))
     return "\n".join(out) + "\n"
 
 
