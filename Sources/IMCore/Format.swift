@@ -1167,7 +1167,7 @@ enum NDJSON {
         case .chats(let p):
             let units = p.chats.map { c -> [[String: Any]] in
                 var o = chat(c)
-                if let last = c.last { o["last"] = message(last, type: false) }
+                if let last = c.last { o["last"] = message(last, chat: c.rowid, type: false) }
                 return [o]
             }
             let tail = p.hasMore ? [more("imessage chats -n \(p.limit + 20)")] : []
@@ -1189,7 +1189,7 @@ enum NDJSON {
                     spots.append((g.chat.rowid, nil))
                 }
                 for e in g.entries {
-                    var m = message(e.message)
+                    var m = message(e.message, chat: g.chat.rowid)
                     m["unread"] = e.isUnread
                     if e.gapBefore { m["gap"] = true }
                     units.append(lead + [m])
@@ -1218,7 +1218,7 @@ enum NDJSON {
             if p.newerExists { o["newer"] = true }
             // Keep the newest messages that fit, as the text output does, and print them oldest first.
             let back = Array(p.messages.reversed())
-            let units = back.map { [message($0)] }
+            let units = back.map { [message($0, chat: p.chat.rowid)] }
             func before(_ kept: Int) -> [String: Any] { more("imessage read \(p.chat.rowid) --before \(back[kept - 1].rowid)") }
             let kept = keep(head: { _ in [o] }, units: units, more: before, tail: [])
             lines = [o] + units.prefix(kept).reversed().flatMap { $0 }
@@ -1227,7 +1227,7 @@ enum NDJSON {
             lines.append(ref(d.chat))
             let body = Array(d.message.text.utf8)
             let range = Renderer.showPage(body, from: d.fromByte)
-            var o = message(d.message)
+            var o = message(d.message, chat: d.chat.rowid)
             o["text"] = String(decoding: body[range], as: UTF8.self)
             o["offset"] = range.lowerBound
             o["total"] = body.count
@@ -1244,7 +1244,7 @@ enum NDJSON {
             }
             var seen = Set<Int64>()
             let units = p.hits.map { h -> [[String: Any]] in
-                (seen.insert(h.chat.rowid).inserted ? [ref(h.chat)] : []) + [message(h.message)]
+                (seen.insert(h.chat.rowid).inserted ? [ref(h.chat)] : []) + [message(h.message, chat: h.chat.rowid)]
             }
             lines = page(head: head, units: units, more: { more(Renderer.searchNext(p, cursor: cursor($0))) })
         case .contacts(let p):
@@ -1267,7 +1267,7 @@ enum NDJSON {
             }
             var seen = Set<Int64>()
             let units = p.changes.map { c -> [[String: Any]] in
-                var m = message(c.message)
+                var m = message(c.message, chat: c.chat.rowid)
                 m["type"] = "change"
                 m["kind"] = c.kind.rawValue
                 return (seen.insert(c.chat.rowid).inserted ? [ref(c.chat)] : []) + [m]
@@ -1278,7 +1278,7 @@ enum NDJSON {
                 lines.append(["type": "timeout"])
             } else {
                 if let c = o.chat { lines.append(ref(c)) }
-                if let m = o.message { lines.append(message(m)) }
+                if let m = o.message { lines.append(message(m, chat: o.chat?.rowid ?? m.chatRowID)) }
             }
         case .failure(let e):
             lines.append(failure(e))
@@ -1376,8 +1376,11 @@ enum NDJSON {
         ["type": "chat", "id": c.rowid, "label": c.label, "group": c.isGroup]
     }
 
-    static func message(_ m: MessageRecord, type: Bool = true) -> [String: Any] {
-        var o: [String: Any] = ["id": m.rowid, "guid": m.guid, "chat": m.chatRowID, "date": iso(m.dateNs),
+    /// `chat` is the ROWID of the chat record the message prints under. For a contact's merged iMessage and SMS
+    /// chats that is the conversation's primary chat, not the chat.db chat in `m.chatRowID`, so every message names
+    /// a chat record in the same output.
+    static func message(_ m: MessageRecord, chat: Int64, type: Bool = true) -> [String: Any] {
+        var o: [String: Any] = ["id": m.rowid, "guid": m.guid, "chat": chat, "date": iso(m.dateNs),
                                 "ns": m.dateNs, "from": m.fromMe ? "You" : m.senderName, "text": m.text]
         if type { o["type"] = "message" }
         if m.fromMe { o["me"] = true }
