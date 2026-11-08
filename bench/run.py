@@ -44,7 +44,7 @@ OUT = os.path.join(HERE, "out")
 def overhead_rows():
     rows = []
     n, origin = overhead.ours_skill()
-    rows.append(("ours", "skills/imessage/SKILL.md, loaded as a skill call", n,
+    rows.append(("ours", "skill/imessage/SKILL.md, loaded as a skill call", n,
                  "placeholder: DESIGN.md section 6 caps (body 400, description 40) plus frontmatter"
                  if origin == "placeholder" else origin))
     for tool, key in (("imsg", "imsg"), ("steve228uk", "steve228uk"), ("jeffhuber", "jeffhuber"),
@@ -464,7 +464,8 @@ def report(sessions, ours_mode, sens):
         "",
         "## Known biases",
         "",
-        "- Every ours row is a projection from a renderer, and the ours skill is a placeholder (see above).",
+        "- Every ours row is a projection from a renderer%s (see above)." % (
+            ", and the ours skill is a placeholder" if overhead.ours_skill()[1] == "placeholder" else ""),
         "- The main tables leave out the agent's own commands. On T1 to T3 they are {:,} tokens for jeffhuber, "
         "{} for imsg, steve228uk, cmer and the built-in tool, and {} for ours. This favors jeffhuber most. "
         "The agent commands table shows the effect.".format(

@@ -6,29 +6,29 @@ Ours: renderers/ours.py, the DESIGN.md section 5 format.
 
 ## Summary
 
-On T1 to T3, the tasks every tool can at least attempt, the other tools use 1.5x (cmer) to 7.6x (jeffhuber) the input tokens ours does. The highest ratio is 7.6x, for jeffhuber. No tool is 10x heavier than ours on T1 to T3.
+On T1 to T3, the tasks every tool can at least attempt, the other tools use 1.5x (cmer) to 7.7x (jeffhuber) the input tokens ours does. The highest ratio is 7.7x, for jeffhuber. No tool is 10x heavier than ours on T1 to T3.
 
 This replaces the first run's 1.1x to 17.7x range. That range came from scripts that asked steve228uk, the built-in tools and jeffhuber for more messages than the other tools. Every tool that takes a history limit now gets the same one, ours included (bench/VERIFY.md).
 
 On steps (calls plus approval cards, dialogs, questions and grants), the other tools take 1.0x (RyanNewsom) to 2.8x (jeffhuber) as many as ours on T1 to T3. RyanNewsom ties or beats ours on steps.
 
-Every ours number is a projection. It comes from `renderers/ours.py`, a renderer for the DESIGN.md section 5 CLI, which is not built yet. The ours skill is a 450-token placeholder: the DESIGN.md section 6 caps of 400 body tokens and 40 description tokens, plus 10 for the frontmatter lines. It is 1,350 of ours' 2,357 T1 to T3 tokens (57%). With the only concrete draft skill, 628 tokens (research/tokens.md section 4), the range is 1.2x (cmer) to 6.2x (jeffhuber). If the real skill is as large as imsg's (1,906 tokens), the range becomes 0.5x (cmer) to 2.7x (jeffhuber), and RyanNewsom and cmer would use fewer tokens than ours. With the DESIGN default of `unread -c 2` instead of 4, it is 1.6x (cmer) to 8.2x (jeffhuber).
+Every ours number is a projection. It comes from `renderers/ours.py`, a renderer for the DESIGN.md section 5 CLI, which is not built yet. The ours skill is the 445-token skill/imessage/SKILL.md. It is 1,335 of ours' 2,342 T1 to T3 tokens (57%). With the only concrete draft skill, 628 tokens (research/tokens.md section 4), the range is 1.2x (cmer) to 6.2x (jeffhuber). If the real skill is as large as imsg's (1,906 tokens), the range becomes 0.5x (cmer) to 2.7x (jeffhuber), and RyanNewsom and cmer would use fewer tokens than ours. With the DESIGN default of `unread -c 2` instead of 4, it is 1.6x (cmer) to 8.2x (jeffhuber).
 
-The main tables leave out the agent's own commands. Counting them moves the range to 1.5x (cmer) to 8.2x (jeffhuber), mostly because jeffhuber's request files are 1,735 tokens of commands on T1 to T3.
+The main tables leave out the agent's own commands. Counting them moves the range to 1.5x (cmer) to 8.3x (jeffhuber), mostly because jeffhuber's request files are 1,735 tokens of commands on T1 to T3.
 
-imsg's ratio depends on how the agent calls it. Without `jq -s` and with plain-text `history` and `chats` it is 3.4x (7,986 tokens) instead of 6.6x. Chaining its five T1 history reads into one shell call cuts its T1 to T3 steps from 23 to 15 (1.3x ours).
+imsg's ratio depends on how the agent calls it. Without `jq -s` and with plain-text `history` and `chats` it is 3.4x (7,986 tokens) instead of 6.7x. Chaining its five T1 history reads into one shell call cuts its T1 to T3 steps from 23 to 15 (1.3x ours).
 
-With Mom and Dad stored as first names (`contacts-firstname.json`), jeffhuber and cmer find Mom without a failed call and a question, and the T1 to T3 range is 1.4x (cmer) to 7.5x (jeffhuber).
+With Mom and Dad stored as first names (`contacts-firstname.json`), jeffhuber and cmer find Mom without a failed call and a question, and the T1 to T3 range is 1.4x (cmer) to 7.6x (jeffhuber).
 
 Ours is yes on T1 and T3 and unverified on T2 (S1), T4 (S3) and T5 (S1, S2). Its sends in T2 and T5 depend on spike S1, which checks that the Automation grant goes to the bridge, the same -1743 risk that makes the osascript sends of other tools unverified. DESIGN.md also holds tapbacks back until S3 and group file sends until S2. Other tools that attempt all five tasks: imsg (2 yes, 3 unverified), steve228uk (2 yes, 3 unverified).
 
 ## Per task
 
-Ours rows come from `renderers/ours.py`, a renderer for a CLI that is not built yet, so they are projections, not measurements. The ours skill is a 450-token placeholder: the DESIGN.md section 6 caps of 400 body tokens and 40 description tokens, plus 10 for the frontmatter lines. It is 1,350 of ours' 2,357 T1 to T3 tokens (57%).
+Ours rows come from `renderers/ours.py`, a renderer for a CLI that is not built yet, so they are projections, not measurements. The ours skill is the 445-token skill/imessage/SKILL.md. It is 1,335 of ours' 2,342 T1 to T3 tokens (57%).
 
 | Task | Tool | Calls | Steps | Input tokens | Possible | Note |
 |---|---|---:|---:|---:|---|---|
-| T1 Summarize unread messages | ours | 2 | 3 | 1100 | yes |  |
+| T1 Summarize unread messages | ours | 2 | 3 | 1095 | yes |  |
 |  | imsg | 7 | 13 | 8900 | yes |  |
 |  | grokbot-builtin | 8 | 8 | 5728 | partial | no unread state; reads every chat active in 48 h, its activity count plus 4 items |
 |  | steve228uk | 7 | 13 | 6973 | yes |  |
@@ -36,7 +36,7 @@ Ours rows come from `renderers/ours.py`, a renderer for a CLI that is not built 
 |  | RyanNewsom | 2 | 3 | 1888 | partial | no unread state; last 5 messages per thread in 48 h |
 |  | jimmyliu03 | 7 | 7 | 3678 | yes |  |
 |  | cmer | 1 | 2 | 1161 | partial | no unread state; triages the last 2 days |
-| T2 Reply to Mom | ours | 3 | 6 | 694 | unverified (S1) | the send depends on S1 (Automation grant tied to the bridge) |
+| T2 Reply to Mom | ours | 3 | 6 | 689 | unverified (S1) | the send depends on S1 (Automation grant tied to the bridge) |
 |  | imsg | 4 | 7 | 4293 | unverified | osascript from the Grok Bot shell may get -1743 |
 |  | grokbot-builtin | 4 | 5 | 1630 | yes | assumes FindContacts matches the nickname |
 |  | steve228uk | 4 | 8 | 4004 | unverified | osascript from the Grok Bot shell may get -1743 |
@@ -44,7 +44,7 @@ Ours rows come from `renderers/ours.py`, a renderer for a CLI that is not built 
 |  | RyanNewsom | 3 | 6 | 1458 | unverified | raw osascript send; osascript from the Grok Bot shell may get -1743 |
 |  | jimmyliu03 | 5 | 8 | 3192 | yes | no names in the chat list |
 |  | cmer | 4 | 11 | 1314 | yes | contacts have no nicknames |
-| T3 Find the address Dad sent last month | ours | 2 | 3 | 563 | yes |  |
+| T3 Find the address Dad sent last month | ours | 2 | 3 | 558 | yes |  |
 |  | imsg | 2 | 3 | 2398 | yes |  |
 |  | grokbot-builtin | 1 | 1 | 471 | yes | names come back as Sunil Desai, not Dad |
 |  | steve228uk | 3 | 5 | 1840 | yes | the documented positional search fails once |
@@ -52,7 +52,7 @@ Ours rows come from `renderers/ours.py`, a renderer for a CLI that is not built 
 |  | RyanNewsom | 2 | 3 | 821 | yes |  |
 |  | jimmyliu03 | 3 | 4 | 3555 | yes | no search; scans the newest 20 messages (the default) |
 |  | cmer | 2 | 4 | 969 | yes | names come back as Sunil Desai, not Dad |
-| T4 React to the last message | ours | 5 | 11 | 777 | unverified (S3) | tapbacks ship only if S3 passes; the chats preview cannot rule out a newer incoming message in chat 23, so the agent reads it too |
+| T4 React to the last message | ours | 5 | 11 | 772 | unverified (S3) | tapbacks ship only if S3 passes; the chats preview cannot rule out a newer incoming message in chat 23, so the agent reads it too |
 |  | imsg | 5 | 10 | 4144 | unverified | System Events UI scripting from the Grok Bot shell |
 |  | grokbot-builtin | n/a | n/a | n/a | no | no tapback tool |
 |  | steve228uk | 6 | 12 | 3708 | unverified | react is undocumented in the skill; System Events UI scripting |
@@ -60,7 +60,7 @@ Ours rows come from `renderers/ours.py`, a renderer for a CLI that is not built 
 |  | RyanNewsom | n/a | n/a | n/a | no | read-only helper; no tapbacks |
 |  | jimmyliu03 | n/a | n/a | n/a | no | no tapback tool |
 |  | cmer | n/a | n/a | n/a | no | send_message is text to one person; no tapbacks or files |
-| T5 Send a photo to a group | ours | 2 | 4 | 479 | unverified (S1, S2) | group file sends stay unverified until S2; the send depends on S1 (Automation grant tied to the bridge) |
+| T5 Send a photo to a group | ours | 2 | 4 | 474 | unverified (S1, S2) | group file sends stay unverified until S2; the send depends on S1 (Automation grant tied to the bridge) |
 |  | imsg | 3 | 5 | 2193 | unverified | osascript from the Grok Bot shell may get -1743 |
 |  | grokbot-builtin | n/a | n/a | n/a | no | SendIMessage sends text only |
 |  | steve228uk | 4 | 8 | 2680 | unverified | file send is undocumented in the skill; osascript from the Grok Bot shell may get -1743 |
@@ -71,17 +71,17 @@ Ours rows come from `renderers/ours.py`, a renderer for a CLI that is not built 
 
 ## Per tool
 
-T1 to T3 are the tasks every tool can at least attempt. Ratios divide by the ours total. Ours rows come from `renderers/ours.py`, a renderer for a CLI that is not built yet, so they are projections, not measurements. The ours skill is a 450-token placeholder: the DESIGN.md section 6 caps of 400 body tokens and 40 description tokens, plus 10 for the frontmatter lines. It is 1,350 of ours' 2,357 T1 to T3 tokens (57%).
+T1 to T3 are the tasks every tool can at least attempt. Ratios divide by the ours total. Ours rows come from `renderers/ours.py`, a renderer for a CLI that is not built yet, so they are projections, not measurements. The ours skill is the 445-token skill/imessage/SKILL.md. It is 1,335 of ours' 2,342 T1 to T3 tokens (57%).
 
 | Tool | yes | partial | unverified | no | T1 to T3 calls | T1 to T3 steps | T1 to T3 input tokens | Steps vs ours | Tokens vs ours |
 |---|---:|---:|---:|---:|---:|---:|---:|---:|---:|
-| ours | 2 | 0 | 3 | 0 | 7 | 12 | 2357 | 1.0x | 1.0x |
-| imsg | 2 | 0 | 3 | 0 | 13 | 23 | 15591 | 1.9x | 6.6x |
+| ours | 2 | 0 | 3 | 0 | 7 | 12 | 2342 | 1.0x | 1.0x |
+| imsg | 2 | 0 | 3 | 0 | 13 | 23 | 15591 | 1.9x | 6.7x |
 | grokbot-builtin | 2 | 1 | 0 | 2 | 13 | 14 | 7829 | 1.2x | 3.3x |
-| steve228uk | 2 | 0 | 3 | 0 | 14 | 26 | 12817 | 2.2x | 5.4x |
-| jeffhuber | 2 | 1 | 0 | 2 | 15 | 33 | 17917 | 2.8x | 7.6x |
+| steve228uk | 2 | 0 | 3 | 0 | 14 | 26 | 12817 | 2.2x | 5.5x |
+| jeffhuber | 2 | 1 | 0 | 2 | 15 | 33 | 17917 | 2.8x | 7.7x |
 | RyanNewsom | 1 | 1 | 2 | 1 | 7 | 12 | 4167 | 1.0x | 1.8x |
-| jimmyliu03 | 3 | 0 | 0 | 2 | 15 | 19 | 10425 | 1.6x | 4.4x |
+| jimmyliu03 | 3 | 0 | 0 | 2 | 15 | 19 | 10425 | 1.6x | 4.5x |
 | cmer | 2 | 1 | 0 | 2 | 7 | 17 | 3444 | 1.4x | 1.5x |
 
 ## Sensitivity
@@ -94,13 +94,13 @@ Ratios divide by the main ours row. Chained rows put independent reads in one sh
 
 | Variant | T1 to T3 calls | T1 to T3 steps | T1 to T3 tokens | Steps vs ours | Tokens vs ours | T4 steps | T4 tokens |
 |---|---:|---:|---:|---:|---:|---:|---:|
-| imsg as benchmarked (`--json \| jq -s`) | 13 | 23 | 15591 | 1.9x | 6.6x | 10 | 4144 |
-| imsg without jq (compact NDJSON) | 13 | 23 | 14206 | 1.9x | 6.0x | 10 | 3588 |
+| imsg as benchmarked (`--json \| jq -s`) | 13 | 23 | 15591 | 1.9x | 6.7x | 10 | 4144 |
+| imsg without jq (compact NDJSON) | 13 | 23 | 14206 | 1.9x | 6.1x | 10 | 3588 |
 | imsg without jq, plain-text `history` and `chats` | 13 | 23 | 7986 | 1.9x | 3.4x | 10 | 2245 |
-| imsg, independent reads chained in one shell call | 9 | 15 | 15591 | 1.3x | 6.6x | 8 | 4144 |
+| imsg, independent reads chained in one shell call | 9 | 15 | 15591 | 1.3x | 6.7x | 8 | 4144 |
 | imsg without jq, plain-text `history` and `chats`, reads chained | 9 | 15 | 7986 | 1.3x | 3.4x | 8 | 2245 |
-| steve228uk as benchmarked | 14 | 26 | 12817 | 2.2x | 5.4x | 12 | 3708 |
-| steve228uk, independent reads chained in one shell call | 10 | 18 | 12817 | 1.5x | 5.4x | 10 | 3708 |
+| steve228uk as benchmarked | 14 | 26 | 12817 | 2.2x | 5.5x | 12 | 3708 |
+| steve228uk, independent reads chained in one shell call | 10 | 18 | 12817 | 1.5x | 5.5x | 10 | 3708 |
 
 ### Ours variants
 
@@ -108,9 +108,9 @@ The ratio column divides the main competitor totals by this ours total and gives
 
 | Ours variant | T1 to T3 steps | T1 to T3 tokens | Skill share of those tokens | Competitor token ratios on T1 to T3 | T4 steps | T4 tokens |
 |---|---:|---:|---:|---|---:|---:|
-| ours as benchmarked (`unread -c 4`, skill as in the fixed-context table) | 12 | 2357 | 57% | 1.5x (cmer) to 7.6x (jeffhuber) | 11 | 777 |
-| ours with `unread -c 2`, the DESIGN default | 12 | 2198 | 61% | 1.6x (cmer) to 8.2x (jeffhuber) | 11 | 777 |
-| ours with independent reads chained | 12 | 2357 | 57% | 1.5x (cmer) to 7.6x (jeffhuber) | 9 | 777 |
+| ours as benchmarked (`unread -c 4`, skill as in the fixed-context table) | 12 | 2342 | 57% | 1.5x (cmer) to 7.7x (jeffhuber) | 11 | 772 |
+| ours with `unread -c 2`, the DESIGN default | 12 | 2183 | 61% | 1.6x (cmer) to 8.2x (jeffhuber) | 11 | 772 |
+| ours with independent reads chained | 12 | 2342 | 57% | 1.5x (cmer) to 7.7x (jeffhuber) | 9 | 772 |
 | ours with a 628-token skill, the size of the research/tokens.md section 4 draft | 12 | 2891 | 65% | 1.2x (cmer) to 6.2x (jeffhuber) | 11 | 955 |
 | ours with a 1,906-token skill, the size of imsg's | 12 | 6725 | 85% | 0.5x (cmer) to 2.7x (jeffhuber) | 11 | 2233 |
 
@@ -120,13 +120,13 @@ The main tables count what the tools return, not what the agent writes. This tab
 
 | Tool | T1 to T3 input tokens | Command tokens | Total with commands | Tokens vs ours, main | Tokens vs ours, with commands |
 |---|---:|---:|---:|---:|---:|
-| ours | 2357 | 40 | 2397 | 1.0x | 1.0x |
-| imsg | 15591 | 201 | 15792 | 6.6x | 6.6x |
-| grokbot-builtin | 7829 | 162 | 7991 | 3.3x | 3.3x |
-| steve228uk | 12817 | 150 | 12967 | 5.4x | 5.4x |
-| jeffhuber | 17917 | 1735 | 19652 | 7.6x | 8.2x |
+| ours | 2342 | 40 | 2382 | 1.0x | 1.0x |
+| imsg | 15591 | 201 | 15792 | 6.7x | 6.6x |
+| grokbot-builtin | 7829 | 162 | 7991 | 3.3x | 3.4x |
+| steve228uk | 12817 | 150 | 12967 | 5.5x | 5.4x |
+| jeffhuber | 17917 | 1735 | 19652 | 7.7x | 8.3x |
 | RyanNewsom | 4167 | 96 | 4263 | 1.8x | 1.8x |
-| jimmyliu03 | 10425 | 109 | 10534 | 4.4x | 4.4x |
+| jimmyliu03 | 10425 | 109 | 10534 | 4.5x | 4.4x |
 | cmer | 3444 | 195 | 3639 | 1.5x | 1.5x |
 
 ### Contacts variant
@@ -135,18 +135,18 @@ The main tables count what the tools return, not what the agent writes. This tab
 
 | Tool | T2 steps, nickname | T2 steps, first name | T2 tokens, nickname | T2 tokens, first name | T3 tokens, nickname | T3 tokens, first name | T1 to T3 tokens vs ours, nickname | T1 to T3 tokens vs ours, first name |
 |---|---:|---:|---:|---:|---:|---:|---:|---:|
-| ours | 6 | 6 | 694 | 694 | 563 | 563 | 1.0x | 1.0x |
-| imsg | 7 | 7 | 4293 | 4293 | 2398 | 2398 | 6.6x | 6.6x |
+| ours | 6 | 6 | 689 | 689 | 558 | 558 | 1.0x | 1.0x |
+| imsg | 7 | 7 | 4293 | 4293 | 2398 | 2398 | 6.7x | 6.7x |
 | grokbot-builtin | 5 | 5 | 1630 | 1618 | 471 | 468 | 3.3x | 3.3x |
-| steve228uk | 8 | 8 | 4004 | 4004 | 1840 | 1840 | 5.4x | 5.4x |
-| jeffhuber | 17 | 14 | 6234 | 6113 | 5368 | 5362 | 7.6x | 7.5x |
+| steve228uk | 8 | 8 | 4004 | 4004 | 1840 | 1840 | 5.5x | 5.5x |
+| jeffhuber | 17 | 14 | 6234 | 6113 | 5368 | 5362 | 7.7x | 7.6x |
 | RyanNewsom | 6 | 6 | 1458 | 1422 | 821 | 812 | 1.8x | 1.7x |
-| jimmyliu03 | 8 | 8 | 3192 | 3192 | 3555 | 3555 | 4.4x | 4.4x |
+| jimmyliu03 | 8 | 8 | 3192 | 3192 | 3555 | 3555 | 4.5x | 4.5x |
 | cmer | 11 | 8 | 1314 | 1270 | 969 | 960 | 1.5x | 1.4x |
 
 ## Known biases
 
-- Every ours row is a projection from a renderer, and the ours skill is a placeholder (see above).
+- Every ours row is a projection from a renderer (see above).
 - The main tables leave out the agent's own commands. On T1 to T3 they are 1,735 tokens for jeffhuber, 150 to 201 for imsg, steve228uk, cmer and the built-in tool, and 40 for ours. This favors jeffhuber most. The agent commands table shows the effect.
 - Every shell call counts one approval card, and built-in and MCP calls count none. With a standing `always` grant for `run-command` (research/grokbot.md), T1 to T3 steps are ours 8, RyanNewsom 8, cmer 10, imsg 13, grokbot-builtin 14, steve228uk 15, jimmyliu03 19, jeffhuber 21.
 - The built-in tool definitions count as 0 tokens, because the schemas are server-side. This favors the built-in tool.
@@ -161,7 +161,7 @@ Counted inside every task row above, once per session.
 
 | Tool | Fixed context | Tokens | Source |
 |---|---|---:|---|
-| ours | skills/imessage/SKILL.md, loaded as a skill call | 450 | placeholder: DESIGN.md section 6 caps (body 400, description 40) plus frontmatter |
+| ours | skill/imessage/SKILL.md, loaded as a skill call | 445 | skill/imessage/SKILL.md |
 | imsg | openclaw/imsg .agents/skills/imsg/SKILL.md, loaded as a skill call | 1906 | file (MIT) |
 | steve228uk | steve228uk/grok-bot-imessage skills/imessage-on-mac.md, loaded as a skill call | 1341 | file (no license file) |
 | jeffhuber | jeffhuber/grokbot-imessage-skill SKILL.md, loaded as a skill call | 4627 | file (MIT) |
@@ -185,8 +185,8 @@ Counted inside every task row above, once per session.
 ## Trace
 
 ```
-T1 ours (yes): 2 calls, 3 steps, 1100 tokens
-  skill          450  imessage skill (placeholder)
+T1 ours (yes): 2 calls, 3 steps, 1095 tokens
+  skill          445  imessage skill (skill/imessage/SKILL.md)
   shell          650  imessage unread -c 4
   card             0  Grok Bot shell approval
 T1 imsg (yes): 7 calls, 13 steps, 8900 tokens
@@ -253,8 +253,8 @@ T1 cmer (partial): 1 calls, 2 steps, 1161 tokens
   context        175  instructions the user pastes into Grok Bot
   shell          986  /Users/alex/.local/bin/imessage-bridge call --agent grok-bot review_messages days=2
   card             0  Grok Bot shell approval
-T2 ours (unverified (S1)): 3 calls, 6 steps, 694 tokens
-  skill          450  imessage skill (placeholder)
+T2 ours (unverified (S1)): 3 calls, 6 steps, 689 tokens
+  skill          445  imessage skill (skill/imessage/SKILL.md)
   shell          215  imessage read Mom -n 10
   card             0  Grok Bot shell approval
   shell           29  imessage send Mom "Yes, I'll be there Sunday. Will call Nani tomorrow."
@@ -332,8 +332,8 @@ T2 cmer (yes): 4 calls, 11 steps, 1314 tokens
   shell           48  /Users/alex/.local/bin/imessage-bridge call --agent grok-bot send_message '{"to": "+14155550101", "text": "...
   card             0  Grok Bot shell approval
   dialog           0  native confirmation dialog
-T3 ours (yes): 2 calls, 3 steps, 563 tokens
-  skill          450  imessage skill (placeholder)
+T3 ours (yes): 2 calls, 3 steps, 558 tokens
+  skill          445  imessage skill (skill/imessage/SKILL.md)
   shell          113  imessage search address --in Dad
   card             0  Grok Bot shell approval
 T3 imsg (yes): 2 calls, 3 steps, 2398 tokens
@@ -374,8 +374,8 @@ T3 cmer (yes): 2 calls, 4 steps, 969 tokens
   card             0  Grok Bot shell approval
   shell          203  /Users/alex/.local/bin/imessage-bridge call --agent grok-bot search_messages query=address days=40
   card             0  Grok Bot shell approval
-T4 ours (unverified (S3)): 5 calls, 11 steps, 777 tokens
-  skill          450  imessage skill (placeholder)
+T4 ours (unverified (S3)): 5 calls, 11 steps, 772 tokens
+  skill          445  imessage skill (skill/imessage/SKILL.md)
   shell          137  imessage chats -n 5
   card             0  Grok Bot shell approval
   shell           82  imessage read 23 -n 3
@@ -421,8 +421,8 @@ T4 jimmyliu03 (no): 1 calls, 1 steps, 1979 tokens
   skill          826  apple-messages-reminders SKILL.md (file)
 T4 cmer (no): 0 calls, 0 steps, 175 tokens
   context        175  instructions the user pastes into Grok Bot
-T5 ours (unverified (S1, S2)): 2 calls, 4 steps, 479 tokens
-  skill          450  imessage skill (placeholder)
+T5 ours (unverified (S1, S2)): 2 calls, 4 steps, 474 tokens
+  skill          445  imessage skill (skill/imessage/SKILL.md)
   shell           29  imessage send Family --file ~/Pictures/IMG_4420.HEIC
   card             0  Grok Bot shell approval
   dialog           0  native approval dialog: Allow once
