@@ -1,0 +1,6 @@
+{"group":false,"id":7,"label":"Me","older":false,"service":"iMessage","total":5,"type":"chat","unread":2}
+{"chat":7,"date":"2026-11-06T06:41:00Z","from":"You","guid":"G1","id":1,"me":true,"ns":815640060000000000,"text":"a","type":"message"}
+{"chat":7,"date":"2026-11-06T06:42:00Z","from":"Ann","guid":"G2","id":2,"ns":815640120000000000,"read":true,"text":"b","type":"message"}
+{"att":[{"bytes":2400000,"h":3024,"id":9903,"kind":"photo","name":"IMG_0001.HEIC","onDisk":true,"state":5,"uti":"public.heic","w":4032}],"chat":7,"date":"2026-11-06T06:43:00Z","from":"You","guid":"G3","id":3,"me":true,"ns":815640180000000000,"parts":2,"text":"look","type":"message"}
+{"chat":7,"date":"2026-11-06T06:44:00Z","from":"You","guid":"G4","id":4,"me":true,"ns":815640240000000000,"text":"","type":"message","unsent":true}
+{"chat":7,"date":"2026-11-06T06:45:00Z","from":"Ann","guid":"G5","id":5,"ns":815640300000000000,"read":true,"text":"d","type":"message"}
