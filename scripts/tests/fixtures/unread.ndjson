@@ -1,0 +1,5 @@
+{"chats":1,"total":2,"type":"unread"}
+{"group":false,"id":7,"label":"Me","service":"iMessage","type":"chat","unread":2}
+{"chat":7,"date":"2026-11-06T06:41:00Z","from":"Ann","guid":"G40","id":40,"ns":815640060000000000,"read":true,"text":"context","type":"message","unread":false}
+{"chat":7,"date":"2026-11-06T06:42:00Z","from":"Ann","guid":"G41","id":41,"ns":815640120000000000,"read":false,"text":"a","type":"message","unread":true}
+{"chat":7,"date":"2026-11-06T06:43:00Z","from":"Ann","guid":"G42","id":42,"ns":815640180000000000,"read":false,"text":"b","type":"message","unread":true}
