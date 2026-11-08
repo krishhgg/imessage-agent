@@ -1,0 +1,35 @@
+# SwiftPM and Xcode build output, including per-module scratch paths (.build-imstore, .build-skeleton, ...)
+.build/
+.build*/
+.swiftpm/
+DerivedData/
+*.xcodeproj/
+xcuserdata/
+Tests/Fixtures/make-fixture/.build/
+Tests/Fixtures/make-fixture/.swiftpm/
+
+# scripts/build.sh, release and spike build output (out/ at any depth, including spikes/s1/out/)
+out/
+dist/
+*.tar.gz
+*.app/
+scripts/release-tests/results/
+
+# Signing material never enters the repo
+signing/
+spikes/s1/signing/
+*.keychain
+*.keychain-db
+*.p12
+*.cer
+*.pem
+*.key
+*.pw
+
+# Python caches from bench/
+__pycache__/
+*.pyc
+
+# macOS
+.DS_Store
+
