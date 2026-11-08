@@ -375,9 +375,15 @@ final class AXSupportTests: XCTestCase {
     func testAListWithNoRowIsLoading() {
         // About 1 to 2 s after a hidden launch: 11 children, all `AXGroup` with no description.
         XCTAssertEqual(ConversationListRule.state(children: Array(repeating: .placeholder, count: 11)), .loading)
-        // Children with a description but no row among them read loading, as before.
+        // A placeholder next to children with a description, and no row, still reads loading.
         XCTAssertEqual(ConversationListRule.state(children: [.other, .placeholder]), .loading)
-        XCTAssertEqual(ConversationListRule.state(children: [.other]), .loading)
+    }
+
+    func testAListOfDescribedChildrenWithNoRowIsLoaded() {
+        // A warm Messages that shows only pinned tiles: each has a description, so none is a placeholder and
+        // nothing waits.
+        XCTAssertEqual(ConversationListRule.state(children: [.other]), .loaded)
+        XCTAssertEqual(ConversationListRule.state(children: [.other, .other, .other]), .loaded)
     }
 
     func testNoListIsMissing() {

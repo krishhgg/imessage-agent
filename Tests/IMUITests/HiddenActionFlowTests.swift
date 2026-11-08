@@ -115,6 +115,49 @@ final class HiddenActionFlowTests: XCTestCase {
         XCTAssertFalse(rig.app.calls.contains(.hide), "the user's window is never hidden")
     }
 
+    func testANotLoadedChatCheckAfterALockOrASecondWindowIsTheBusyLine() {
+        // A lock or a second window during the list wait makes the live reads come back empty or fail, which the
+        // targeter reports as `not_loaded`. The window recheck runs then, and its busy line wins.
+        let cases: [(String, MessagesAppState?, ActionResult)] = [
+            ("locked", Make.state(locked: true), .screenLocked),
+            ("two AX windows", Make.state(ax: 2), ActionResult(.busy(.messagesOpen))),
+            ("quit", Make.state(running: false), ActionResult(.noHiddenWindow)),
+            ("still hidden with one window", nil, ActionResult(.notLoaded)),
+        ]
+        for (name, state, expected) in cases {
+            let rig = Rig()
+            let (targeting, tapbacks, unsend) = runners(rig)
+            targeting.selection = .refused(ActionResult(.notLoaded))
+            if let state { targeting.onSelect = { rig.app.current = state } }
+            let request = TapbackRequest(target: Make.target(), chat: Make.chat(), kind: .heart, remove: false)
+            let tapback = tapbacks.run(request, queueDeadline: rig.clock.uptime + 30, recorder: rig.recorder)
+            XCTAssertEqual(tapback.result.code, expected.code, "tapback, \(name)")
+            XCTAssertFalse(tapback.pressed, name)
+            let undo = unsend.run(target: Make.target(), chat: Make.chat(), queueDeadline: rig.clock.uptime + 30,
+                                  recorder: rig.recorder)
+            XCTAssertEqual(undo.result.code, expected.code, "unsend, \(name)")
+            XCTAssertFalse(undo.pressed, name)
+            XCTAssertTrue(rig.ax.performed.isEmpty, name)
+            XCTAssertFalse(rig.log.contains("target.find"), name)
+        }
+    }
+
+    func testOtherChatCheckRefusalsSkipTheRecheck() {
+        // A busy, ambiguous or unsupported refusal comes back as it is, even on a locked screen.
+        for refusal in [ActionResult(.busy(.chatNotOpen)), ActionResult(.ambiguous(.target)), ActionResult(.unsupportedTarget)] {
+            let rig = Rig()
+            let (targeting, tapbacks, _) = runners(rig)
+            targeting.selection = .refused(refusal)
+            let locked = Make.state(locked: true)
+            targeting.onSelect = { rig.app.current = locked }
+            let request = TapbackRequest(target: Make.target(), chat: Make.chat(), kind: .heart, remove: false)
+            let result = tapbacks.run(request, queueDeadline: rig.clock.uptime + 30, recorder: rig.recorder)
+            XCTAssertEqual(result.result.code, refusal.code, "\(refusal)")
+            XCTAssertFalse(result.pressed)
+            XCTAssertTrue(rig.ax.performed.isEmpty)
+        }
+    }
+
     func testUnsendStopsWhenTheUserShowsMessagesAfterPrepare() {
         let rig = Rig()
         let (targeting, _, unsend) = runners(rig)

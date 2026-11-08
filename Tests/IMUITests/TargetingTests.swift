@@ -679,7 +679,28 @@ final class TargetingTests: XCTestCase {
         XCTAssertEqual(targeter.selectChat(Make.chat()), .selected)
         XCTAssertEqual(clock.uptime - launched, 3.5, accuracy: targeter.pollInterval + 0.0001)
         XCTAssertGreaterThan(clock.sleeps.count, sleeps, "it waited")
-        XCTAssertEqual(rig.log.count(of: "ax.rows"), 2, "read again once, after the list filled in")
+        XCTAssertEqual(rig.log.count(of: "ax.rows"), clock.sleeps.count - sleeps + 1,
+                       "the first read, then one on each poll while rows show next to placeholders")
+        XCTAssertNoPress(rig.log)
+    }
+
+    func testATargetRowThatShowsNextToPlaceholdersAfterALaunchIsMatchedWithoutWaitingForTheRest() {
+        // Some placeholders never fill in. The target's row shows 1.5 s after the launch, and the wait ends there,
+        // not when the launch is `listLoadTimeout` old.
+        let (rig, targeter) = rig(rows: [Make.row(1, "Taylor, hey, 12:05 AM")])
+        let launched = launch(rig)
+        let clock = rig.clock
+        let rows = loadedRows
+        let partlyLoaded = self.partlyLoaded
+        rig.ax.listState = { [unowned ax = rig.ax] in
+            if clock.uptime - launched >= 1.5 { ax.rows = rows }
+            return partlyLoaded
+        }
+        let sleeps = clock.sleeps.count
+        XCTAssertEqual(targeter.selectChat(Make.chat()), .selected)
+        XCTAssertEqual(clock.uptime - launched, 1.5, accuracy: targeter.pollInterval + 0.0001)
+        XCTAssertLessThan(clock.uptime - launched, targeter.listLoadTimeout)
+        XCTAssertEqual(rig.log.count(of: "ax.rows"), clock.sleeps.count - sleeps + 1)
         XCTAssertNoPress(rig.log)
     }
 
@@ -689,10 +710,12 @@ final class TargetingTests: XCTestCase {
         let partlyLoaded = self.partlyLoaded
         rig.ax.listState = { partlyLoaded }
         let start = rig.clock.uptime
+        let sleeps = rig.clock.sleeps.count
         XCTAssertEqual(targeter.selectChat(Make.chat()), .refused(ActionResult(.notLoaded)))
         XCTAssertEqual(rig.clock.uptime - launched, targeter.listLoadTimeout, accuracy: targeter.pollInterval + 0.0001)
         XCTAssertLessThan(rig.clock.uptime, start + targeter.listLoadTimeout)
-        XCTAssertEqual(rig.log.count(of: "ax.rows"), 2, "read again once the list stops counting as loading")
+        XCTAssertEqual(rig.log.count(of: "ax.rows"), rig.clock.sleeps.count - sleeps + 1,
+                       "the first read, one on each poll, the last once the list stops counting as loading")
         XCTAssertFalse(rig.log.contains("ax.bubbles"))
         XCTAssertNoPress(rig.log)
     }

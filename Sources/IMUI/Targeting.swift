@@ -168,8 +168,8 @@ public final class ChatTargeter: ChatTargeting {
     /// `clock.uptime` of the bridge's last launch of Messages (`HiddenWindowManager.lastLaunchUptime`), nil if it
     /// hasn't launched Messages. A missing conversation list, or one with a placeholder child next to its rows,
     /// counts as still loading only within `listLoadTimeout` of that launch. At any other time a window with no list
-    /// stays `not_loaded` with no wait, and any row means the list has loaded, so pinned tiles on a warm Messages
-    /// never cause a wait.
+    /// stays `not_loaded` with no wait, and so does a list with any row. A list only counts as loading on its own when
+    /// it has placeholders and no row, so pinned tiles with descriptions never cause a wait.
     public let lastLaunch: () -> TimeInterval?
 
     public convenience init(ax: MessagesAXDriving, source: UITargetSource,
@@ -327,36 +327,51 @@ public final class ChatTargeter: ChatTargeting {
     }
 
     /// The conversation rows, read again once the list has loaded when no row matches `description` and the list is
-    /// still loading (`listIsLoading`). Nil when it is still loading after `listLoadTimeout`. A row read that hits a
+    /// still loading (`listProgress`). Nil when it is still loading after `listLoadTimeout`. A row read that hits a
     /// stale element counts as a list still loading, since Messages replaces the list's children while it loads.
-    /// When the first read has no match and the list then reads loaded, the rows are read once more, because Messages
-    /// can replace its placeholders between the two reads. Throws any other AX error.
+    /// When the first read has no match and the list no longer counts as loading, the rows are read once more,
+    /// because Messages can replace its placeholders between the row read and the state read. While rows show next to
+    /// placeholders after a launch, each poll reads the rows too and returns as soon as one matches. Throws any other
+    /// AX error.
     private func conversationRows(matching description: String) throws -> [ConversationRowInfo]? {
+        let matches: ([ConversationRowInfo]) -> Bool = { $0.contains { Self.sameRowText($0.description, description) } }
         do {
             let rows = try ax.conversationRows()
-            if rows.contains(where: { Self.sameRowText($0.description, description) }) { return rows }
-            guard try listIsLoading() else { return try ax.conversationRows() }
+            if matches(rows) { return rows }
+            if try listProgress() == .loaded { return try ax.conversationRows() }
         } catch AXDriveError.staleReference {}
         let deadline = clock.uptime + listLoadTimeout
         while true {
             let left = deadline - clock.uptime
             if left <= 0 { return nil }
             sleepPollStep(clock, interval: pollInterval, left: left)
-            guard try !listIsLoading() else { continue }
-            do { return try ax.conversationRows() } catch AXDriveError.staleReference { continue }
+            switch try listProgress() {
+            case .loading:
+                continue
+            case .rowsShowing:
+                do {
+                    let rows = try ax.conversationRows()
+                    if matches(rows) { return rows }
+                } catch AXDriveError.staleReference {}
+            case .loaded:
+                do { return try ax.conversationRows() } catch AXDriveError.staleReference { continue }
+            }
         }
     }
 
-    /// True while the list has children and no row among them, and when the read hits a stale element. Within
-    /// `listLoadTimeout` of `lastLaunch`, also while no list shows or a placeholder child sits next to the rows.
-    /// Throws any other AX error.
-    private func listIsLoading() throws -> Bool {
+    private enum ListProgress { case loading, rowsShowing, loaded }
+
+    /// `loading` while the list has placeholders and no row, and when the read hits a stale element. Within
+    /// `listLoadTimeout` of `lastLaunch`, also `loading` while no list shows, and `rowsShowing` while a placeholder
+    /// child sits next to the rows. Otherwise `loaded`. Throws any other AX error.
+    private func listProgress() throws -> ListProgress {
         let state: ConversationListState
-        do { state = try ax.conversationListState() } catch AXDriveError.staleReference { return true }
+        do { state = try ax.conversationListState() } catch AXDriveError.staleReference { return .loading }
         switch state {
-        case .loading: return true
-        case .loaded: return false
-        case .missing, .partlyLoaded: return launchedRecently()
+        case .loading: return .loading
+        case .loaded: return .loaded
+        case .missing: return launchedRecently() ? .loading : .loaded
+        case .partlyLoaded: return launchedRecently() ? .rowsShowing : .loaded
         }
     }
 

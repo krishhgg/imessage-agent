@@ -226,10 +226,12 @@ final class ForegroundRunner {
             if early.code == .notLoaded, let busy = env.windowRules.recheck() { return busy }
             return early
         }
-        // Later steps post keys to `pid`, so a Messages that quit or relaunched is `no_hidden_window`.
+        if let busy = env.windowRules.recheck() { return busy }
+        // Later steps post keys to `pid`, so a Messages that quit or relaunched is `no_hidden_window`. This read comes
+        // after the recheck, so a relaunch during the recheck's own read, which it can't tell from the first launch,
+        // is still caught.
         let after = env.app.state()
         guard after.isRunning, after.pid == messagesPID else { return ActionResult(.noHiddenWindow) }
-        if let busy = env.windowRules.recheck() { return busy }
 
         do {
             guard let composer = try env.ax.composer() else { return .abortedCheck(ForegroundCheck.axRead) }

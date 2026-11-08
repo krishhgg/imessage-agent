@@ -122,8 +122,8 @@ public protocol MessagesAXDriving: AnyObject {
     /// AX windows of Messages.
     func windowCount() throws -> Int
     func conversationRows() throws -> [ConversationRowInfo]
-    /// What the conversation list shows (`ConversationListRule.state`): no list, a list still loading (children and
-    /// none of its direct children an `AXStaticText` row), a list with rows and placeholders, or a loaded list. Reads
+    /// What the conversation list shows (`ConversationListRule.state`): no list, a list still loading (placeholder
+    /// children and no `AXStaticText` row among them), a list with rows and placeholders, or a loaded list. Reads
     /// the children's roles, and the descriptions of those that aren't rows, and hands out no refs.
     func conversationListState() throws -> ConversationListState
     /// `AXPress` on a conversation row. Live, it checks the window rules after its description read and throws
@@ -401,13 +401,14 @@ enum ThreadViewRule {
 public enum ConversationListState: Hashable, Sendable {
     /// No window, or a window with no `ConversationList` element.
     case missing
-    /// The list has children and none of its direct children is an `AXStaticText` row.
+    /// The list has children, none of its direct children is an `AXStaticText` row, and at least one is a placeholder.
     case loading
     /// Some direct child is an `AXStaticText` row and some other is a placeholder (`ConversationListChild`). Right
     /// after a launch, rows may still be filling in. On a warm Messages it may be a pinned tile, so `ChatTargeter`
     /// counts it as loading only within `listLoadTimeout` of its own launch.
     case partlyLoaded
-    /// Some direct child is an `AXStaticText` row and none is a placeholder, or the list has no children.
+    /// No direct child is a placeholder: some are `AXStaticText` rows, or all of them have descriptions (pinned tiles,
+    /// say), or the list has no children.
     case loaded
 }
 
@@ -427,13 +428,13 @@ enum ConversationListChild: Hashable {
 /// between, so a list with some rows may still hold placeholders, one of them the target's. Pinned chats may show as
 /// tiles that aren't `AXStaticText`, so a child that isn't a row doesn't by itself mean the list is loading.
 enum ConversationListRule {
-    /// `missing` with no list (`children` nil), `loading` with children and no row among them, `partlyLoaded` with a
-    /// row and a placeholder, otherwise `loaded`. A list with no children reads loaded.
+    /// `missing` with no list (`children` nil), `loading` with placeholders and no row, `partlyLoaded` with a row and
+    /// a placeholder, otherwise `loaded`. A list with no children, or whose children all have descriptions, reads
+    /// loaded, so a warm Messages that shows only pinned tiles never waits.
     static func state(children: [ConversationListChild]?) -> ConversationListState {
         guard let children else { return .missing }
-        if children.isEmpty { return .loaded }
-        guard children.contains(.row) else { return .loading }
-        return children.contains(.placeholder) ? .partlyLoaded : .loaded
+        guard children.contains(.placeholder) else { return .loaded }
+        return children.contains(.row) ? .partlyLoaded : .loading
     }
 
     /// Sorts one child by its role. `description` is read only for a child that isn't `AXStaticText`, and a child

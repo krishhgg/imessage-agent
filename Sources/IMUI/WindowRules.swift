@@ -129,7 +129,8 @@ public final class HiddenWindowManager {
     private var launchedAt: TimeInterval?
 
     /// `clock.uptime` when this manager last ran `open -g -j -b` for a cold launch or relaunch, nil before its first
-    /// launch. `ChatTargeter` reads it to tell a list that hasn't shown yet after a launch from a window with no list.
+    /// launch. `ChatTargeter` reads it to tell a list that hasn't shown yet, or is still filling in its rows, after a
+    /// launch from a window with no list or a list with placeholder tiles.
     public var lastLaunchUptime: TimeInterval? {
         lock.lock()
         defer { lock.unlock() }

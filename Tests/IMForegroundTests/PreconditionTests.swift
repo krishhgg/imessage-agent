@@ -223,6 +223,28 @@ final class PreconditionTests: XCTestCase {
         }
     }
 
+    func testARelaunchDuringTheWindowRecheckIsNoHiddenWindow() {
+        // Messages quits and comes back hidden with one window while the recheck reads it, so the recheck passes.
+        // The pid read comes after it and catches the new pid.
+        for reply in [false, true] {
+            let h = Harness()
+            var composerReads = 0
+            h.ax.onComposerRead = { composerReads += 1 }
+            _ = h.machine // builds the env, which installs the real recheck
+            let recheck = h.windowRules.rechecker
+            h.windowRules.rechecker = { [unowned h] in
+                h.base.pid = Harness.pid + 1
+                return recheck()
+            }
+            let outcome = reply ? h.runReply() : h.runEdit()
+            XCTAssertEqual(outcome.result.code, .noHiddenWindow, "reply: \(reply)")
+            XCTAssertEqual(h.windowRules.rechecks, 1)
+            XCTAssertEqual(h.log.count(.findBubble), 0)
+            XCTAssertEqual(composerReads, 0)
+            assertNothingActivated(h)
+        }
+    }
+
     func testMessagesQuitOrRelaunchedDuringTheChatCheckIsNoHiddenWindow() {
         var relaunched = Harness().base
         relaunched.pid = Harness.pid + 1

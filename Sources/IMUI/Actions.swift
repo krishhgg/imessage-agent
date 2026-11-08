@@ -459,8 +459,13 @@ struct HiddenActionFlow {
         notes.append(contentsOf: prep.notes)
         if let early = prep.early { return .refused(early) }
         // `selectChat` presses nothing, so a refusal there, `busy: chat not open in Messages` included, and the
-        // results up to the bubble press leave `pressed` false.
-        if case .refused(let result) = targeting.selectChat(chat) { return .refused(result) }
+        // results up to the bubble press leave `pressed` false. A lock or a second window during its list wait makes
+        // the live AX reads come back empty or fail, which it reports as `not_loaded`, so that refusal runs the
+        // window recheck and its busy line wins, as in foreground step 1.
+        if case .refused(let result) = targeting.selectChat(chat) {
+            if result.code == .notLoaded, let busy = windows.recheck() { return .refused(busy) }
+            return .refused(result)
+        }
         return targeting.findBubble(target)
     }
 
