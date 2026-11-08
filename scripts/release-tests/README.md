@@ -88,7 +88,7 @@ IMESSAGE_AGENT_TARBALL="$PWD/out/imessage-agent-<version>.tar.gz" bash out/insta
 IMSG_TEST_HANDLE=you@example.com release-tests/t7-fresh-account.sh
 ```
 
-Its log goes to `~/imessage-agent-release-tests/` in that account. It writes `/Users/Shared/imessage-agent-t7.txt`, which holds only its outcome lines. If an older copy of that file from another account is in the way, delete it from that account first. Back in your own account, pass the file with `--with-t7`.
+Its log goes to `~/imessage-agent-release-tests/` in that account. It writes `/Users/Shared/imessage-agent-t7.txt`, which holds only its outcome lines. It never writes over a file that is already there, so delete an older copy first from the account that made it. Back in your own account, pass the file with `--with-t7`.
 
 What to expect:
 - The bridge allows 30 sends per chat in 24 hours. A run without `--foreground` sends about 15 messages to your own chat, and tests 4, 5 and 6b send about 22 more, so run them on different days.

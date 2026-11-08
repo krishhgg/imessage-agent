@@ -11,8 +11,8 @@
 #
 # The outcome goes to a results folder in this account's home (IMSG_RT_RESULTS overrides it), because the copy of
 # this folder in /Users/Shared belongs to your own account. It also goes to --share FILE (default
-# /Users/Shared/imessage-agent-t7.txt), which holds only the outcome lines. Back in your own account, pass that file
-# to run.sh with --with-t7. A failure blocks the tag.
+# /Users/Shared/imessage-agent-t7.txt), which holds only the outcome lines and must not exist yet. Back in your own
+# account, pass that file to run.sh with --with-t7. A failure blocks the tag.
 set -uo pipefail
 # shellcheck source-path=SCRIPTDIR source=lib.sh
 source "$(dirname "$0")/lib.sh"
@@ -28,6 +28,14 @@ rt_init 7 manual
 
 PROBLEMS=""
 problem() { PROBLEMS="$PROBLEMS; $*"; msg "   problem: $*"; }
+
+# share_outcome <file>: writes the env and gate lines to a new file every account can read. Any account can put a
+# file or a symlink at a fixed path in /Users/Shared, so a path that is already there is refused, noclobber makes the
+# create exclusive, and the umask sets the mode instead of a chmod that would follow a link.
+share_outcome() {
+    [[ ! -e "$1" && ! -L "$1" ]] || return 1
+    (umask 022; set -C; grep -E '^(env|gate) ' "$OUTCOMES" >"$1") 2>/dev/null
+}
 
 [[ -d "$APP" ]] || die "no app at $APP fix: install iMessage Agent in this account first"
 yes_no "Is this a macOS user account that never had iMessage Agent, its grants, or a Terminal or Grok Bot grant?" \
@@ -63,10 +71,10 @@ if [[ -z "$PROBLEMS" ]]; then
 else
     gate fail fresh-account 7 "macOS $MM:${PROBLEMS#;}"
 fi
-if grep -E '^(env|gate) ' "$OUTCOMES" 2>/dev/null >"$SHARE" && chmod 644 "$SHARE"; then
+if share_outcome "$SHARE"; then
     msg "outcome copied to $SHARE. In your own account, run run.sh --with-t7 $SHARE"
 else
-    msg "error: couldn't write $SHARE fix: delete the old file from your own account, or pass --share with another path"
+    msg "error: couldn't write $SHARE as a new file fix: delete the old file from the account that made it, or pass --share with another path"
     msg "The outcome is also in $OUTCOMES."
     exit 1
 fi

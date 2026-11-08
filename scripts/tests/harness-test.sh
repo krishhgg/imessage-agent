@@ -577,6 +577,33 @@ check "t5 judges a case whose sampler says rerun, since that is about the end st
 check "t5 runs a case again after an invalid sample" is "$(t5_case "4 3")" "case pass t5-before-field-letter after 2 tries"
 check "t5 never passes a case whose samples are all invalid" is "$(t5_case 4)" "case rerun t5-before-field-letter after 3 tries"
 
+# Test 7's share file. Any account can put a file or a symlink at a fixed path in /Users/Shared, so the outcome goes
+# only to a new file, and nothing is written or chmodded through a link.
+printf '%s\n' 'env macos 26.0 bridge 1.0' 'cap pass unsend 7 x' 'gate pass fresh-account 7 ok' >"$T/t7-outcomes.txt"
+t7_share() {
+    (
+        eval "$(functions_of "$RT/t7-fresh-account.sh")"
+        OUTCOMES="$T/t7-outcomes.txt" share_outcome "$1"
+    ) 2>/dev/null
+}
+mkdir -p "$T/shared"
+echo keep >"$T/victim.txt"
+chmod 600 "$T/victim.txt"
+check "t7 writes a new share file" t7_share "$T/shared/new.txt"
+check "t7's share file holds only the env and gate lines" \
+    is "$(cat "$T/shared/new.txt")" $'env macos 26.0 bridge 1.0\ngate pass fresh-account 7 ok'
+check "t7's share file is readable by every account" is "$(stat -f %Lp "$T/shared/new.txt")" 644
+ln -s "$T/victim.txt" "$T/shared/planted.txt"
+check "t7 refuses a share path that is a symlink" not t7_share "$T/shared/planted.txt"
+check "t7 writes nothing through a planted symlink" is "$(cat "$T/victim.txt")" keep
+check "t7 changes no mode through a planted symlink" is "$(stat -f %Lp "$T/victim.txt")" 600
+ln -s "$T/shared/nothing-yet.txt" "$T/shared/dangling.txt"
+check "t7 refuses a share path that is a dangling symlink" not t7_share "$T/shared/dangling.txt"
+check "t7 creates nothing behind a dangling symlink" test ! -e "$T/shared/nothing-yet.txt"
+echo old >"$T/shared/old.txt"
+check "t7 refuses a share file that is already there" not t7_share "$T/shared/old.txt"
+check "t7 leaves an old share file as it was" is "$(cat "$T/shared/old.txt")" old
+
 # Outcome lines.
 cap pass unsend 1 detail here >/dev/null
 gate fail fullscreen-panel 6 Messages showed >/dev/null
