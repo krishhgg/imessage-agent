@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<!--
+LaunchAgent template. install.sh replaces each "~/" path below with the absolute path under the user's home
+folder, and switches SockPathName to ~/.imessage-agent/bridge.sock when the primary path is longer than 103 bytes
+(the rule in Sources/IMCore/Paths.swift, resolvedSocketPath). There is no EnvironmentVariables key on purpose.
+-->
+<plist version="1.0">
+<dict>
+	<key>Label</key>
+	<string>io.github.krishhgg.imessage-agent</string>
+	<key>Program</key>
+	<string>~/Applications/iMessage Agent.app/Contents/MacOS/IMessageAgent</string>
+	<key>AssociatedBundleIdentifiers</key>
+	<array>
+		<string>io.github.krishhgg.imessage-agent</string>
+	</array>
+	<key>LimitLoadToSessionType</key>
+	<string>Aqua</string>
+	<key>ProcessType</key>
+	<string>Interactive</string>
+	<key>Sockets</key>
+	<dict>
+		<key>Listener</key>
+		<dict>
+			<key>SockPathName</key>
+			<string>~/Library/Application Support/iMessage Agent/bridge.sock</string>
+			<key>SockPathMode</key>
+			<integer>384</integer>
+		</dict>
+	</dict>
+	<key>StandardErrorPath</key>
+	<string>~/Library/Application Support/iMessage Agent/bridge.log</string>
+</dict>
+</plist>

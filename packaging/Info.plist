@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>CFBundleIdentifier</key>
+	<string>io.github.krishhgg.imessage-agent</string>
+	<key>CFBundleName</key>
+	<string>iMessage Agent</string>
+	<key>CFBundleDisplayName</key>
+	<string>iMessage Agent</string>
+	<key>CFBundleExecutable</key>
+	<string>IMessageAgent</string>
+	<key>CFBundlePackageType</key>
+	<string>APPL</string>
+	<key>CFBundleInfoDictionaryVersion</key>
+	<string>6.0</string>
+	<key>CFBundleShortVersionString</key>
+	<string>0.0.0</string>
+	<key>CFBundleVersion</key>
+	<string>0.0.0</string>
+	<key>LSUIElement</key>
+	<true/>
+	<key>LSMultipleInstancesProhibited</key>
+	<true/>
+	<key>LSMinimumSystemVersion</key>
+	<string>14.0</string>
+	<key>NSAppleEventsUsageDescription</key>
+	<string>iMessage Agent sends the messages you approve through Messages.</string>
+	<key>NSAccessibilityUsageDescription</key>
+	<string>iMessage Agent performs the tapbacks, unsends and edits you approve in a hidden Messages window.</string>
+</dict>
+</plist>
