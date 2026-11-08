@@ -500,6 +500,26 @@ check "t1's Heart remove passes when an invalid sample makes it run again" \
 check "t1's Heart remove still presses when the Heart add left no Heart" \
     is "$(t1_heart t1-heart-remove absent 0)" "pass after 1 tries: react heart --remove: ok; Heart in chat.db: absent"
 
+# Test 5's landed check for between-escapes: the injection must come after the first cleanup Escape and before the
+# next Escape, or before the hide when no Escape follows.
+t5_landed() {
+    printf '%s\n' "$2" >"$BRIDGE_LOG"
+    (
+        eval "$(functions_of "$RT/t5-abort.sh")"
+        landed between-escapes "$1" 0
+    )
+}
+two_escapes=$'release-test 1000 phase bridgeOwnedCleanup\nrelease-test 1010 key escape\nrelease-test 1020 key escape\nrelease-test 1100 phase finishing\nrelease-test 1200 hide'
+one_escape=$'release-test 1000 phase bridgeOwnedCleanup\nrelease-test 1010 key escape\nrelease-test 1200 hide'
+stopped=$'release-test 1000 phase bridgeOwnedCleanup\nrelease-test 1010 key escape'
+check "t5 counts an injection between the cleanup Escapes" t5_landed 1015 "$two_escapes"
+check "t5 doesn't count an injection before the first Escape" not t5_landed 1005 "$two_escapes"
+check "t5 doesn't count an injection at the second Escape" not t5_landed 1020 "$two_escapes"
+check "t5 doesn't count an injection after both Escapes, though it is before the hide" not t5_landed 1050 "$two_escapes"
+check "t5 bounds a one-Escape cleanup by the hide" t5_landed 1100 "$one_escape"
+check "t5 doesn't count an injection at the hide of a one-Escape cleanup" not t5_landed 1200 "$one_escape"
+check "t5 counts an injection after the first Escape when the bridge stopped there" t5_landed 1015 "$stopped"
+
 # Test 5's case loop with a fake sampler and injector. The fake edit writes a `phase front` marker and the fake
 # injector posts 5 ms after it, so the case lands at before-field and the bridge stops there. The sampler's pass,
 # fail and rerun are about the end state, which a takeover changes, but an invalid sample can miss a hide or a

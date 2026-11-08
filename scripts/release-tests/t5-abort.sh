@@ -98,7 +98,9 @@ landed() {
         between-escapes)
             a="$(first_marker "$s" phase bridgeOwnedCleanup)"
             a="$([[ -n "$a" ]] && first_marker "$a" key escape)"
-            b="$(first_marker "$s" hide)" ;;
+            # The next Escape ends the point. When no Escape follows, the hide does.
+            b="$([[ -n "$a" ]] && first_marker $((a + 1)) key escape)"
+            [[ -n "$b" ]] || b="$(first_marker "$s" hide)" ;;
         before-hide) a="$(first_marker "$s" key return)"; b="$(first_marker "$s" hide)" ;;
         before-focus-restore) a="$(first_marker "$s" hide)"; b="$(first_marker "$s" focus-restore)" ;;
     esac
