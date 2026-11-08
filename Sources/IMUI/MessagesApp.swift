@@ -14,7 +14,8 @@ import IMCore
 /// - `endActivation`: terminates that `open` if it still runs. IMForeground calls it once Messages is seen
 ///   frontmost, or when the late-activation watch ends, rather than leaving it to `openTimeout`.
 /// - `state().onScreenWindowCount` counts every on-screen window owned by the Messages pid, at any layer and size.
-/// - `state().allSpacesWindowCount` counts the pid's real windows on every Space (`realWindowCount`).
+/// - `state().allSpacesWindowCount` counts the pid's real windows on every Space (`realWindowCount`), and
+///   `state().spaceWindowCount` the ones of those the window server puts on a Space (`spaceWindowCount`).
 /// - `isFrontmost` reads only NSWorkspace and the running app's pid, with no AX read and no window list.
 /// - Never uses Window > Messages or `imessage://` (both showed a window in S3 and S3b).
 public final class LiveMessagesApp: MessagesAppControl, ActivationEnding {
@@ -39,12 +40,14 @@ public final class LiveMessagesApp: MessagesAppControl, ActivationEnding {
         // action's final check sees an unhide or activation that happened during those reads.
         let axWindowCount = Self.axWindowCount(pid: pid)
         let onScreenWindowCount = Self.onScreenWindowCount(pid: pid)
-        let allSpacesWindowCount = Self.realWindowCount(pid: pid, in: Self.allWindows())
+        let allWindows = Self.allWindows()
+        let allSpacesWindowCount = Self.realWindowCount(pid: pid, in: allWindows)
+        let spaceWindowCount = Self.spaceWindowCount(pid: pid, in: allWindows, spaces: WindowSpaces.count(of:))
         let isHidden = running.isHidden
         let frontmost = NSWorkspace.shared.frontmostApplication?.processIdentifier == pid
         return MessagesAppState(isRunning: true, pid: pid, isFrontmost: frontmost, isHidden: isHidden,
                                 axWindowCount: axWindowCount, onScreenWindowCount: onScreenWindowCount,
-                                allSpacesWindowCount: allSpacesWindowCount)
+                                allSpacesWindowCount: allSpacesWindowCount, spaceWindowCount: spaceWindowCount)
     }
 
     /// The front app's pid against the running Messages' pid. No AX read and no window list, so it can't block on
@@ -191,13 +194,60 @@ public final class LiveMessagesApp: MessagesAppControl, ActivationEnding {
     /// -1 when there is no list. A window with no readable bounds doesn't count.
     static func realWindowCount(pid: pid_t, in list: [[String: Any]]?) -> Int {
         guard let list else { return -1 }
+        return list.filter { isRealWindow($0, pid: pid) }.count
+    }
+
+    /// The real windows in `list` (`realWindowCount`) that `spaces` puts on at least one Space. `spaces` gives the
+    /// number of Spaces a window id is on, or nil when it can't say, and a window it can't place still counts, as
+    /// does one with no readable id. -1 when there is no list.
+    ///
+    /// Messages owns a 500 x 500 layer 0 window that is never on screen, at the screen's bottom-left corner, on no
+    /// Space and absent from AX. Its chat window is on a Space when open, minimized or hidden
+    /// (research/live-tests/2026-11-07-sends.md, test 2).
+    static func spaceWindowCount(pid: pid_t, in list: [[String: Any]]?, spaces: (Int) -> Int?) -> Int {
+        guard let list else { return -1 }
         return list.filter { info in
-            guard (info[kCGWindowOwnerPID as String] as? NSNumber)?.int32Value == pid,
-                  (info[kCGWindowLayer as String] as? NSNumber)?.intValue == 0,
-                  let bounds = info[kCGWindowBounds as String] as? NSDictionary,
-                  let rect = CGRect(dictionaryRepresentation: bounds as CFDictionary) else { return false }
-            return rect.width >= realWindowMinimumSide && rect.height >= realWindowMinimumSide
+            guard isRealWindow(info, pid: pid) else { return false }
+            guard let id = (info[kCGWindowNumber as String] as? NSNumber)?.intValue, let count = spaces(id) else {
+                return true
+            }
+            return count > 0
         }.count
+    }
+
+    /// Owned by `pid`, layer 0, and both sides at least `realWindowMinimumSide`. A window with no readable bounds
+    /// isn't real.
+    private static func isRealWindow(_ info: [String: Any], pid: pid_t) -> Bool {
+        guard (info[kCGWindowOwnerPID as String] as? NSNumber)?.int32Value == pid,
+              (info[kCGWindowLayer as String] as? NSNumber)?.intValue == 0,
+              let bounds = info[kCGWindowBounds as String] as? NSDictionary,
+              let rect = CGRect(dictionaryRepresentation: bounds as CFDictionary) else { return false }
+        return rect.width >= realWindowMinimumSide && rect.height >= realWindowMinimumSide
+    }
+}
+
+/// Which Spaces the window server puts a window on, through `CGSCopySpacesForWindows`. That function is private, so
+/// it is looked up at run time, and every answer is nil when it is missing. Owner: IMUI.
+enum WindowSpaces {
+    private typealias MainConnection = @convention(c) () -> Int32
+    private typealias CopySpaces = @convention(c) (Int32, Int32, CFArray) -> Unmanaged<CFArray>?
+
+    /// Current, other and full-screen Spaces.
+    static let allSpacesMask: Int32 = 0x7
+
+    private static let functions: (main: MainConnection, copy: CopySpaces)? = {
+        guard let handle = dlopen("/System/Library/Frameworks/CoreGraphics.framework/CoreGraphics", RTLD_LAZY),
+              let main = dlsym(handle, "CGSMainConnectionID"),
+              let copy = dlsym(handle, "CGSCopySpacesForWindows") else { return nil }
+        return (unsafeBitCast(main, to: MainConnection.self), unsafeBitCast(copy, to: CopySpaces.self))
+    }()
+
+    /// The number of Spaces window `id` is on, or nil if the lookup is missing or gives no list.
+    static func count(of id: Int) -> Int? {
+        guard let functions,
+              let spaces = functions.copy(functions.main(), allSpacesMask, [id] as CFArray)?.takeRetainedValue()
+        else { return nil }
+        return CFArrayGetCount(spaces)
     }
 }
 

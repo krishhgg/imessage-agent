@@ -100,7 +100,12 @@ final class SourceGuardTests: XCTestCase {
         // the earlier front app's hasWindows both go through the size-floor filter `realWindowCount`.
         let lines = try codeLines().first { $0.0 == "MessagesApp.swift" }!.1
         let state = body(of: "public func state() -> MessagesAppState", in: lines).joined()
-        XCTAssertTrue(state.contains("allSpacesWindowCount = Self.realWindowCount(pid: pid, in: Self.allWindows())"), state)
+        XCTAssertTrue(state.contains("let allWindows = Self.allWindows()"), state)
+        XCTAssertTrue(state.contains("allSpacesWindowCount = Self.realWindowCount(pid: pid, in: allWindows)"), state)
+        // The Space count reads the same list, so the two counts describe one moment.
+        XCTAssertTrue(state.contains(
+            "spaceWindowCount = Self.spaceWindowCount(pid: pid, in: allWindows, spaces: WindowSpaces.count(of:))"), state)
+        XCTAssertTrue(state.contains("spaceWindowCount: spaceWindowCount)"), state)
         let normal = body(of: "private static func hasNormalWindow(pid: pid_t)", in: lines).joined()
         XCTAssertTrue(normal.contains("realWindowCount(pid: pid, in: allWindows()) > 0"), normal)
         XCTAssertFalse(normal.contains("CGWindowListCopyWindowInfo"), normal)

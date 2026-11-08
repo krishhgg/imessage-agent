@@ -43,9 +43,15 @@ public struct MessagesAppState: Hashable, Sendable {
     /// this count has it. The size floor drops the 1512 x 33 menu bar strips every app owns there on macOS 26
     /// (docs/BUILD-PLAN.md entry 49). -1 if the window server gives no list.
     public var allSpacesWindowCount: Int
+    /// The windows in `allSpacesWindowCount` that the window server puts on at least one Space. Messages also owns a
+    /// 500 x 500 layer 0 window it never shows, at the screen's bottom-left corner on no Space, and this count drops
+    /// it (docs/BUILD-PLAN.md entry 51). Only the hidden rule's one-window test uses it. Equal to
+    /// `allSpacesWindowCount` when the Space lookup isn't available, and -1 when the window server gives no list.
+    public var spaceWindowCount: Int
 
+    /// `spaceWindowCount` defaults to `allSpacesWindowCount`.
     public init(isRunning: Bool, pid: Int32?, isFrontmost: Bool, isHidden: Bool, axWindowCount: Int,
-                onScreenWindowCount: Int, allSpacesWindowCount: Int) {
+                onScreenWindowCount: Int, allSpacesWindowCount: Int, spaceWindowCount: Int? = nil) {
         self.isRunning = isRunning
         self.pid = pid
         self.isFrontmost = isFrontmost
@@ -53,6 +59,7 @@ public struct MessagesAppState: Hashable, Sendable {
         self.axWindowCount = axWindowCount
         self.onScreenWindowCount = onScreenWindowCount
         self.allSpacesWindowCount = allSpacesWindowCount
+        self.spaceWindowCount = spaceWindowCount ?? allSpacesWindowCount
     }
 
     public static let notRunning = MessagesAppState(isRunning: false, pid: nil, isFrontmost: false, isHidden: false,
