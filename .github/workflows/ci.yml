@@ -19,8 +19,6 @@ jobs:
       - name: Toolchain
         run: swift --version
       - name: Build
-        if: hashFiles('Package.swift') != ''
         run: swift build
       - name: Test
-        if: hashFiles('Package.swift') != ''
         run: swift test
