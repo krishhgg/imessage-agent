@@ -307,7 +307,7 @@ A fixed task suite runs against each tool on the same synthetic fixtures:
 4. React to the last message.
 5. Send a photo to a group.
 
-Each run counts every call, skill load, retry and Grok Bot approval card. Tokens are counted with o200k as a proxy, and with xAI's tokenizer if an API key is available. The README publishes only measured numbers. S5 projected 1.5x to 7.6x fewer input tokens on tasks 1 to 3, using a renderer of the section 5 CLI and a 450-token placeholder skill. At a skill as large as imsg's (1,906 tokens), S5 projected 0.5x to 2.7x, and two other repos beat ours. So the README states a range only after the built CLI and the shipped skill (body 400 tokens or fewer) are measured, reruns S5 before each tag, and doesn't claim 10x on tokens. Its main claim is coverage at low cost.
+Each run counts every call, skill load, retry and Grok Bot approval card. Tokens are counted with o200k as a proxy, and with xAI's tokenizer if an API key is available. The README publishes only measured numbers. S5 projected 1.5x to 7.7x fewer input tokens on tasks 1 to 3, using a renderer of the section 5 CLI and the 445-token `skill/imessage/SKILL.md`. At a skill as large as imsg's (1,906 tokens), S5 projected 0.5x to 2.7x, and two other repos beat ours. So the README states a range only after the built CLI and the shipped skill (body 400 tokens or fewer) are measured, reruns S5 before each tag, and doesn't claim 10x on tokens. Its main claim is coverage at low cost.
 
 ## Not in v1
 

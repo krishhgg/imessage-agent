@@ -24,7 +24,7 @@ import tokens  # noqa: E402
 
 REPO = os.path.dirname(HERE)
 CACHE = os.path.join(HERE, "overhead_data", "counts.json")
-OURS_SKILL = os.path.join(REPO, "skills", "imessage", "SKILL.md")
+OURS_SKILL = os.path.join(REPO, "skill", "imessage", "SKILL.md")
 # A placeholder for the whole ours SKILL.md, not a real skill. Competitor counts
 # are whole files, frontmatter included, so this one is too: the DESIGN.md
 # section 6 caps (body 400 tokens or fewer, description 40 or fewer) plus the
@@ -80,7 +80,7 @@ def file_tokens(key):
 def ours_skill():
     if os.path.exists(OURS_SKILL):
         with open(OURS_SKILL, encoding="utf-8") as f:
-            return tokens.count(f.read()), "skills/imessage/SKILL.md"
+            return tokens.count(f.read()), "skill/imessage/SKILL.md"
     return OURS_PLACEHOLDER, "placeholder"
 
 

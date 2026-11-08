@@ -61,7 +61,7 @@ codesign --verify --strict --deep "$OUT/$NAME.app"
 
 # Install: stop the job, swap the bundle, reload.
 launchctl bootout "gui/$(id -u)/$LABEL" 2>/dev/null || true
-mkdir -p "$HOME/Applications" "$SOCKDIR"; chmod 700 "$SOCKDIR"
+mkdir -p "$HOME/Applications" "$(dirname "$PLIST")" "$SOCKDIR"; chmod 700 "$SOCKDIR"
 rm -rf "$APP"; ditto "$OUT/$NAME.app" "$APP"
 /System/Library/Frameworks/CoreServices.framework/Frameworks/LaunchServices.framework/Support/lsregister -f "$APP"
 
