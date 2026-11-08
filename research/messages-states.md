@@ -280,7 +280,7 @@ Before the first effect, the bridge records a restore plan from its state sample
 
 Foreground mode is the exception. Its finish first takes Messages out of the front, by today's hide or by returning focus, and only then restores the chat, because the bridge never presses a row on a frontmost Messages (G6).
 
-It restores an item only if the item still has the value the bridge left. If the user changed it, the user's choice stands. It unhides only if the chat restore succeeded or had nothing to do. The restore runs before the chat.db verification wait, so the user's state comes back within the action span, not after it. The result names each item that wasn't restored. The plan lives in memory. The journal holds only flags, the earlier chat's ROWID and a digest of its row description (G12), because it never stores message text, and row descriptions contain message previews.
+It restores an item only if the item still has the value the bridge left. If the user changed it, the user's choice stands. It unhides only if the chat restore succeeded or had nothing to do. The restore runs before the chat.db verification wait, so the user's state comes back within the action span, not after it. The result names each item that wasn't restored. The plan lives in memory. The journal holds only flags, the Messages pid, the earlier chat's ROWID and a digest of its row description (G12), because it never stores message text, and row descriptions contain message previews.
 
 | Item | Recorded from | Restored by | Restorable |
 | --- | --- | --- | --- |
@@ -332,7 +332,7 @@ The final-check rule in BUILD-PLAN entry 50 still holds for every new press, wri
   - a full-screen or Split View Messages, by `AXFullScreen` through `AXMainWindow` or the full-height bounds test
   - any Messages while Stage Manager is on
 - Before the hide, the bridge does all chat.db work and the checks that make the hide safe. Those come from the state sample: the window counts, `AXMainWindow`, `AXFullScreen`, Stage Manager and the front app. The reads of the window's contents are the G2 checks, the target row and bubble lookups, and the earlier chat's capture. When AX already lists the window, as reported for state 11, they run before the hide, so a refusal there hides nothing. When AX lists no window until the hide, as in state 12, they run after the recheck and the reachability test below, and before any press. In that case they count toward the 2 s cap. The driver repeats its fingerprint read before each press anyway.
-- The bridge journals the `hid` flag (G12), hides, and polls `isHidden` for up to 1 s. It then reads the state again. Messages must be hidden, not frontmost, with exactly one conversation window and nothing on screen, and the front app must be the one recorded before.
+- The bridge journals the `hid` flag and the Messages pid (G12), hides, and polls `isHidden` for up to 1 s. It then reads the state again. Messages must be hidden, not frontmost, with exactly one conversation window and nothing on screen, and the front app must be the one recorded before.
 - The span from the hide to the target press is capped at 2 s. On overrun the bridge skips the effect, restores the chat if it changed, and unhides.
 - If AX shows 0 windows after the bridge's own hide while the all-Spaces count is 1 or more, the bridge reads `AXMainWindow` and `AXFocusedWindow`. If both are nil, it unhides through G4 and returns state 17's result.
 - It never quits a Messages it hid, or a Messages that may have a window. That covers an all-Spaces count of 1 or more, an unknown count, Stage Manager on, a non-nil `AXMainWindow` or `AXFocusedWindow`, and a launch not finished. That window may hold the user's draft.
@@ -422,9 +422,9 @@ The final-check rule in BUILD-PLAN entry 50 still holds for every new press, wri
 **G11. Result notes.** `error: Messages became visible` is replaced by a comparison of the end state against the plan. A difference the bridge caused, such as a window it showed that wasn't showing before, gets an error note. A change the user made gets none.
 
 **G12. Journal and crash.**
-- With the `hid` and `launched` flags and their times, the journal records the earlier chat's chat.db ROWID and a digest of the captured row description. It records no text.
+- Before the first hide or press, the journal records the Messages pid, because the plan lives in memory and recovery needs it to tell whether Messages is the same process. With the `hid` and `launched` flags and their times, the journal also records the earlier chat's chat.db ROWID and a digest of the captured row description. It records no text.
 - After a crash, recovery never unhides or quits Messages on its own, because the user may have moved on.
-- If Messages is still hidden with the same pid and its selected row resolves to the target chat, recovery runs the G3 restore once while Messages is hidden. Otherwise it leaves Messages alone and shows G15's notice.
+- If Messages is still hidden, its pid matches the one the journal recorded, and its selected row resolves to the target chat, recovery runs the G3 restore once while Messages is hidden. Otherwise, including when the entry has no recorded pid, it leaves Messages alone and shows G15's notice.
 - `doctor` says Messages may be hidden and showing another chat.
 - A quit-later timer lost in a crash leaves Messages running hidden, which is harmless.
 
@@ -650,7 +650,7 @@ The earlier approval-order probe is dropped. Local files already answer it (sect
   - The approval kept for one retry.
   - The panel text over a frontmost Messages.
   - The "Always allow this chat" text and the README say that tapbacks in that chat may hide and show Messages and switch its chat.
-- **Section 3.** Item 2: the journal flags, the earlier chat's ROWID and the digest. Item 3: the idle, mouse and frontmost waits don't hold the queue. Item 4: quit later after a cold start, under a queue ticket.
+- **Section 3.** Item 2: the journal flags, the Messages pid, the earlier chat's ROWID and the digest. Item 3: the idle, mouse and frontmost waits don't hold the queue. Item 4: quit later after a cold start, under a queue ticket.
 - **Results.** New busy reasons:
   - `Messages is in use`
   - `several Messages windows`
@@ -717,7 +717,7 @@ The earlier approval-order probe is dropped. Local files already answer it (sect
   - `HIDInputMonitor` adds the `flagsState` and `pressedMouseButtons` checks, and gesture event types if probe 13 shows the HID state reports them.
 - **IMSend.** ColdStart.swift and MessageSender.swift report when the bridge started Messages from not running.
 - **IMPolicy.**
-  - Journal.swift gets the `hid` and `launched` flags, the earlier chat's ROWID, the row-description digest, and their recovery.
+  - Journal.swift gets the `hid` and `launched` flags, the Messages pid, the earlier chat's ROWID, the row-description digest, and their recovery.
   - PolicyStore.swift gets a separate in-front setting with a consent version. An existing `foregroundMode` that is on doesn't turn it on (PolicyStore.swift:28, 304-311).
   - Approvals.swift keeps an approval valid for the same key after a busy that reached nothing.
 - **IMBridge.**
