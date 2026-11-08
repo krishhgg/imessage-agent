@@ -125,9 +125,9 @@ The main tables count what the tools return, not what the agent writes. This tab
 | grokbot-builtin | 7829 | 162 | 7991 | 3.3x | 3.3x |
 | steve228uk | 12817 | 150 | 12967 | 5.4x | 5.4x |
 | jeffhuber | 17917 | 1735 | 19652 | 7.6x | 8.2x |
-| RyanNewsom | 4167 | 92 | 4259 | 1.8x | 1.8x |
+| RyanNewsom | 4167 | 96 | 4263 | 1.8x | 1.8x |
 | jimmyliu03 | 10425 | 109 | 10534 | 4.4x | 4.4x |
-| cmer | 3444 | 191 | 3635 | 1.5x | 1.5x |
+| cmer | 3444 | 195 | 3639 | 1.5x | 1.5x |
 
 ### Contacts variant
 
@@ -307,7 +307,7 @@ T2 RyanNewsom (unverified): 3 calls, 6 steps, 1458 tokens
   shell          836  ~/.local/bin/imsg-read thread --handle Mom --days 7 --limit 10
   card             0  Grok Bot shell approval
   approve          4  show recipient and text, wait for yes
-  shell            0  osascript -e 'tell application "Messages" to send "Yes, I'll be there Sunday. Will call Nani tomorrow." to ...
+  shell            0  osascript -e 'tell application "Messages" to send "Yes, I'"'"'ll be there Sunday. Will call Nani tomorrow."...
   card             0  Grok Bot shell approval
 T2 jimmyliu03 (yes): 5 calls, 8 steps, 3192 tokens
   context       1153  MCP tool list (8 tools) and server instructions

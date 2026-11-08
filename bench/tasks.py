@@ -32,6 +32,7 @@ Counting rules:
 
 import json
 import os
+import shlex
 import subprocess
 
 import overhead
@@ -467,8 +468,10 @@ def ryan_tasks(s, t):
         s.shell("%s thread --handle Mom --days 7 --limit %d" % (rn.CMD, REPLY_LIMIT),
                 rn.thread(fx, "Mom", 7, REPLY_LIMIT))
         s.step("approve", "show recipient and text, wait for yes", SEND_OK)
-        s.shell("osascript -e 'tell application \"Messages\" to send \"%s\" to participant \"%s\" "
-                "of (1st account whose service type = iMessage)'" % (REPLY, MOM), rn.OSASCRIPT_OK)
+        # REPLY has an apostrophe, so the script is shell-quoted rather than wrapped in bare single quotes.
+        script = ('tell application "Messages" to send "%s" to participant "%s" '
+                  'of (1st account whose service type = iMessage)' % (REPLY, MOM))
+        s.shell("osascript -e %s" % shlex.quote(script), rn.OSASCRIPT_OK)
         s.result("unverified", "raw osascript send; " + _osascript_note())
     elif t == "T3":
         s.shell("%s search --query address --days 40" % rn.CMD, rn.search(fx, "address", 40))
@@ -542,7 +545,7 @@ def cmer_tasks(s, t):
                     cmer.get_conversation(fx, full, limit=REPLY_LIMIT))
             notes.append("contacts have no nicknames")
         s.step("approve", "show recipient and text, wait for yes", SEND_OK)
-        s.shell(cmer.command("send_message", "'{\"to\": \"%s\", \"text\": \"%s\"}'" % (MOM, REPLY)),
+        s.shell(cmer.command("send_message", shlex.quote(json.dumps({"to": MOM, "text": REPLY}))),
                 cmer.send_message(fx, MOM, REPLY))
         s.step("dialog", "native confirmation dialog")
         s.result("yes", _join(*notes))
