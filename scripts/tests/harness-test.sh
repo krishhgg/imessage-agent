@@ -412,6 +412,94 @@ printf '%s\n' "11 $((now - 900))" "12 $((now - 100))" "13 $((now - 50))" >"$RESU
 check "pool_next skips an expired message" is "$(pool_next)" 12
 check "pool_next keeps the rest" is "$(cat "$RESULTS/pool.txt")" "13 $((now - 50))"
 
+# The cases below run functions from the release tests themselves. functions_of prints every function a script
+# defines, so a test can load them without running the script's own steps.
+functions_of() {
+    awk '!body && /^[a-z_]+\(\) \{/ { print; if ($0 !~ /\}$/) body = 1; next } body { print; if ($0 ~ /^}/) body = 0 }' "$1"
+}
+# A fake sampler. It writes a start line and the ready file, then on SIGTERM prints a verdict and exits with the next
+# code in FAKE_SAMPLER_RCS (0 pass, 1 fail, 3 rerun, 4 invalid). The last code repeats.
+mkdir -p "$T/tools" "$RESULTS/samples"
+cat >"$T/tools/sampler" <<'EOF'
+#!/bin/bash
+out="" ready=""
+while (($#)); do
+    case "$1" in
+        --out) out="$2"; shift 2 ;;
+        --ready) ready="$2"; shift 2 ;;
+        *) shift ;;
+    esac
+done
+read -r -a rcs <<<"${FAKE_SAMPLER_RCS:-0}"
+n="$(cat "$FAKE_STATE/sampler.count" 2>/dev/null || echo 0)"
+echo $((n + 1)) >"$FAKE_STATE/sampler.count"
+((n < ${#rcs[@]})) || n=$((${#rcs[@]} - 1))
+rc="${rcs[$n]}"
+case "$rc" in 0) v=pass ;; 1) v=fail ;; 3) v=rerun ;; *) v=invalid ;; esac
+ms=$(($(date +%s) * 1000))
+echo "{\"front\":\"com.apple.finder\",\"messages_hidden\":true,\"type\":\"start\",\"wall_ms\":$ms}" >"$out"
+echo "$ms" >"$ready"
+trap 'echo "verdict $v fake sampler"; exit "$rc"' TERM
+while :; do sleep 0.02; done
+EOF
+chmod 755 "$T/tools/sampler"
+
+# Test 1's Heart cases through run_sampled. A try whose sample is invalid runs again, so each try's setup must put
+# the Heart back the way the action needs it, or the second press returns `already` and a good sample fails. This
+# fake CLI keeps the Heart on message 101 in a file, and react answers `already` when nothing would change.
+cat >"$T/imessage-heart" <<'EOF'
+#!/bin/bash
+heart="$FAKE_STATE/heart"
+case "$1" in
+    react)
+        if [[ " $* " == *" --remove "* ]]; then
+            if [[ -e "$heart" ]]; then rm -f "$heart"; code=ok; else code=already; fi
+        elif [[ -e "$heart" ]]; then
+            code=already
+        else
+            touch "$heart"
+            code=ok
+        fi
+        echo "{\"result\":{\"code\":\"$code\",\"notes\":[]},\"type\":\"ui\"}" ;;
+    show)
+        echo '{"group":false,"id":7,"label":"Me","type":"chat"}'
+        if [[ -e "$heart" ]]; then
+            echo '{"id":101,"me":true,"ns":815640000000000000,"react":[{"by":"You","kind":"heart","part":0}],"text":"hi","type":"message"}'
+        else
+            echo '{"id":101,"me":true,"ns":815640000000000000,"text":"hi","type":"message"}'
+        fi ;;
+    *) exit 1 ;;
+esac
+EOF
+chmod 755 "$T/imessage-heart"
+# t1_heart <case> <Heart at the start: present or absent> <sampler codes>: runs the case with the setup and action
+# t1-bridge.sh passes to run_sampled, and prints the status for its outcome line.
+t1_heart() {
+    local name="$1" start="$2" setup action
+    read -r setup action < <(awk -v n="$name" '$1 == "run_sampled" && $2 == n { print $4, $5; exit }' "$RT/t1-bridge.sh")
+    rm -f "$FAKE_STATE/heart" "$FAKE_STATE/sampler.count"
+    [[ "$start" == present ]] && touch "$FAKE_STATE/heart"
+    # The t1 functions read TARGET and call the stand-ins, which shellcheck can't see through the eval.
+    # shellcheck disable=SC2034,SC2329
+    (
+        eval "$(functions_of "$RT/t1-bridge.sh")"
+        IMSG="$T/imessage-heart" TOOLS="$T/tools" TARGET=101 FAKE_SAMPLER_RCS="$3"
+        export FAKE_SAMPLER_RCS
+        wait_messages_quit() { :; }
+        front_other_app() { :; }
+        messages_running() { :; }
+        sleep() { command sleep 0.01; }
+        run_sampled "$name" hidden "$setup" "$action" >/dev/null
+        echo "$(sampled_status) after $(cat "$FAKE_STATE/sampler.count") tries: $ACTION_DETAIL"
+    )
+}
+check "t1's Heart add passes when an invalid sample makes it run again" \
+    is "$(t1_heart t1-cold-ui absent "4 0")" "pass after 2 tries: react heart: ok; Heart in chat.db: present"
+check "t1's Heart remove passes when an invalid sample makes it run again" \
+    is "$(t1_heart t1-heart-remove present "4 0")" "pass after 2 tries: react heart --remove: ok; Heart in chat.db: absent"
+check "t1's Heart remove still presses when the Heart add left no Heart" \
+    is "$(t1_heart t1-heart-remove absent 0)" "pass after 1 tries: react heart --remove: ok; Heart in chat.db: absent"
+
 # Outcome lines.
 cap pass unsend 1 detail here >/dev/null
 gate fail fullscreen-panel 6 Messages showed >/dev/null

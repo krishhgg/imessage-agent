@@ -53,6 +53,13 @@ act_heart_remove() {
     if ui_ok && lacks_my_reaction "$TARGET" heart; then ACTION_OK=1; fi
     ACTION_DETAIL="react heart --remove: $UI_LINE; Heart in chat.db: $REACTION_STATE"
 }
+# Each try's setup puts the Heart back the way the action needs it, outside the sample, so a try that runs again
+# after a rerun or invalid sample presses again instead of getting `already`.
+setup_cold_ui() { clear_reaction "$TARGET" heart; setup_cold; }
+setup_heart_remove() {
+    if lacks_my_reaction "$TARGET" heart; then ui react "$TARGET" heart; fi
+    setup_warm
+}
 
 # a. Cold launch before a text send.
 run_sampled t1-cold-text hidden setup_cold act_cold_text
@@ -70,7 +77,7 @@ run_sampled t1-cold-file hidden setup_cold act_file
 gate "$(sampled_status)" cold-file-send 1 "$(sampled_detail)"
 
 # c. Cold launch before a UI action. This is also the Heart add.
-run_sampled t1-cold-ui hidden setup_cold act_heart_add
+run_sampled t1-cold-ui hidden setup_cold_ui act_heart_add
 gate "$(sampled_status)" cold-ui-action 1 "$(sampled_detail)"
 HEART_ADD="$(sampled_status)"
 HEART_ADD_DETAIL="$(sampled_detail)"
@@ -80,7 +87,7 @@ run_sampled t1-warm-text hidden setup_warm act_warm_text
 gate "$(sampled_status)" warm-text-send 1 "$(sampled_detail)"
 
 # e. Heart remove.
-run_sampled t1-heart-remove hidden setup_warm act_heart_remove
+run_sampled t1-heart-remove hidden setup_heart_remove act_heart_remove
 HEART_REMOVE="$(sampled_status)"
 if [[ "$HEART_ADD" == pass && "$HEART_REMOVE" == pass ]]; then
     cap pass tapback.heart 1 "add and remove verified in chat.db"
