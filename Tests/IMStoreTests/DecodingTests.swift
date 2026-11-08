@@ -224,6 +224,18 @@ final class DecodingTests: XCTestCase {
         XCTAssertEqual(names([add, row(2, "p:0/G", 3006, "+14155550101", emoji: "🪔")]), [])
     }
 
+    /// `TapbackRunner` accepts a 3006 row with no emoji as the removal, so the fold must take the reaction away too.
+    func testEmojiRemoveWithoutAnEmojiTakesAwayTheActorsEmoji() {
+        let add = row(1, "p:0/G", 2006, "+14155550101", emoji: "🪔")
+        XCTAssertEqual(names([add, row(2, "p:0/G", 3006, "+14155550101")]), [])
+        XCTAssertEqual(names([add, row(2, "p:1/G", 3006, "+14155550101")]), ["0 🪔 Mom"])
+        XCTAssertEqual(names([add, row(2, "p:0/G", 3006, nil, me: true)]), ["0 🪔 Mom"])
+        XCTAssertEqual(names([row(1, "p:0/G", 2000, "+14155550101"), row(2, "p:0/G", 3006, "+14155550101")]),
+                       ["0 ❤️ Mom"])
+        XCTAssertEqual(names([row(1, "p:0/G", 2006, nil, me: true, emoji: "🪔"), row(2, "p:0/G", 3006, nil, me: true),
+                              row(3, "p:0/G", 2006, nil, me: true, emoji: "🪔")]), ["0 🪔 You"])
+    }
+
     func testRowsReplayInRowIDOrderAndBadKindsAreSkipped() {
         XCTAssertEqual(names([row(5, "p:0/G", 3000, "+14155550101"), row(4, "p:0/G", 2000, "+14155550101")]), [])
         XCTAssertEqual(names([row(1, "p:0/G", 2007, "+14155550101"), row(2, "p:0/G", 2006, "+14155550101"),
