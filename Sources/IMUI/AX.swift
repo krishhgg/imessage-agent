@@ -98,8 +98,8 @@ public enum AXDriveError: Error, Hashable, Sendable {
     case staleReference
     case actionMissing(String)
     case axError(Int32)
-    /// Right before a row press, Messages was no longer hidden with one window (the user may have shown it), so
-    /// nothing was pressed. Carries the state that failed the window rules.
+    /// Right before a row press in `press(row:)`, which nothing calls now, Messages was no longer hidden with one
+    /// window (the user may have shown it), so nothing was pressed. Carries the state that failed the window rules.
     case messagesVisible(MessagesAppState)
     /// A tree walk reached its node cap with nodes left unread, so it can't show that something is absent.
     case walkLimit
@@ -123,7 +123,8 @@ public protocol MessagesAXDriving: AnyObject {
     func windowCount() throws -> Int
     func conversationRows() throws -> [ConversationRowInfo]
     /// What the conversation list shows (`ConversationListRule.state`): no list, a list still loading (children and
-    /// none of its direct children an `AXStaticText` row), or a loaded list. Reads roles only and hands out no refs.
+    /// none of its direct children an `AXStaticText` row), a list with rows and placeholders, or a loaded list. Reads
+    /// the children's roles, and the descriptions of those that aren't rows, and hands out no refs.
     func conversationListState() throws -> ConversationListState
     /// `AXPress` on a conversation row. Live, it checks the window rules after its description read and throws
     /// `messagesVisible` (or `notRunning`) instead of pressing if Messages isn't hidden with one window. Then
@@ -402,20 +403,44 @@ public enum ConversationListState: Hashable, Sendable {
     case missing
     /// The list has children and none of its direct children is an `AXStaticText` row.
     case loading
-    /// Some direct child is an `AXStaticText` row, or the list has no children.
+    /// Some direct child is an `AXStaticText` row and some other is a placeholder (`ConversationListChild`). Right
+    /// after a launch, rows may still be filling in. On a warm Messages it may be a pinned tile, so `ChatTargeter`
+    /// counts it as loading only within `listLoadTimeout` of its own launch.
+    case partlyLoaded
+    /// Some direct child is an `AXStaticText` row and none is a placeholder, or the list has no children.
     case loaded
+}
+
+/// A direct child of the conversation list, as `ConversationListRule` sorts it.
+enum ConversationListChild: Hashable {
+    /// An `AXStaticText` conversation row.
+    case row
+    /// Not `AXStaticText` and no `AXDescription`, like the groups Messages shows before it fills in the rows.
+    case placeholder
+    /// Not `AXStaticText`, with a description.
+    case other
 }
 
 /// When the conversation list counts as still loading. About 1 to 2 s after a hidden launch its direct children were
 /// all `AXGroup` with no description, and about 6 s after it they were all `AXStaticText` rows
-/// (research/live-tests/2026-11-07-sends.md, Conversation rows after a hidden launch). Pinned chats may show as
-/// tiles that aren't `AXStaticText`, so one child that isn't a row doesn't mean the list is loading.
+/// (research/live-tests/2026-11-07-sends.md, Conversation rows after a hidden launch). Nothing sampled the list in
+/// between, so a list with some rows may still hold placeholders, one of them the target's. Pinned chats may show as
+/// tiles that aren't `AXStaticText`, so a child that isn't a row doesn't by itself mean the list is loading.
 enum ConversationListRule {
-    /// `missing` with no list (`childRoles` nil), `loading` with children and none of them `AXStaticText`, otherwise
-    /// `loaded`. A list with no children reads loaded.
-    static func state(childRoles: [String]?) -> ConversationListState {
-        guard let roles = childRoles else { return .missing }
-        return !roles.isEmpty && !roles.contains("AXStaticText") ? .loading : .loaded
+    /// `missing` with no list (`children` nil), `loading` with children and no row among them, `partlyLoaded` with a
+    /// row and a placeholder, otherwise `loaded`. A list with no children reads loaded.
+    static func state(children: [ConversationListChild]?) -> ConversationListState {
+        guard let children else { return .missing }
+        if children.isEmpty { return .loaded }
+        guard children.contains(.row) else { return .loading }
+        return children.contains(.placeholder) ? .partlyLoaded : .loaded
+    }
+
+    /// Sorts one child by its role. `description` is read only for a child that isn't `AXStaticText`, and a child
+    /// without the attribute reads "" there, so it counts as a placeholder.
+    static func child(role: String, description: () throws -> String) rethrows -> ConversationListChild {
+        if role == "AXStaticText" { return .row }
+        return try description().isEmpty ? .placeholder : .other
     }
 }
 
@@ -432,11 +457,12 @@ struct AXElement: Hashable {
 ///
 /// - Reads only Messages' one window, the transcript, the conversation list, the menu bar and the app's focused
 ///   text field. More than one window is an error, so a press can't land in a second window.
-/// - Presses rows with `AXPress`, runs only the bubble actions `UINames.isAllowedBubbleAction` allows, presses only
-///   the menu items in `UINames.allowedMenuTitles` (it looks up `lookupOnlyMenuTitles` too but never presses them),
-///   and writes values only to the composer, an edit field or the focused reply field.
+/// - Runs only the bubble actions `UINames.isAllowedBubbleAction` allows, presses only the menu items in
+///   `UINames.allowedMenuTitles` (it looks up `lookupOnlyMenuTitles` too but never presses them), and writes values
+///   only to the composer, an edit field or the focused reply field. `press(row:)` can press a row with `AXPress`,
+///   but nothing calls it now.
 /// - Before acting on a ref it re-reads the element's description or title and refuses with `staleReference` if
-///   it changed or can't be read. Before a row press it also checks the window rules again and refuses with
+///   it changed or can't be read. `press(row:)` also checks the window rules again and refuses with
 ///   `messagesVisible`. The caller's `AXFinalCheck` runs after all of these, as the line right before
 ///   `AXUIElementPerformAction` or `AXUIElementSetAttributeValue`.
 /// - Every AX read gets `messagingTimeout`. A failed read, a timeout included, throws (`AXRead`) and ends any tree
@@ -477,12 +503,15 @@ public final class LiveMessagesAX: MessagesAXDriving {
         }
     }
 
-    /// `ConversationListRule.state` on the roles of the list's direct children. With no window there is no list
-    /// either, so that reads `missing` too.
+    /// `ConversationListRule.state` on the list's direct children, each sorted by `ConversationListRule.child`. With
+    /// no window there is no list either, so that reads `missing` too.
     public func conversationListState() throws -> ConversationListState {
-        guard let list = try conversationList() else { return ConversationListRule.state(childRoles: nil) }
-        let roles = try Self.children(of: list).map { try Self.string($0, "AXRole") }
-        return ConversationListRule.state(childRoles: roles)
+        guard let list = try conversationList() else { return ConversationListRule.state(children: nil) }
+        let children = try Self.children(of: list).map { child in
+            try ConversationListRule.child(role: try Self.string(child, "AXRole"),
+                                           description: { try Self.string(child, "AXDescription") })
+        }
+        return ConversationListRule.state(children: children)
     }
 
     /// Unused for now and kept for the chat switch flows, which wait for probes. See the protocol requirement.

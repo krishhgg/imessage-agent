@@ -41,6 +41,11 @@ public protocol HiddenWindowPreparing: AnyObject {
     /// the action adds to its own result when it goes ahead, such as `error: Messages became visible` after a cold
     /// launch or relaunch that showed a window (section 4, Window rules).
     func prepare(queueDeadline: TimeInterval) -> WindowPreparation
+    /// The window rules again, launching and quitting nothing (`HiddenWindowManager.recheck`): nil while Messages is
+    /// still hidden with one window, otherwise the result to return, such as `busy: screen locked` or
+    /// `busy: Messages is open`. Step 1 calls it after the chat check, which can wait seconds for the list to load,
+    /// and after a `not_loaded` refusal from that check, since a lock or a second window during the wait ends there.
+    func recheck() -> ActionResult?
 }
 
 extension HiddenWindowManager: HiddenWindowPreparing {}
@@ -249,7 +254,9 @@ public final class OwnershipGuard {
 /// Rule checklist:
 /// - Idle gate first (2 s of no input, 30 s budget, `busy: user active`), then the queue, then step 1 checks.
 /// - Step 1: Messages hidden, the chat already the one selected chat and checked, with no row press
-///   (`busy: chat not open in Messages` otherwise), Messages still hidden after that check, empty composer
+///   (`busy: chat not open in Messages` otherwise), after that check the same Messages pid and the window rules
+///   again (`HiddenWindowPreparing.recheck`, so a locked screen is `busy: screen locked`, also in place of a
+///   `not_loaded` refusal from that check), empty composer
 ///   (`busy: draft in Messages`), no edit field and no thread view (`busy: edit in progress`), parent unchanged
 ///   (`newestIncoming(for:)?.guid == parent.guid`, else `aborted: parent changed`), bubble and action or menu item
 ///   present (`unsupported`).

@@ -40,24 +40,27 @@ final class RateRecheck {
     init(check: @escaping () -> ApprovalPrompt?) { self.check = check }
 
     /// The machine's window step with the check in front of it.
-    func guarding(_ base: HiddenWindowPreparing) -> HiddenWindowPreparing { Guarded(recheck: self, base: base) }
+    func guarding(_ base: HiddenWindowPreparing) -> HiddenWindowPreparing { Guarded(rate: self, base: base) }
 
     private final class Guarded: HiddenWindowPreparing {
-        let recheck: RateRecheck
+        let rate: RateRecheck
         let base: HiddenWindowPreparing
 
-        init(recheck: RateRecheck, base: HiddenWindowPreparing) {
-            self.recheck = recheck
+        init(rate: RateRecheck, base: HiddenWindowPreparing) {
+            self.rate = rate
             self.base = base
         }
 
         func prepare(queueDeadline: TimeInterval) -> WindowPreparation {
-            if let found = recheck.check() {
-                recheck.prompt = found
+            if let found = rate.check() {
+                rate.prompt = found
                 return WindowPreparation(early: ActionResult(.pending(id: found.id)), notes: [])
             }
             return base.prepare(queueDeadline: queueDeadline)
         }
+
+        /// The rate check runs once, in `prepare`, so this is the base's window recheck alone.
+        func recheck() -> ActionResult? { base.recheck() }
     }
 }
 

@@ -58,7 +58,8 @@ public enum WindowRules {
 
     /// True only when `decide` says `proceed`: Messages hidden, not frontmost, one AX window, none on screen and no
     /// more than one real window on any Space.
-    /// Read-only. The last check before a hidden row press or named action, after `prepare` may have waited.
+    /// Read-only. `HiddenWindowManager.recheck` runs it as the last check before a hidden named action, after
+    /// `prepare` may have waited.
     public static func allowsHiddenAction(_ state: MessagesAppState) -> Bool {
         decide(state) == .proceed
     }
@@ -186,8 +187,10 @@ public final class HiddenWindowManager {
     }
 
     /// The window rules again, launching and quitting nothing: nil while Messages is still hidden with one window,
-    /// `busy: screen locked` on a locked screen, `no_hidden_window` if it quit, otherwise `WindowRules.busyResult`. Hidden actions call it right before the
-    /// named action, because the user may have shown Messages since `prepare`.
+    /// `busy: screen locked` on a locked screen, `no_hidden_window` if it quit, otherwise `WindowRules.busyResult`.
+    /// Hidden actions call it right before the named action, because the user may have shown Messages since
+    /// `prepare`. Foreground step 1 calls it after the chat check, which can wait seconds for the list to load, and
+    /// after a `not_loaded` refusal from that check.
     public func recheck() -> ActionResult? {
         let state = currentState()
         if WindowRules.allowsHiddenAction(state) { return nil }
@@ -285,7 +288,8 @@ public final class HiddenWindowManager {
     /// `app.state()`, with an unknown AX window count (-1) filled from `countWindows`, which can block for up to 2 s.
     /// After that read succeeds, `app.state()` runs again, so `isHidden` and frontmost are sampled after every read
     /// that can block. The filled count is used only if the new state's AX count is still unknown. A new state that
-    /// shows Messages not running is returned as it is. `LiveMessagesAX` uses it before a row press.
+    /// shows Messages not running is returned as it is. `LiveMessagesAX.press(row:)`, which nothing calls now, uses it
+    /// too.
     static func state(of app: MessagesAppControl, countWindows: () throws -> Int) -> MessagesAppState {
         let first = app.state()
         guard first.isRunning, first.axWindowCount < 0, let count = try? countWindows() else { return first }

@@ -216,12 +216,20 @@ final class ForegroundRunner {
 
         // `selectChat` presses no row. A chat that isn't the one selected chat is `busy: chat not open in Messages`,
         // returned like the other step 1 refusals, with nothing pressed and no mark-read note.
-        if case .refused(let early) = env.targeting.selectChat(run.chat) { return early }
         // `selectChat` can wait several seconds for a conversation list that is still loading, longer than the idle
-        // check before `open -b` covers. The user may have shown Messages during that wait, so the state is read again.
+        // check before `open -b` covers. During that wait the user may have shown Messages, opened a second window
+        // or locked the screen, so the window rules run again after it, the same recheck the hidden actions make
+        // before their press. A lock or a second window that AX counts also makes the live targeter's AX reads come
+        // back empty or fail, which it reports as `not_loaded`. So a `not_loaded` refusal runs the recheck too, and
+        // its busy line wins. The other refusals are returned as they are.
+        if case .refused(let early) = env.targeting.selectChat(run.chat) {
+            if early.code == .notLoaded, let busy = env.windowRules.recheck() { return busy }
+            return early
+        }
+        // Later steps post keys to `pid`, so a Messages that quit or relaunched is `no_hidden_window`.
         let after = env.app.state()
         guard after.isRunning, after.pid == messagesPID else { return ActionResult(.noHiddenWindow) }
-        guard after.isHidden, !after.isFrontmost else { return .messagesOpen }
+        if let busy = env.windowRules.recheck() { return busy }
 
         do {
             guard let composer = try env.ax.composer() else { return .abortedCheck(ForegroundCheck.axRead) }

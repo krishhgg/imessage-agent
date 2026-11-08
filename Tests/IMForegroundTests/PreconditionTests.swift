@@ -81,8 +81,12 @@ final class PreconditionTests: XCTestCase {
 
     func testMessagesShownDuringTheChatCheckIsBusyMessagesOpen() {
         // The chat check can wait seconds for a conversation list that is still loading. A user who shows Messages
-        // early in that wait and then stays still for 2 s would pass the idle check before `open -b`.
-        for (hidden, frontmost) in [(false, false), (true, true)] {
+        // early in that wait and then stays still for 2 s would pass the idle check before `open -b`. The result is
+        // the window rules' own busy line: with the fix for a window showing, without it for a hidden Messages.
+        let cases: [(hidden: Bool, frontmost: Bool, result: ActionResult)] = [
+            (false, false, .messagesOpen), (true, true, ActionResult(.busy(.messagesOpen))),
+        ]
+        for (hidden, frontmost, result) in cases {
             let h = Harness()
             h.log.onEvent = { [unowned h] event in
                 guard event == .selectChat else { return }
@@ -92,10 +96,130 @@ final class PreconditionTests: XCTestCase {
                 h.clock.advance(6)
             }
             let edit = h.runEdit()
-            XCTAssertEqual(edit.result, .messagesOpen, "\(hidden) \(frontmost)")
+            XCTAssertEqual(edit.result, result, "\(hidden) \(frontmost)")
             XCTAssertEqual(h.log.count(.selectChat), 1)
-            XCTAssertEqual(h.log.count(.findBubble), 0, "step 1 stops at the state read after the chat check")
+            XCTAssertEqual(h.windowRules.rechecks, 1)
+            XCTAssertEqual(h.log.count(.findBubble), 0, "step 1 stops at the recheck after the chat check")
             assertNothingActivated(h)
+        }
+    }
+
+    func testScreenLockedDuringTheChatCheckIsBusyScreenLocked() {
+        // AX lists no window on a locked screen, so without the recheck the next AX read would fail as
+        // `aborted: AX read`.
+        for reply in [false, true] {
+            let h = Harness()
+            var composerReads = 0
+            h.ax.onComposerRead = { composerReads += 1 }
+            h.log.onEvent = { [unowned h] event in
+                guard event == .selectChat else { return }
+                h.base.isScreenLocked = true
+                h.clock.advance(6)
+            }
+            let outcome = reply ? h.runReply() : h.runEdit()
+            XCTAssertEqual(outcome.result, .screenLocked, "reply: \(reply)")
+            XCTAssertEqual(outcome.result.rendered, "busy: screen locked fix: unlock the Mac and retry")
+            XCTAssertEqual(h.windowRules.rechecks, 1)
+            XCTAssertEqual(h.log.count(.findBubble), 0, "no bubble lookup")
+            XCTAssertEqual(composerReads, 0, "no composer read")
+            XCTAssertEqual(h.source.readsAt.count, 0, "no chat.db read for the step 1 checks")
+            assertNothingActivated(h)
+        }
+    }
+
+    func testASecondWindowDuringTheChatCheckIsBusyMessagesOpen() {
+        // Hidden with two windows, as AX counts them or as the window server counts them on some Space. Hiding
+        // again doesn't help, so the busy line has no fix.
+        for (ax, space) in [(2, 1), (1, 2)] {
+            for reply in [false, true] {
+                let h = Harness()
+                var composerReads = 0
+                h.ax.onComposerRead = { composerReads += 1 }
+                h.log.onEvent = { [unowned h] event in
+                    guard event == .selectChat else { return }
+                    h.base.axWindowCount = ax
+                    h.base.allSpacesWindowCount = space
+                    h.base.spaceWindowCount = space
+                    h.clock.advance(6)
+                }
+                let outcome = reply ? h.runReply() : h.runEdit()
+                let label = "ax \(ax), space \(space), reply: \(reply)"
+                XCTAssertEqual(outcome.result, ActionResult(.busy(.messagesOpen)), label)
+                XCTAssertEqual(outcome.result.rendered, "busy: Messages is open", label)
+                XCTAssertEqual(h.windowRules.rechecks, 1, label)
+                XCTAssertEqual(h.log.count(.findBubble), 0, label)
+                XCTAssertEqual(composerReads, 0, label)
+                assertNothingActivated(h)
+            }
+        }
+    }
+
+    func testTheWindowRecheckComesAfterTheChatCheckAndBeforeTheOtherStep1Reads() {
+        // Once per take of the queue, after the chat check and before the bubble lookup and the composer read.
+        let h = Harness()
+        var rechecksAtFindBubble: [Int] = []
+        var rechecksAtComposer: [Int] = []
+        h.ax.onComposerRead = { [unowned h] in rechecksAtComposer.append(h.windowRules.rechecks) }
+        h.log.onEvent = { [unowned h] event in
+            if event == .selectChat { XCTAssertEqual(h.windowRules.rechecks, 0) }
+            if event == .findBubble { rechecksAtFindBubble.append(h.windowRules.rechecks) }
+        }
+        XCTAssertEqual(h.runEdit().result.code, .ok)
+        XCTAssertEqual(h.windowRules.rechecks, 1)
+        XCTAssertEqual(rechecksAtFindBubble.first, 1)
+        XCTAssertEqual(rechecksAtComposer.first, 1)
+
+        // A `not_loaded` refusal runs the recheck once. Messages is still hidden with one window here, so the
+        // refusal is returned. The other refusals return before the recheck.
+        let r = Harness()
+        r.targeting.selection = .refused(ActionResult(.notLoaded))
+        XCTAssertEqual(r.runReply().result, ActionResult(.notLoaded))
+        XCTAssertEqual(r.windowRules.rechecks, 1, "a not_loaded refusal runs the recheck")
+        XCTAssertEqual(r.log.count(.findBubble), 0)
+        assertNothingActivated(r)
+
+        let busy = ActionResult(.busy(.chatNotOpen), fix: "open Sam in Messages, hide it (⌘H), then retry")
+        for refusal in [ActionResult(.ambiguous(.target)), ActionResult(.unsupportedTarget), busy] {
+            let o = Harness()
+            o.targeting.selection = .refused(refusal)
+            o.log.onEvent = { [unowned o] event in
+                if event == .selectChat { o.base.isScreenLocked = true }
+            }
+            XCTAssertEqual(o.runReply().result, refusal)
+            XCTAssertEqual(o.windowRules.rechecks, 0, "\(refusal.rendered) returns before the recheck")
+        }
+    }
+
+    func testANotLoadedChatCheckAfterALockOrASecondWindowIsTheBusyLine() {
+        // The live targeter reads no window on a locked screen or after Messages quits, and fails its AX reads when
+        // AX counts two windows. Each ends as `not_loaded`. The recheck after that refusal names the real cause, and
+        // nothing is pressed.
+        let cases: [(label: String, change: (inout MessagesAppState) -> Void, result: ActionResult)] = [
+            ("locked", { $0.isScreenLocked = true }, .screenLocked),
+            ("two AX windows", { $0.axWindowCount = 2 }, ActionResult(.busy(.messagesOpen))),
+            ("quit", { $0 = .notRunning }, ActionResult(.noHiddenWindow)),
+        ]
+        for (label, change, result) in cases {
+            for reply in [false, true] {
+                let h = Harness()
+                h.targeting.selection = .refused(ActionResult(.notLoaded))
+                var composerReads = 0
+                h.ax.onComposerRead = { composerReads += 1 }
+                h.log.onEvent = { [unowned h] event in
+                    guard event == .selectChat else { return }
+                    change(&h.base)
+                    h.clock.advance(6)
+                }
+                let outcome = reply ? h.runReply() : h.runEdit()
+                let name = "\(label), reply: \(reply)"
+                XCTAssertEqual(outcome.result, result, name)
+                XCTAssertEqual(h.windowRules.rechecks, 1, name)
+                XCTAssertEqual(h.log.count(.selectChat), 1, name)
+                XCTAssertEqual(h.log.count(.findBubble), 0, name)
+                XCTAssertEqual(composerReads, 0, name)
+                XCTAssertEqual(outcome.result.notes, [], "\(name): nothing pressed, so no mark-read note")
+                assertNothingActivated(h)
+            }
         }
     }
 

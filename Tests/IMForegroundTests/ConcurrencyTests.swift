@@ -194,6 +194,7 @@ final class AlwaysOn: ForegroundModeSwitching {
 
 final class NoWindowRules: HiddenWindowPreparing {
     func prepare(queueDeadline: TimeInterval) -> WindowPreparation { WindowPreparation(early: nil, notes: []) }
+    func recheck() -> ActionResult? { nil }
 }
 
 final class WorldApp: MessagesAppControl {

@@ -134,10 +134,11 @@ public protocol ChatTargeting: AnyObject {
 /// 3. The conversation rows. If no row's description equals the expected one and the list is still loading, it
 ///    reads the list's state (`MessagesAXDriving.conversationListState`) every `pollInterval` until the list has
 ///    loaded, then reads the rows again. A list still loading after `listLoadTimeout` is `not_loaded`. The list is
-///    still loading while its children are all placeholders, while no list shows within `listLoadTimeout` of the
-///    bridge's last launch of Messages (`lastLaunch`), and after a read that hit an element Messages had just
-///    replaced (`AXDriveError.staleReference`). A loaded list, or a missing one with no recent launch, is read once
-///    with no wait.
+///    still loading while it has children and none of them is a row, and after a read that hit an element Messages
+///    had just replaced (`AXDriveError.staleReference`). Within `listLoadTimeout` of the bridge's last launch of
+///    Messages (`lastLaunch`) it is also still loading while no list shows, or while a placeholder child sits next
+///    to the rows (`ConversationListState.partlyLoaded`). A loaded list, or a missing or part-loaded one with no
+///    recent launch, is read once with no wait.
 /// 4. Exactly one loaded row whose full description equals the expected one (`sameRowText`). None is `not_loaded`,
 ///    several are `ambiguous`. No prefix matching and no scrolling. A row without the English row actions
 ///    (`UINames.requiredRowActions`) is `unsupported`: Messages isn't running in English.
@@ -164,8 +165,10 @@ public final class ChatTargeter: ChatTargeting {
     public var listLoadTimeout: TimeInterval = 6
     public var pollInterval: TimeInterval = 0.1
     /// `clock.uptime` of the bridge's last launch of Messages (`HiddenWindowManager.lastLaunchUptime`), nil if it
-    /// hasn't launched Messages. A missing conversation list counts as still loading only within `listLoadTimeout`
-    /// of that launch. At any other time a window with no list stays `not_loaded` with no wait.
+    /// hasn't launched Messages. A missing conversation list, or one with a placeholder child next to its rows,
+    /// counts as still loading only within `listLoadTimeout` of that launch. At any other time a window with no list
+    /// stays `not_loaded` with no wait, and any row means the list has loaded, so pinned tiles on a warm Messages
+    /// never cause a wait.
     public let lastLaunch: () -> TimeInterval?
 
     public convenience init(ax: MessagesAXDriving, source: UITargetSource,
@@ -325,12 +328,13 @@ public final class ChatTargeter: ChatTargeting {
     /// The conversation rows, read again once the list has loaded when no row matches `description` and the list is
     /// still loading (`listIsLoading`). Nil when it is still loading after `listLoadTimeout`. A row read that hits a
     /// stale element counts as a list still loading, since Messages replaces the list's children while it loads.
-    /// Throws any other AX error.
+    /// When the first read has no match and the list then reads loaded, the rows are read once more, because Messages
+    /// can replace its placeholders between the two reads. Throws any other AX error.
     private func conversationRows(matching description: String) throws -> [ConversationRowInfo]? {
         do {
             let rows = try ax.conversationRows()
             if rows.contains(where: { Self.sameRowText($0.description, description) }) { return rows }
-            guard try listIsLoading() else { return rows }
+            guard try listIsLoading() else { return try ax.conversationRows() }
         } catch AXDriveError.staleReference {}
         let deadline = clock.uptime + listLoadTimeout
         while true {
@@ -342,18 +346,23 @@ public final class ChatTargeter: ChatTargeting {
         }
     }
 
-    /// True while the list's children are all placeholders, while no list shows within `listLoadTimeout` of
-    /// `lastLaunch`, and when the read hits a stale element. Throws any other AX error.
+    /// True while the list has children and no row among them, and when the read hits a stale element. Within
+    /// `listLoadTimeout` of `lastLaunch`, also while no list shows or a placeholder child sits next to the rows.
+    /// Throws any other AX error.
     private func listIsLoading() throws -> Bool {
         let state: ConversationListState
         do { state = try ax.conversationListState() } catch AXDriveError.staleReference { return true }
         switch state {
         case .loading: return true
         case .loaded: return false
-        case .missing:
-            guard let launched = lastLaunch() else { return false }
-            return clock.uptime - launched <= listLoadTimeout
+        case .missing, .partlyLoaded: return launchedRecently()
         }
+    }
+
+    /// True within `listLoadTimeout` of the bridge's last launch of Messages.
+    private func launchedRecently() -> Bool {
+        guard let launched = lastLaunch() else { return false }
+        return clock.uptime - launched <= listLoadTimeout
     }
 
     private func waitForTranscript(matching signature: [SignatureRow]) -> Bool {

@@ -251,4 +251,38 @@ final class ForegroundPipelineTests: XCTestCase {
             XCTAssertEqual(h.queue.acquisitions, 1)
         }
     }
+
+    func testTheRateCheckWrapperForwardsTheWindowRecheckWithoutTheRateCheck() {
+        // Step 1's recheck after the chat check goes through the wrapper for an approved threaded reply. It must
+        // return the base's busy line, and the rate check runs only in `prepare`.
+        let base = RecheckCountingWindowRules(answer: .screenLocked)
+        var rateChecks = 0
+        let guarded = RateRecheck {
+            rateChecks += 1
+            return nil
+        }.guarding(base)
+        XCTAssertEqual(guarded.recheck(), .screenLocked)
+        XCTAssertEqual(base.rechecks, 1)
+        XCTAssertEqual(rateChecks, 0, "recheck() doesn't run the rate check")
+
+        base.answer = nil
+        XCTAssertNil(guarded.recheck())
+        XCTAssertEqual(base.rechecks, 2)
+        XCTAssertEqual(rateChecks, 0)
+    }
+}
+
+/// Window rules whose `recheck` answers `answer` and counts its calls.
+private final class RecheckCountingWindowRules: HiddenWindowPreparing {
+    var answer: ActionResult?
+    private(set) var rechecks = 0
+
+    init(answer: ActionResult?) { self.answer = answer }
+
+    func prepare(queueDeadline: TimeInterval) -> WindowPreparation { WindowPreparation(early: nil, notes: []) }
+
+    func recheck() -> ActionResult? {
+        rechecks += 1
+        return answer
+    }
 }

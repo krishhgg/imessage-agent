@@ -386,6 +386,10 @@ final class FakeWindowRules: HiddenWindowPreparing {
     /// Notes for the action's own result, returned on every call.
     var notes: [ResultNote] = []
     private(set) var deadlines: [TimeInterval] = []
+    /// Answers `recheck`. The harness sets it to a `HiddenWindowManager`'s recheck over the harness's Messages, so
+    /// the recheck after the chat check reads the scripted state as the live one reads Messages.
+    var rechecker: () -> ActionResult? = { nil }
+    private(set) var rechecks = 0
 
     init(log: EventLog) { self.log = log }
 
@@ -393,6 +397,11 @@ final class FakeWindowRules: HiddenWindowPreparing {
         log.add(.ensureHidden)
         deadlines.append(queueDeadline)
         return WindowPreparation(early: result, notes: notes)
+    }
+
+    func recheck() -> ActionResult? {
+        rechecks += 1
+        return rechecker()
     }
 }
 
@@ -716,6 +725,8 @@ final class Harness {
                                         source: source, rows: rows, mode: mode) { [unowned self] event in
             log.add(.progress(event))
         }
+        let rechecking = HiddenWindowManager(app: env.app, ax: ax, transfers: FakePendingTransfers(), clock: clock)
+        windowRules.rechecker = { rechecking.recheck() }
         env.windowRules = windowRules
         env.marker = { [unowned self] marker in log.add(.marker(marker)) }
         env.editWindowOpen = { [unowned self] dateNs, now in
