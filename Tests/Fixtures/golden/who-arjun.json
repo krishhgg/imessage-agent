@@ -1,0 +1,25 @@
+{
+ "contacts": [
+  {
+   "chats": [
+    {
+     "isGroup": true,
+     "label": "Family 🏡",
+     "rowid": 12
+    }
+   ],
+   "firstName": "Arjun",
+   "handles": [
+    {
+     "id": "+14155550104",
+     "services": [
+      "iMessage"
+     ]
+    }
+   ],
+   "lastName": "Desai",
+   "shortName": "Arjun"
+  }
+ ],
+ "query": "Arjun"
+}

@@ -1,0 +1,31 @@
+{
+ "contacts": [
+  {
+   "chats": [
+    {
+     "isGroup": false,
+     "label": "Mom",
+     "rowid": 7
+    },
+    {
+     "isGroup": true,
+     "label": "Family 🏡",
+     "rowid": 12
+    }
+   ],
+   "firstName": "Meera",
+   "handles": [
+    {
+     "id": "+14155550101",
+     "services": [
+      "SMS",
+      "iMessage"
+     ]
+    }
+   ],
+   "lastName": "Desai",
+   "shortName": "Mom"
+  }
+ ],
+ "query": "Mom"
+}

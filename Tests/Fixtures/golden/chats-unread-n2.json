@@ -1,0 +1,93 @@
+{
+ "chats": [
+  {
+   "canonical": {
+    "rawValue": "group:chat564517051022821277"
+   },
+   "displayName": "",
+   "guid": "any;+;chat564517051022821277",
+   "identifier": "chat564517051022821277",
+   "isGroup": true,
+   "label": "Jordan, Taylor",
+   "last": {
+    "agentSent": false,
+    "attachments": [],
+    "chatRowID": 19,
+    "dateDeliveredNs": 0,
+    "dateEditedNs": 0,
+    "dateNs": 815634018941987000,
+    "dateReadNs": 0,
+    "edited": false,
+    "errorCode": 0,
+    "fromMe": false,
+    "guid": "2A04A6E7-90C4-41A4-AA0B-321863E9F5BA",
+    "isRead": false,
+    "partCount": 1,
+    "partUnsent": false,
+    "reactions": [],
+    "rowid": 41557,
+    "senderHandle": "+12125550188",
+    "senderName": "Taylor",
+    "service": "iMessage",
+    "stickers": [],
+    "text": "trivia next thursday?",
+    "unsent": false
+   },
+   "memberNames": [
+    "Jordan",
+    "Taylor"
+   ],
+   "mergedChatRowIDs": [
+    19
+   ],
+   "rowid": 19,
+   "service": "iMessage",
+   "unreadCount": 1
+  },
+  {
+   "canonical": {
+    "rawValue": "handle:+14155550101"
+   },
+   "displayName": "",
+   "guid": "any;-;+14155550101",
+   "identifier": "+14155550101",
+   "isGroup": false,
+   "label": "Mom",
+   "last": {
+    "agentSent": false,
+    "attachments": [],
+    "chatRowID": 7,
+    "dateDeliveredNs": 0,
+    "dateEditedNs": 0,
+    "dateNs": 815632922051314000,
+    "dateReadNs": 0,
+    "edited": false,
+    "errorCode": 0,
+    "fromMe": false,
+    "guid": "7EA96919-2833-4891-BFD3-CE5F0E2002BB",
+    "isRead": false,
+    "partCount": 1,
+    "partUnsent": false,
+    "reactions": [],
+    "rowid": 41556,
+    "senderHandle": "+14155550101",
+    "senderName": "Mom",
+    "service": "iMessage",
+    "stickers": [],
+    "text": "Also call Nani, she was asking about you",
+    "unsent": false
+   },
+   "memberNames": [
+    "Mom"
+   ],
+   "mergedChatRowIDs": [
+    7
+   ],
+   "rowid": 7,
+   "service": "iMessage",
+   "unreadCount": 2
+  }
+ ],
+ "hasMore": true,
+ "limit": 2
+}

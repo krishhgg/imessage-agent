@@ -1,0 +1,2376 @@
+{
+  "attachments" : [
+    {
+      "filename" : "~/Library/Messages/Attachments/eb/10/610099C7-8774-4D4A-BEEB-5BAF9E54197A/IMG_2291.HEIC",
+      "fixture_path" : "Attachments/eb/10/610099C7-8774-4D4A-BEEB-5BAF9E54197A/IMG_2291.HEIC",
+      "guid" : "610099C7-8774-4D4A-BEEB-5BAF9E54197A",
+      "kind" : "photo",
+      "message_rowid" : 40051,
+      "mime_type" : "image/heic",
+      "on_disk" : false,
+      "rowid" : 9001,
+      "total_bytes" : 2431882,
+      "transfer_name" : "IMG_2291.HEIC"
+    },
+    {
+      "filename" : "~/Library/Messages/Attachments/5e/09/64C1C016-BF35-4524-91D1-B3995FC4435F/IMG_7661.HEIC",
+      "fixture_path" : "Attachments/5e/09/64C1C016-BF35-4524-91D1-B3995FC4435F/IMG_7661.HEIC",
+      "guid" : "64C1C016-BF35-4524-91D1-B3995FC4435F",
+      "kind" : "photo",
+      "message_rowid" : 40231,
+      "mime_type" : "image/heic",
+      "on_disk" : false,
+      "rowid" : 9002,
+      "total_bytes" : 3291612,
+      "transfer_name" : "IMG_7661.HEIC"
+    },
+    {
+      "file_bytes" : 496,
+      "file_sha256" : "29b827d2b2190386742245765e7700c0bb760b726ee806c551308db38365735b",
+      "filename" : "~/Library/Messages/Attachments/49/08/4C65644D-297F-4373-9EB1-3DE53FF3C98D/IMG_2439.HEIC",
+      "fixture_path" : "Attachments/49/08/4C65644D-297F-4373-9EB1-3DE53FF3C98D/IMG_2439.HEIC",
+      "guid" : "4C65644D-297F-4373-9EB1-3DE53FF3C98D",
+      "kind" : "photo",
+      "message_rowid" : 40354,
+      "mime_type" : "image/heic",
+      "on_disk" : true,
+      "rowid" : 9003,
+      "total_bytes" : 2451103,
+      "transfer_name" : "IMG_2439.HEIC"
+    },
+    {
+      "file_bytes" : 496,
+      "file_sha256" : "d8de281ca4e9135219fcea6b4e4646005be766dc2d860083d912d43177fa9bda",
+      "filename" : "~/Library/Messages/Attachments/95/14/6065608C-2BE0-42DF-B262-C25A2078403E/IMG_2126.HEIC",
+      "fixture_path" : "Attachments/95/14/6065608C-2BE0-42DF-B262-C25A2078403E/IMG_2126.HEIC",
+      "guid" : "6065608C-2BE0-42DF-B262-C25A2078403E",
+      "kind" : "photo",
+      "message_rowid" : 40369,
+      "mime_type" : "image/heic",
+      "on_disk" : true,
+      "rowid" : 9004,
+      "total_bytes" : 2468588,
+      "transfer_name" : "IMG_2126.HEIC"
+    },
+    {
+      "file_bytes" : 495,
+      "file_sha256" : "3e6f8ba148915085a1f8b68b530050f6f3681ae1396de8ab58526c9054ec04fa",
+      "filename" : "~/Library/Messages/Attachments/f0/09/EAF5AF65-3516-45EF-AD44-465A0307CCF7/IMG_2215.HEIC",
+      "fixture_path" : "Attachments/f0/09/EAF5AF65-3516-45EF-AD44-465A0307CCF7/IMG_2215.HEIC",
+      "guid" : "EAF5AF65-3516-45EF-AD44-465A0307CCF7",
+      "kind" : "photo",
+      "message_rowid" : 40479,
+      "mime_type" : "image/heic",
+      "on_disk" : true,
+      "rowid" : 9005,
+      "total_bytes" : 1108370,
+      "transfer_name" : "IMG_2215.HEIC"
+    },
+    {
+      "file_bytes" : 1347,
+      "file_sha256" : "ee634973918d2106fd592e27bb065d6e509dbfb283371bd222aa7b8278262ded",
+      "filename" : "~/Library/Messages/Attachments/ea/00/9A50A312-3A99-4DEA-A9F9-C3A07C10828C/sticker.heic",
+      "fixture_path" : "Attachments/ea/00/9A50A312-3A99-4DEA-A9F9-C3A07C10828C/sticker.heic",
+      "guid" : "9A50A312-3A99-4DEA-A9F9-C3A07C10828C",
+      "kind" : "sticker",
+      "message_rowid" : 40528,
+      "mime_type" : "image/heic",
+      "on_disk" : true,
+      "rowid" : 9006,
+      "total_bytes" : 61442,
+      "transfer_name" : "sticker.heic"
+    },
+    {
+      "file_bytes" : 495,
+      "file_sha256" : "10712a23abbb569fec80279a07a0d23ff3ff56bd5821b908b4ff4f30232ae259",
+      "filename" : "~/Library/Messages/Attachments/3a/15/CCB92034-AE49-4EE5-81BB-3036F80929AC/IMG_7824.HEIC",
+      "fixture_path" : "Attachments/3a/15/CCB92034-AE49-4EE5-81BB-3036F80929AC/IMG_7824.HEIC",
+      "guid" : "CCB92034-AE49-4EE5-81BB-3036F80929AC",
+      "kind" : "photo",
+      "message_rowid" : 40533,
+      "mime_type" : "image/heic",
+      "on_disk" : true,
+      "rowid" : 9007,
+      "total_bytes" : 1180291,
+      "transfer_name" : "IMG_7824.HEIC"
+    },
+    {
+      "file_bytes" : 64068,
+      "file_sha256" : "aaeb3517ea5101f8f68600363f1ed517765fcff6499738f93106e491ea75f00f",
+      "filename" : "~/Library/Messages/Attachments/2a/03/969E87CD-4086-4AF4-AAF1-8D8598F10AE1/Audio Message.caf",
+      "fixture_path" : "Attachments/2a/03/969E87CD-4086-4AF4-AAF1-8D8598F10AE1/Audio Message.caf",
+      "guid" : "969E87CD-4086-4AF4-AAF1-8D8598F10AE1",
+      "kind" : "voice",
+      "message_rowid" : 40580,
+      "mime_type" : "audio/x-caf",
+      "on_disk" : true,
+      "rowid" : 9008,
+      "total_bytes" : 11734,
+      "transcript" : "Hi beta, call me when you get a chance, it is about Sunday. Papa wants to know if you are bringing the car.",
+      "transfer_name" : "Audio Message.caf"
+    },
+    {
+      "file_bytes" : 493,
+      "file_sha256" : "f12ba602d799f69f857edd6620a52b423e2ed7b4869052990bd879eadda97728",
+      "filename" : "~/Library/Messages/Attachments/9c/03/9BBDB17A-8FF3-460F-8543-5068CDB898EF/IMG_3819.HEIC",
+      "fixture_path" : "Attachments/9c/03/9BBDB17A-8FF3-460F-8543-5068CDB898EF/IMG_3819.HEIC",
+      "guid" : "9BBDB17A-8FF3-460F-8543-5068CDB898EF",
+      "kind" : "photo",
+      "message_rowid" : 40588,
+      "mime_type" : "image/heic",
+      "on_disk" : true,
+      "rowid" : 9009,
+      "total_bytes" : 3182315,
+      "transfer_name" : "IMG_3819.HEIC"
+    },
+    {
+      "file_bytes" : 495,
+      "file_sha256" : "925700c0be2b208acee1f0be5b55c340c49ed56ea130cf0de80d7be42d927aac",
+      "filename" : "~/Library/Messages/Attachments/fd/05/E0E335D1-D214-45F5-A241-1AC4295D26A9/IMG_4250.HEIC",
+      "fixture_path" : "Attachments/fd/05/E0E335D1-D214-45F5-A241-1AC4295D26A9/IMG_4250.HEIC",
+      "guid" : "E0E335D1-D214-45F5-A241-1AC4295D26A9",
+      "kind" : "photo",
+      "message_rowid" : 40591,
+      "mime_type" : "image/heic",
+      "on_disk" : true,
+      "rowid" : 9010,
+      "total_bytes" : 1268610,
+      "transfer_name" : "IMG_4250.HEIC"
+    },
+    {
+      "file_bytes" : 629,
+      "file_sha256" : "59822728bf59cb0837f446def17137ec19b265df72edb4c79d11717421b77874",
+      "filename" : "~/Library/Messages/Attachments/f8/01/4CFD9F41-6467-441F-91C0-52B068179B02/Insurance_Renewal_2026.pdf",
+      "fixture_path" : "Attachments/f8/01/4CFD9F41-6467-441F-91C0-52B068179B02/Insurance_Renewal_2026.pdf",
+      "guid" : "4CFD9F41-6467-441F-91C0-52B068179B02",
+      "kind" : "pdf",
+      "message_rowid" : 40677,
+      "mime_type" : "application/pdf",
+      "on_disk" : true,
+      "rowid" : 9011,
+      "total_bytes" : 348211,
+      "transfer_name" : "Insurance_Renewal_2026.pdf"
+    },
+    {
+      "file_bytes" : 496,
+      "file_sha256" : "8ec633e8e196917c09918d323abbb38315c40b8cb0d7f59c0a29e08b3aef7a36",
+      "filename" : "~/Library/Messages/Attachments/c2/15/BA435180-7CDE-4600-A640-75439A3C2846/IMG_6321.HEIC",
+      "fixture_path" : "Attachments/c2/15/BA435180-7CDE-4600-A640-75439A3C2846/IMG_6321.HEIC",
+      "guid" : "BA435180-7CDE-4600-A640-75439A3C2846",
+      "kind" : "photo",
+      "message_rowid" : 40691,
+      "mime_type" : "image/heic",
+      "on_disk" : true,
+      "rowid" : 9012,
+      "total_bytes" : 1170022,
+      "transfer_name" : "IMG_6321.HEIC"
+    },
+    {
+      "file_bytes" : 496,
+      "file_sha256" : "2a49b7e136eb0ae1d9fdd0349fd100a68b0253a19425d92ff04923a0d84f4e19",
+      "filename" : "~/Library/Messages/Attachments/fe/01/9D1F2EEA-D5E4-43DC-83FE-BE83825FF717/IMG_7040.HEIC",
+      "fixture_path" : "Attachments/fe/01/9D1F2EEA-D5E4-43DC-83FE-BE83825FF717/IMG_7040.HEIC",
+      "guid" : "9D1F2EEA-D5E4-43DC-83FE-BE83825FF717",
+      "kind" : "photo",
+      "message_rowid" : 40755,
+      "mime_type" : "image/heic",
+      "on_disk" : true,
+      "rowid" : 9013,
+      "total_bytes" : 3291814,
+      "transfer_name" : "IMG_7040.HEIC"
+    },
+    {
+      "file_bytes" : 496,
+      "file_sha256" : "b6127b6c9e7fc332df1a050a6729d5966be775b93aa82894f1a11866e4b02c76",
+      "filename" : "~/Library/Messages/Attachments/76/09/CBF6F44C-5BD1-4B89-9C7E-1D3801BC9BAD/IMG_4420.HEIC",
+      "fixture_path" : "Attachments/76/09/CBF6F44C-5BD1-4B89-9C7E-1D3801BC9BAD/IMG_4420.HEIC",
+      "guid" : "CBF6F44C-5BD1-4B89-9C7E-1D3801BC9BAD",
+      "kind" : "photo",
+      "message_rowid" : 40785,
+      "mime_type" : "image/heic",
+      "on_disk" : true,
+      "rowid" : 9014,
+      "total_bytes" : 2204318,
+      "transfer_name" : "IMG_4420.HEIC"
+    },
+    {
+      "file_bytes" : 492,
+      "file_sha256" : "dd067f7de6678740e047de78447338837cbc63ae791d5692068eeefebd314a30",
+      "filename" : "~/Library/Messages/Attachments/94/04/0F0F690E-E05A-4F44-9C73-10B023731F94/IMG_2259.HEIC",
+      "fixture_path" : "Attachments/94/04/0F0F690E-E05A-4F44-9C73-10B023731F94/IMG_2259.HEIC",
+      "guid" : "0F0F690E-E05A-4F44-9C73-10B023731F94",
+      "kind" : "photo",
+      "message_rowid" : 40937,
+      "mime_type" : "image/heic",
+      "on_disk" : true,
+      "rowid" : 9015,
+      "total_bytes" : 1957029,
+      "transfer_name" : "IMG_2259.HEIC"
+    },
+    {
+      "file_bytes" : 496,
+      "file_sha256" : "aa1f33008d90c1008c65dfef476cbafbeffce78f78a684b59b62ee45f1c0712b",
+      "filename" : "~/Library/Messages/Attachments/57/07/60AC738E-DB9F-47DC-90D1-9E57C6E824E3/IMG_5101.HEIC",
+      "fixture_path" : "Attachments/57/07/60AC738E-DB9F-47DC-90D1-9E57C6E824E3/IMG_5101.HEIC",
+      "guid" : "60AC738E-DB9F-47DC-90D1-9E57C6E824E3",
+      "kind" : "photo",
+      "message_rowid" : 40945,
+      "mime_type" : "image/heic",
+      "on_disk" : true,
+      "rowid" : 9016,
+      "total_bytes" : 1987004,
+      "transfer_name" : "IMG_5101.HEIC"
+    },
+    {
+      "file_bytes" : 498,
+      "file_sha256" : "765b49380df71360b4daaaa8e418456ac3466abe2ead49987e262d9db0da618e",
+      "filename" : "~/Library/Messages/Attachments/05/06/5B9F34AA-0DBE-4D00-8381-F39A22C01604/IMG_5102.HEIC",
+      "fixture_path" : "Attachments/05/06/5B9F34AA-0DBE-4D00-8381-F39A22C01604/IMG_5102.HEIC",
+      "guid" : "5B9F34AA-0DBE-4D00-8381-F39A22C01604",
+      "kind" : "photo",
+      "message_rowid" : 40945,
+      "mime_type" : "image/heic",
+      "on_disk" : true,
+      "rowid" : 9017,
+      "total_bytes" : 2310771,
+      "transfer_name" : "IMG_5102.HEIC"
+    },
+    {
+      "file_bytes" : 494,
+      "file_sha256" : "13443057e6aacb43d90b87bfa3250e109570dff4b06f1a7a644bb94d1195f917",
+      "filename" : "~/Library/Messages/Attachments/6e/12/15E79008-B7AA-4A15-AEF2-BD96266CC904/IMG_7188.HEIC",
+      "fixture_path" : "Attachments/6e/12/15E79008-B7AA-4A15-AEF2-BD96266CC904/IMG_7188.HEIC",
+      "guid" : "15E79008-B7AA-4A15-AEF2-BD96266CC904",
+      "kind" : "photo",
+      "message_rowid" : 40965,
+      "mime_type" : "image/heic",
+      "on_disk" : true,
+      "rowid" : 9018,
+      "total_bytes" : 2018773,
+      "transfer_name" : "IMG_7188.HEIC"
+    },
+    {
+      "file_bytes" : 491,
+      "file_sha256" : "d901ac3efbd081cd9731bea3fe8ad97e962739acd814cb00af5fe37b219aa11c",
+      "filename" : "~/Library/Messages/Attachments/9f/09/AE3DA206-9E21-4752-8A5D-2F6D97776E8D/IMG_2142.HEIC",
+      "fixture_path" : "Attachments/9f/09/AE3DA206-9E21-4752-8A5D-2F6D97776E8D/IMG_2142.HEIC",
+      "guid" : "AE3DA206-9E21-4752-8A5D-2F6D97776E8D",
+      "kind" : "photo",
+      "message_rowid" : 41124,
+      "mime_type" : "image/heic",
+      "on_disk" : true,
+      "rowid" : 9019,
+      "total_bytes" : 1738251,
+      "transfer_name" : "IMG_2142.HEIC"
+    },
+    {
+      "file_bytes" : 556,
+      "file_sha256" : "9f05a451d6522c1c30f70036aabb7919b393127fd28dbf7a3a8aeff3b29a9cab",
+      "filename" : "~/Library/Messages/Attachments/06/07/7C59F4E5-36D1-48A3-A73A-96B31EB466BD/IMG_6230.HEIC",
+      "fixture_path" : "Attachments/06/07/7C59F4E5-36D1-48A3-A73A-96B31EB466BD/IMG_6230.HEIC",
+      "guid" : "7C59F4E5-36D1-48A3-A73A-96B31EB466BD",
+      "kind" : "photo",
+      "message_rowid" : 41232,
+      "mime_type" : "image/heic",
+      "on_disk" : true,
+      "rowid" : 9020,
+      "total_bytes" : 1640093,
+      "transfer_name" : "IMG_6230.HEIC"
+    },
+    {
+      "file_bytes" : 494,
+      "file_sha256" : "95c62f0704042a7e275e56c949ecff403ee65a21b6f7d070bdd81cc25bc653bf",
+      "filename" : "~/Library/Messages/Attachments/ad/05/25FD6C46-013E-49A5-92FC-10EB6A6A3312/IMG_7295.HEIC",
+      "fixture_path" : "Attachments/ad/05/25FD6C46-013E-49A5-92FC-10EB6A6A3312/IMG_7295.HEIC",
+      "guid" : "25FD6C46-013E-49A5-92FC-10EB6A6A3312",
+      "kind" : "photo",
+      "message_rowid" : 41244,
+      "mime_type" : "image/heic",
+      "on_disk" : true,
+      "rowid" : 9021,
+      "total_bytes" : 3194774,
+      "transfer_name" : "IMG_7295.HEIC"
+    },
+    {
+      "file_bytes" : 492,
+      "file_sha256" : "86cd12f30028a061d2270be1cfd8cad009eb72c502a09cd3cc458683ac6ff2c8",
+      "filename" : "~/Library/Messages/Attachments/9e/00/EE7A9C77-EC88-4181-AAF1-C36F71B7BB34/IMG_4480.HEIC",
+      "fixture_path" : "Attachments/9e/00/EE7A9C77-EC88-4181-AAF1-C36F71B7BB34/IMG_4480.HEIC",
+      "guid" : "EE7A9C77-EC88-4181-AAF1-C36F71B7BB34",
+      "kind" : "photo",
+      "message_rowid" : 41310,
+      "mime_type" : "image/heic",
+      "on_disk" : true,
+      "rowid" : 9022,
+      "total_bytes" : 1481847,
+      "transfer_name" : "IMG_4480.HEIC"
+    },
+    {
+      "file_bytes" : 491,
+      "file_sha256" : "83b2e959dfd2930ad4c436a34d76a8a3c54665ea8cf070e7e88c3e2be876e6cb",
+      "filename" : "~/Library/Messages/Attachments/9d/10/D4A94D7C-4092-47BC-8B2B-FC1B5E7D3C97/IMG_7781.HEIC",
+      "fixture_path" : "Attachments/9d/10/D4A94D7C-4092-47BC-8B2B-FC1B5E7D3C97/IMG_7781.HEIC",
+      "guid" : "D4A94D7C-4092-47BC-8B2B-FC1B5E7D3C97",
+      "kind" : "photo",
+      "message_rowid" : 41428,
+      "mime_type" : "image/heic",
+      "on_disk" : true,
+      "rowid" : 9023,
+      "total_bytes" : 2288960,
+      "transfer_name" : "IMG_7781.HEIC"
+    },
+    {
+      "file_bytes" : 1391,
+      "file_sha256" : "e8e162c2bec4e63418681f54623e6a197b4ba1bc7872c9c37d03ff1fd2c143f6",
+      "filename" : "~/Library/Messages/Attachments/a4/06/F497E56E-8363-455F-80A1-A96CA9456753/sticker-placed.heic",
+      "fixture_path" : "Attachments/a4/06/F497E56E-8363-455F-80A1-A96CA9456753/sticker-placed.heic",
+      "guid" : "F497E56E-8363-455F-80A1-A96CA9456753",
+      "kind" : "sticker",
+      "message_rowid" : 41436,
+      "mime_type" : "image/heic",
+      "on_disk" : true,
+      "rowid" : 9024,
+      "total_bytes" : 58120,
+      "transfer_name" : "sticker-placed.heic"
+    },
+    {
+      "file_bytes" : 496,
+      "file_sha256" : "5b44738ae6b63809075a5b623194ccf53abb6d6c9d02e9ab79f2a87f8fa899ae",
+      "filename" : "~/Library/Messages/Attachments/f9/07/EDDA7013-D723-4701-B791-ACCF9B36AC4A/IMG_2588.HEIC",
+      "fixture_path" : "Attachments/f9/07/EDDA7013-D723-4701-B791-ACCF9B36AC4A/IMG_2588.HEIC",
+      "guid" : "EDDA7013-D723-4701-B791-ACCF9B36AC4A",
+      "kind" : "photo",
+      "message_rowid" : 41499,
+      "mime_type" : "image/heic",
+      "on_disk" : true,
+      "rowid" : 9025,
+      "total_bytes" : 1449789,
+      "transfer_name" : "IMG_2588.HEIC"
+    },
+    {
+      "file_bytes" : 486,
+      "file_sha256" : "a5c791f9dee069819b9fd06ba63d8dfd18647d91329d594924e9e92d8cadafa2",
+      "filename" : "~/Library/Messages/Attachments/4f/08/5B8CF60D-1313-4583-81ED-F412F0B5060F/IMG_9201.HEIC",
+      "fixture_path" : "Attachments/4f/08/5B8CF60D-1313-4583-81ED-F412F0B5060F/IMG_9201.HEIC",
+      "guid" : "5B8CF60D-1313-4583-81ED-F412F0B5060F",
+      "kind" : "photo",
+      "message_rowid" : 41540,
+      "mime_type" : "image/heic",
+      "on_disk" : true,
+      "rowid" : 9026,
+      "total_bytes" : 1117427,
+      "transfer_name" : "IMG_9201.HEIC"
+    }
+  ],
+  "bodies" : {
+    "count" : 1526,
+    "format" : "sha256 over UTF-8 lines of ROWID, a tab, the decoded attributedBody string, and a newline, in ROWID order",
+    "sha256" : "350e92d2a1a3ba3d3d133bbce6527f6c6227e30854bd32bffd39c592c054d5b3"
+  },
+  "chats" : [
+    {
+      "chat_identifier" : "+14155550100",
+      "display_name" : "",
+      "guid" : "any;-;+14155550100",
+      "label" : "You (self-chat)",
+      "members" : [
+        1
+      ],
+      "message_count" : 57,
+      "read_receipts" : false,
+      "rowid" : 2,
+      "service" : "iMessage",
+      "style" : 45
+    },
+    {
+      "chat_identifier" : "+14155550101",
+      "display_name" : "",
+      "guid" : "any;-;+14155550101",
+      "label" : "Mom",
+      "members" : [
+        3,
+        8
+      ],
+      "message_count" : 311,
+      "read_receipts" : true,
+      "rowid" : 7,
+      "service" : "iMessage",
+      "style" : 45
+    },
+    {
+      "chat_identifier" : "+14155550102",
+      "display_name" : "",
+      "guid" : "any;-;+14155550102",
+      "label" : "Dad",
+      "members" : [
+        4
+      ],
+      "message_count" : 163,
+      "read_receipts" : false,
+      "rowid" : 9,
+      "service" : "iMessage",
+      "style" : 45
+    },
+    {
+      "chat_identifier" : "chat836828054889214904",
+      "display_name" : "Family 🏡",
+      "guid" : "any;+;chat836828054889214904",
+      "label" : "Family 🏡",
+      "members" : [
+        3,
+        4,
+        5,
+        6
+      ],
+      "message_count" : 459,
+      "read_receipts" : false,
+      "rowid" : 12,
+      "service" : "iMessage",
+      "style" : 43
+    },
+    {
+      "chat_identifier" : "chat564517051022821277",
+      "display_name" : "",
+      "guid" : "any;+;chat564517051022821277",
+      "label" : "unnamed group",
+      "members" : [
+        16,
+        17
+      ],
+      "message_count" : 206,
+      "read_receipts" : false,
+      "rowid" : 19,
+      "service" : "iMessage",
+      "style" : 43
+    },
+    {
+      "chat_identifier" : "jordan.kim@example.com",
+      "display_name" : "",
+      "guid" : "any;-;jordan.kim@example.com",
+      "label" : "Jordan Kim (email handle)",
+      "members" : [
+        16
+      ],
+      "message_count" : 109,
+      "read_receipts" : true,
+      "rowid" : 23,
+      "service" : "iMessage",
+      "style" : 45
+    },
+    {
+      "chat_identifier" : "+16505550142",
+      "display_name" : "",
+      "guid" : "any;-;+16505550142",
+      "label" : "Sam Lee (RCS)",
+      "members" : [
+        11
+      ],
+      "message_count" : 147,
+      "read_receipts" : true,
+      "rowid" : 31,
+      "service" : "RCS",
+      "style" : 45
+    },
+    {
+      "chat_identifier" : "+15105550163",
+      "display_name" : "",
+      "guid" : "any;-;+15105550163",
+      "label" : "+1 (510) 555-0163 (SMS, no contact)",
+      "members" : [
+        14
+      ],
+      "message_count" : 81,
+      "read_receipts" : false,
+      "rowid" : 56,
+      "service" : "SMS",
+      "style" : 45
+    }
+  ],
+  "counts" : {
+    "attachments" : 26,
+    "attachments_offloaded" : 2,
+    "attachments_on_disk" : 24,
+    "attributed_body_only" : 1424,
+    "chat_message_join_rows" : 1533,
+    "chats" : 8,
+    "deleted_messages_rows" : 24,
+    "group_event_rows" : 5,
+    "handles" : 12,
+    "message_rows" : 1534,
+    "no_body" : 8,
+    "recently_deleted_rows" : 1,
+    "tapback_rows" : 89,
+    "text_and_attributed_body" : 102,
+    "unread_incoming" : 8
+  },
+  "db_sha256" : "a74577080ba55b2f3aeeef2084d91e73a1a7af7a3660198c17a79fb47c89c14f",
+  "edge_cases" : {
+    "address_decoy_june" : [
+      40850
+    ],
+    "address_last_month" : [
+      41381
+    ],
+    "bold_text" : [
+      41049
+    ],
+    "delivered_no_read_receipt" : [
+      40015,
+      40074,
+      40134,
+      40153,
+      40193,
+      40194,
+      40302,
+      40303,
+      40320,
+      40322,
+      40370,
+      40414,
+      40416,
+      40418,
+      40488,
+      40492,
+      40565,
+      40566,
+      40573,
+      40575,
+      40592,
+      40642,
+      40645,
+      40646,
+      40663,
+      40676,
+      40678,
+      40686,
+      40812,
+      40825,
+      40849,
+      40852,
+      40861,
+      40875,
+      40877,
+      40880,
+      40882,
+      40911,
+      40917,
+      40938,
+      40939,
+      40978,
+      40979,
+      40981,
+      40983,
+      41009,
+      41010,
+      41068,
+      41118,
+      41120,
+      41147,
+      41148,
+      41153,
+      41163,
+      41200,
+      41202,
+      41214,
+      41216,
+      41234,
+      41272,
+      41276,
+      41291,
+      41293,
+      41314,
+      41316,
+      41330,
+      41337,
+      41339,
+      41365,
+      41380,
+      41382,
+      41387,
+      41451,
+      41456,
+      41461,
+      41547
+    ],
+    "duplicate_same_minute" : [
+      41089,
+      41090,
+      41487,
+      41488
+    ],
+    "duplicate_text_after_failure" : [
+      41162,
+      41163
+    ],
+    "edited_once" : [
+      40913,
+      41427
+    ],
+    "edited_twice" : [
+      40779
+    ],
+    "emoji_zwj_flag" : [
+      41489
+    ],
+    "expressive_effect" : [
+      40731
+    ],
+    "failed_send" : [
+      41162
+    ],
+    "group_add" : [
+      40473
+    ],
+    "group_leave" : [
+      41144
+    ],
+    "group_remove" : [
+      40829
+    ],
+    "group_rename" : [
+      40016,
+      40405
+    ],
+    "last_message_overall" : [
+      41558
+    ],
+    "link_preview_single_row" : [
+      41434
+    ],
+    "link_preview_two_rows" : [
+      40659,
+      40660
+    ],
+    "link_without_preview" : [
+      40930
+    ],
+    "long_body" : [
+      40458,
+      40598,
+      41266
+    ],
+    "long_body_over_8kb" : [
+      40927
+    ],
+    "mention" : [
+      41048
+    ],
+    "multiline_body" : [
+      40458
+    ],
+    "multipart" : [
+      40677,
+      40945,
+      41232,
+      41428
+    ],
+    "nfc_text" : [
+      41070
+    ],
+    "nfd_text" : [
+      41069
+    ],
+    "non_latin_accents" : [
+      40545
+    ],
+    "non_latin_devanagari" : [
+      41204
+    ],
+    "non_latin_hangul" : [
+      41002
+    ],
+    "non_latin_vietnamese" : [
+      40941
+    ],
+    "nsattributedstring_class" : [
+      40008,
+      40010,
+      40014,
+      40020,
+      40025,
+      40026,
+      40030,
+      40031,
+      40033,
+      40049,
+      40054,
+      40055,
+      40056,
+      40059,
+      40062,
+      40075,
+      40089,
+      40092,
+      40099,
+      40101,
+      40103,
+      40113,
+      40115,
+      40128,
+      40130,
+      40135,
+      40139,
+      40143,
+      40144,
+      40151,
+      40155,
+      40176,
+      40193,
+      40234,
+      40235,
+      40253,
+      40269,
+      40279,
+      40297,
+      40299,
+      40302,
+      40310,
+      40321,
+      40330,
+      40333,
+      40343,
+      40345,
+      40350,
+      40361,
+      40366,
+      40367,
+      40370,
+      40374,
+      40379,
+      40381,
+      40386,
+      40394,
+      40407,
+      40412,
+      40413,
+      40422,
+      40424,
+      40427,
+      40431,
+      40441,
+      40443,
+      40459,
+      40462,
+      40468,
+      40470,
+      40475,
+      40492,
+      40501,
+      40509,
+      40510,
+      40521,
+      40523,
+      40529,
+      40531,
+      40533,
+      40555,
+      40578,
+      40580,
+      40592,
+      40602,
+      40609,
+      40621,
+      40630,
+      40640,
+      40642,
+      40645,
+      40648,
+      40649,
+      40651,
+      40658,
+      40660,
+      40661,
+      40679,
+      40682,
+      40686,
+      40715,
+      40716,
+      40720,
+      40722,
+      40725,
+      40728,
+      40763,
+      40793,
+      40811,
+      40812,
+      40831,
+      40842,
+      40848,
+      40883,
+      40897,
+      40898,
+      40903,
+      40904,
+      40915,
+      40921,
+      40933,
+      40936,
+      40950,
+      40956,
+      40957,
+      40961,
+      40962,
+      40968,
+      40973,
+      40976,
+      40981,
+      41003,
+      41015,
+      41016,
+      41026,
+      41032,
+      41041,
+      41042,
+      41045,
+      41046,
+      41059,
+      41060,
+      41061,
+      41068,
+      41100,
+      41101,
+      41112,
+      41120,
+      41128,
+      41135,
+      41150,
+      41157,
+      41172,
+      41174,
+      41182,
+      41216,
+      41224,
+      41232,
+      41242,
+      41245,
+      41257,
+      41259,
+      41261,
+      41267,
+      41268,
+      41272,
+      41276,
+      41278,
+      41279,
+      41286,
+      41288,
+      41290,
+      41299,
+      41308,
+      41311,
+      41319,
+      41320,
+      41321,
+      41335,
+      41341,
+      41346,
+      41348,
+      41363,
+      41364,
+      41378,
+      41387,
+      41390,
+      41402,
+      41408,
+      41409,
+      41410,
+      41418,
+      41425,
+      41427,
+      41436,
+      41437,
+      41450,
+      41454,
+      41466,
+      41471,
+      41477,
+      41480,
+      41485,
+      41496,
+      41511,
+      41512,
+      41518,
+      41526,
+      41530,
+      41536,
+      41545,
+      41546,
+      41548
+    ],
+    "offloaded_photo" : [
+      40051,
+      40231
+    ],
+    "offloaded_photo_scripted" : [
+      40051
+    ],
+    "pdf_with_caption" : [
+      40677
+    ],
+    "photo_generic" : [
+      40354,
+      40369,
+      40479,
+      40533,
+      40588,
+      40591,
+      40691,
+      40755,
+      40937,
+      40965,
+      41124,
+      41244,
+      41310,
+      41499,
+      41540
+    ],
+    "photo_heic" : [
+      40785
+    ],
+    "photo_with_caption" : [
+      41428
+    ],
+    "placed_sticker" : [
+      41436
+    ],
+    "rcs_tapback" : [
+      41001
+    ],
+    "read_receipt_on_my_message" : [
+      40003,
+      40007,
+      40018,
+      40045,
+      40047,
+      40056,
+      40059,
+      40061,
+      40063,
+      40079,
+      40082,
+      40085,
+      40091,
+      40097,
+      40110,
+      40122,
+      40124,
+      40142,
+      40169,
+      40172,
+      40174,
+      40176,
+      40177,
+      40180,
+      40187,
+      40200,
+      40204,
+      40208,
+      40216,
+      40224,
+      40246,
+      40254,
+      40261,
+      40265,
+      40268,
+      40269,
+      40279,
+      40282,
+      40289,
+      40292,
+      40297,
+      40306,
+      40308,
+      40310,
+      40312,
+      40314,
+      40316,
+      40326,
+      40334,
+      40343,
+      40347,
+      40355,
+      40359,
+      40364,
+      40373,
+      40399,
+      40407,
+      40426,
+      40434,
+      40436,
+      40442,
+      40455,
+      40457,
+      40459,
+      40463,
+      40476,
+      40489,
+      40511,
+      40514,
+      40526,
+      40530,
+      40532,
+      40533,
+      40535,
+      40542,
+      40544,
+      40547,
+      40550,
+      40568,
+      40570,
+      40576,
+      40581,
+      40584,
+      40596,
+      40600,
+      40603,
+      40606,
+      40609,
+      40611,
+      40618,
+      40621,
+      40623,
+      40628,
+      40630,
+      40648,
+      40651,
+      40652,
+      40657,
+      40666,
+      40668,
+      40670,
+      40688,
+      40692,
+      40696,
+      40699,
+      40702,
+      40709,
+      40711,
+      40726,
+      40733,
+      40745,
+      40747,
+      40749,
+      40751,
+      40756,
+      40758,
+      40769,
+      40771,
+      40773,
+      40779,
+      40783,
+      40787,
+      40795,
+      40797,
+      40804,
+      40816,
+      40819,
+      40822,
+      40831,
+      40842,
+      40867,
+      40869,
+      40883,
+      40886,
+      40891,
+      40895,
+      40901,
+      40903,
+      40913,
+      40943,
+      40948,
+      40952,
+      40954,
+      40955,
+      40961,
+      40963,
+      40966,
+      40970,
+      40974,
+      41000,
+      41012,
+      41013,
+      41018,
+      41033,
+      41065,
+      41069,
+      41071,
+      41074,
+      41075,
+      41082,
+      41088,
+      41092,
+      41094,
+      41100,
+      41104,
+      41107,
+      41109,
+      41125,
+      41134,
+      41150,
+      41160,
+      41165,
+      41177,
+      41179,
+      41181,
+      41183,
+      41191,
+      41195,
+      41197,
+      41199,
+      41205,
+      41207,
+      41219,
+      41223,
+      41224,
+      41227,
+      41245,
+      41247,
+      41256,
+      41258,
+      41280,
+      41282,
+      41285,
+      41301,
+      41323,
+      41325,
+      41332,
+      41334,
+      41336,
+      41358,
+      41362,
+      41363,
+      41368,
+      41394,
+      41410,
+      41437,
+      41449,
+      41452,
+      41458,
+      41464,
+      41491,
+      41493,
+      41496,
+      41504,
+      41506,
+      41526,
+      41531,
+      41537,
+      41539,
+      41540
+    ],
+    "recently_deleted" : [
+      41502
+    ],
+    "reply_to_mom_target" : [
+      41555
+    ],
+    "rowid_gap" : [
+      40004,
+      40146,
+      40161,
+      40166,
+      40225,
+      40227,
+      40252,
+      40293,
+      40346,
+      40348,
+      40438,
+      40499,
+      40513,
+      40557,
+      40644,
+      40764,
+      40826,
+      41083,
+      41352,
+      41411,
+      41495,
+      41507,
+      41516,
+      41521
+    ],
+    "self_echo_assumed" : [
+      40002,
+      40043,
+      40108,
+      40272,
+      40277,
+      40324,
+      40367,
+      40402,
+      40485,
+      40737,
+      40845,
+      40847,
+      40997,
+      40999,
+      41268,
+      41321,
+      41384
+    ],
+    "self_echo_original" : [
+      40001,
+      40042,
+      40107,
+      40271,
+      40276,
+      40323,
+      40366,
+      40401,
+      40484,
+      40736,
+      40844,
+      40846,
+      40996,
+      40998,
+      41267,
+      41320,
+      41383
+    ],
+    "sender_not_in_contacts" : [
+      40474
+    ],
+    "sent_not_delivered" : [
+      41558
+    ],
+    "sms_fallback_in_imessage_chat" : [
+      40258,
+      40259,
+      40260
+    ],
+    "sms_outgoing_no_delivery_date" : [
+      40020
+    ],
+    "sticker" : [
+      40528
+    ],
+    "tapback_2000" : [
+      40078,
+      40115,
+      40140,
+      40217,
+      40219,
+      40332,
+      40466,
+      40540,
+      40555,
+      40594,
+      40624,
+      40684,
+      40753,
+      40786,
+      40840,
+      40881,
+      40893,
+      40915,
+      40940,
+      41001,
+      41047,
+      41145,
+      41175,
+      41221,
+      41376,
+      41393,
+      41420,
+      41429,
+      41435,
+      41477
+    ],
+    "tapback_2001" : [
+      40089,
+      40095,
+      40331,
+      40394,
+      40424,
+      40521,
+      41031,
+      41057,
+      41132,
+      41193,
+      41248,
+      41357,
+      41408,
+      41422,
+      41470,
+      41548
+    ],
+    "tapback_2002" : [
+      40341,
+      41467
+    ],
+    "tapback_2003" : [
+      40068,
+      40069,
+      40083,
+      40120,
+      40162,
+      40295,
+      40393,
+      40539,
+      40560,
+      40664,
+      40759,
+      40781,
+      40810,
+      40841,
+      41030,
+      41131,
+      41138,
+      41225,
+      41421,
+      41430,
+      41440,
+      41478
+    ],
+    "tapback_2004" : [
+      40126,
+      40390,
+      41242,
+      41426,
+      41431,
+      41479
+    ],
+    "tapback_2005" : [
+      40724,
+      41313,
+      41466
+    ],
+    "tapback_2006" : [
+      41472,
+      41474,
+      41475
+    ],
+    "tapback_3000" : [
+      41480
+    ],
+    "tapback_3001" : [
+      41424
+    ],
+    "tapback_3002" : [
+      41469
+    ],
+    "tapback_3003" : [
+      41481
+    ],
+    "tapback_3004" : [
+      41482
+    ],
+    "tapback_3005" : [
+      41468
+    ],
+    "tapback_3006" : [
+      41473
+    ],
+    "tapback_bp_prefix" : [
+      41435
+    ],
+    "tapback_emoji" : [
+      41472,
+      41473,
+      41474,
+      41475
+    ],
+    "tapback_on_attachment" : [
+      40786
+    ],
+    "tapback_on_my_message" : [
+      41548
+    ],
+    "tapback_part_0" : [
+      41429
+    ],
+    "tapback_part_1" : [
+      41430,
+      41431
+    ],
+    "tapback_remove" : [
+      41424,
+      41468,
+      41469,
+      41473,
+      41480,
+      41481,
+      41482
+    ],
+    "tapback_target_a" : [
+      41418
+    ],
+    "tapback_target_b" : [
+      41465
+    ],
+    "tapback_target_c" : [
+      41471
+    ],
+    "tapback_target_d" : [
+      41476
+    ],
+    "tapback_target_multipart" : [
+      41428
+    ],
+    "text_column_populated" : [
+      40012,
+      40020,
+      40021,
+      40022,
+      40023,
+      40053,
+      40058,
+      40067,
+      40070,
+      40110,
+      40127,
+      40132,
+      40138,
+      40154,
+      40184,
+      40185,
+      40189,
+      40192,
+      40195,
+      40207,
+      40218,
+      40221,
+      40233,
+      40284,
+      40285,
+      40287,
+      40292,
+      40319,
+      40357,
+      40358,
+      40362,
+      40365,
+      40395,
+      40413,
+      40420,
+      40439,
+      40446,
+      40470,
+      40475,
+      40517,
+      40525,
+      40531,
+      40541,
+      40561,
+      40572,
+      40577,
+      40582,
+      40591,
+      40620,
+      40627,
+      40638,
+      40649,
+      40666,
+      40676,
+      40689,
+      40721,
+      40733,
+      40783,
+      40833,
+      40835,
+      40898,
+      40899,
+      40923,
+      40928,
+      40929,
+      40982,
+      40985,
+      41002,
+      41021,
+      41024,
+      41025,
+      41041,
+      41043,
+      41062,
+      41092,
+      41102,
+      41103,
+      41143,
+      41208,
+      41210,
+      41264,
+      41280,
+      41282,
+      41290,
+      41302,
+      41322,
+      41323,
+      41328,
+      41335,
+      41341,
+      41360,
+      41371,
+      41402,
+      41404,
+      41414,
+      41441,
+      41446,
+      41447,
+      41500,
+      41508,
+      41536,
+      41542
+    ],
+    "thread_reply" : [
+      40889,
+      41419,
+      41423,
+      41425
+    ],
+    "thread_reply_any" : [
+      40033,
+      40067,
+      40138,
+      40233,
+      40507,
+      40742,
+      40793,
+      40838,
+      40865,
+      40889,
+      41021,
+      41022,
+      41051,
+      41112,
+      41390,
+      41419,
+      41423,
+      41425,
+      41432,
+      41501
+    ],
+    "thread_reply_to_part_1" : [
+      41432
+    ],
+    "thread_root" : [
+      41417
+    ],
+    "two_photos_one_message" : [
+      40945
+    ],
+    "unread" : [
+      41549,
+      41550,
+      41552,
+      41553,
+      41554,
+      41555,
+      41556,
+      41557
+    ],
+    "unsent_legacy" : [
+      40908
+    ],
+    "unsent_modern_incoming" : [
+      41483
+    ],
+    "unsent_modern_outgoing" : [
+      40978
+    ],
+    "unsent_partial" : [
+      41232
+    ],
+    "voice_with_transcript" : [
+      40580
+    ]
+  },
+  "first_message_local" : "2025-09-02 10:08:15",
+  "fixture_now_local" : "2026-11-06 00:30:00",
+  "fixture_now_ns" : 815646600000000000,
+  "generator" : "Tests/Fixtures/make-fixture",
+  "handles" : [
+    {
+      "id" : "+14155550100",
+      "in_contacts" : true,
+      "key" : "me",
+      "person" : "You",
+      "rowid" : 1,
+      "service" : "iMessage"
+    },
+    {
+      "id" : "+14155550101",
+      "in_contacts" : true,
+      "key" : "mom",
+      "person" : "Mom",
+      "rowid" : 3,
+      "service" : "iMessage"
+    },
+    {
+      "id" : "+14155550102",
+      "in_contacts" : true,
+      "key" : "dad",
+      "person" : "Dad",
+      "rowid" : 4,
+      "service" : "iMessage"
+    },
+    {
+      "id" : "+14155550103",
+      "in_contacts" : true,
+      "key" : "priya",
+      "person" : "Priya",
+      "rowid" : 5,
+      "service" : "iMessage"
+    },
+    {
+      "id" : "+14155550104",
+      "in_contacts" : true,
+      "key" : "arjun",
+      "person" : "Arjun",
+      "rowid" : 6,
+      "service" : "iMessage"
+    },
+    {
+      "id" : "+14155550101",
+      "in_contacts" : true,
+      "key" : "mom_sms",
+      "person" : "Mom",
+      "rowid" : 8,
+      "service" : "SMS"
+    },
+    {
+      "id" : "+16505550142",
+      "in_contacts" : true,
+      "key" : "sam",
+      "person" : "Sam",
+      "rowid" : 11,
+      "service" : "RCS"
+    },
+    {
+      "id" : "+15105550163",
+      "in_contacts" : false,
+      "key" : "marco",
+      "person" : "Marco",
+      "rowid" : 14,
+      "service" : "SMS"
+    },
+    {
+      "id" : "jordan.kim@example.com",
+      "in_contacts" : true,
+      "key" : "jordan",
+      "person" : "Jordan",
+      "rowid" : 16,
+      "service" : "iMessage"
+    },
+    {
+      "id" : "+12125550188",
+      "in_contacts" : true,
+      "key" : "taylor",
+      "person" : "Taylor",
+      "rowid" : 17,
+      "service" : "iMessage"
+    },
+    {
+      "id" : "+13105550119",
+      "in_contacts" : true,
+      "key" : "chris",
+      "person" : "Chris",
+      "rowid" : 18,
+      "service" : "iMessage"
+    },
+    {
+      "id" : "+17075550131",
+      "in_contacts" : false,
+      "key" : "riley",
+      "person" : "Riley",
+      "rowid" : 22,
+      "service" : "iMessage"
+    }
+  ],
+  "last_message_local" : "2026-11-05 22:58:40",
+  "owner" : {
+    "email" : "alex@example.com",
+    "handle_rowid" : 1,
+    "phone" : "+14155550100"
+  },
+  "samples" : [
+    {
+      "body" : "Cabin check-in after 4pm, lockbox on the porch",
+      "rowid" : 40001
+    },
+    {
+      "body" : "Cabin check-in after 4pm, lockbox on the porch",
+      "rowid" : 40002
+    },
+    {
+      "body" : "Hi Marco, this is the tenant in unit 4. Is this the right number for maintenance?",
+      "rowid" : 40020
+    },
+    {
+      "body" : "Return library books by Sunday",
+      "rowid" : 40042
+    },
+    {
+      "body" : "Return library books by Sunday",
+      "rowid" : 40043
+    },
+    {
+      "body" : "￼",
+      "rowid" : 40051
+    },
+    {
+      "body" : "Book dentist cleaning",
+      "rowid" : 40107
+    },
+    {
+      "body" : "Book dentist cleaning",
+      "rowid" : 40108
+    },
+    {
+      "body" : "￼",
+      "rowid" : 40231
+    },
+    {
+      "body" : "Phone not working on wifi, sending as text",
+      "rowid" : 40258
+    },
+    {
+      "body" : "Ok got it",
+      "rowid" : 40259
+    },
+    {
+      "body" : "Will call later",
+      "rowid" : 40260
+    },
+    {
+      "body" : "Idea: weekly family call on Sundays",
+      "rowid" : 40271
+    },
+    {
+      "body" : "Idea: weekly family call on Sundays",
+      "rowid" : 40272
+    },
+    {
+      "body" : "Parking level 3, spot C14",
+      "rowid" : 40276
+    },
+    {
+      "body" : "Parking level 3, spot C14",
+      "rowid" : 40277
+    },
+    {
+      "body" : "Flight confirmation XK7P2Q",
+      "rowid" : 40323
+    },
+    {
+      "body" : "Flight confirmation XK7P2Q",
+      "rowid" : 40324
+    },
+    {
+      "body" : "￼",
+      "rowid" : 40354
+    },
+    {
+      "body" : "Call insurance about the claim",
+      "rowid" : 40366
+    },
+    {
+      "body" : "Call insurance about the claim",
+      "rowid" : 40367
+    },
+    {
+      "body" : "￼",
+      "rowid" : 40369
+    },
+    {
+      "body" : "Flight confirmation XK7P2Q",
+      "rowid" : 40401
+    },
+    {
+      "body" : "Flight confirmation XK7P2Q",
+      "rowid" : 40402
+    },
+    {
+      "body" : "Dal makhani recipe like you asked:\n1. Soak 1 cup whole urad dal and 1/4 cup rajma overnight. Rinse 3 times.\n2. Pressure cook with 4 cups water and salt for 8 whistles, then simmer 20 min.\n3. In a heavy pan heat 2 tbsp butter and 1 tbsp oil. Add 1 tsp cumin, then 1 chopped onion. Fry till golden, not brown.\n4. Add 1 tbsp ginger garlic paste, cook 2 min. Add 2 pureed tomatoes, 1 tsp kashmiri chili, 1/2 tsp garam masala.\n5. Cook till the oil separates, around 10 min. Add the dal with its water.\n6. Simmer on LOW for at least 45 min, stir every 10 min so it doesn't stick. The longer the better, Nani did 2 hours.\n7. Add 1/2 cup cream and 1 tbsp kasuri methi crushed between your palms. Salt to taste.\nDon't skip the overnight soak. Call me if it gets too thick, just add hot water. ❤️",
+      "rowid" : 40458
+    },
+    {
+      "body" : "hi everyone! thanks for the add",
+      "rowid" : 40474
+    },
+    {
+      "body" : "￼",
+      "rowid" : 40479
+    },
+    {
+      "body" : "Idea: weekly family call on Sundays",
+      "rowid" : 40484
+    },
+    {
+      "body" : "Idea: weekly family call on Sundays",
+      "rowid" : 40485
+    },
+    {
+      "body" : "￼",
+      "rowid" : 40528
+    },
+    {
+      "body" : "￼",
+      "rowid" : 40533
+    },
+    {
+      "body" : "¡Qué bueno! Nos vemos el sábado 🙌",
+      "rowid" : 40545
+    },
+    {
+      "body" : "￼",
+      "rowid" : 40580
+    },
+    {
+      "body" : "￼",
+      "rowid" : 40588
+    },
+    {
+      "body" : "￼",
+      "rowid" : 40591
+    },
+    {
+      "body" : "ok I need to vent for a sec. The offsite was supposed to be \"light planning\" and instead we spent six hours re-litigating the roadmap we agreed on in March. Every time someone said \"just to play devil's advocate\" I lost a year of my life. Then the projector died, so we did the last two hours on someone's laptop with everyone squinting, and the catering was a single sad tray of wraps. The good news is the team actually agreed to cut two projects, which I've been asking for since spring, so maybe it was worth it? Anyway I am going to sleep for 12 hours. Lunch this week so I can tell you the rest?",
+      "rowid" : 40598
+    },
+    {
+      "body" : "you have to read this before the trip https://blog.example.org/posts/cabin-checklist",
+      "rowid" : 40659
+    },
+    {
+      "body" : "https://blog.example.org/posts/cabin-checklist",
+      "rowid" : 40660
+    },
+    {
+      "body" : "￼Car insurance renewal, check page 2 and sign",
+      "rowid" : 40677
+    },
+    {
+      "body" : "￼",
+      "rowid" : 40691
+    },
+    {
+      "body" : "Happy birthday Arjun!! 🎂🎉",
+      "rowid" : 40731
+    },
+    {
+      "body" : "Flight confirmation XK7P2Q",
+      "rowid" : 40736
+    },
+    {
+      "body" : "Flight confirmation XK7P2Q",
+      "rowid" : 40737
+    },
+    {
+      "body" : "￼",
+      "rowid" : 40755
+    },
+    {
+      "body" : "Lunch at 12:30 at the dumpling place?",
+      "rowid" : 40779
+    },
+    {
+      "body" : "￼",
+      "rowid" : 40785
+    },
+    {
+      "body" : "Loved an image",
+      "rowid" : 40786
+    },
+    {
+      "body" : "Buy: rice, lentils, onions, ginger",
+      "rowid" : 40844
+    },
+    {
+      "body" : "Buy: rice, lentils, onions, ginger",
+      "rowid" : 40845
+    },
+    {
+      "body" : "Gift ideas for Mom: scarf, a jacket",
+      "rowid" : 40846
+    },
+    {
+      "body" : "Gift ideas for Mom: scarf, a jacket",
+      "rowid" : 40847
+    },
+    {
+      "body" : "Old office address was 88 Harbor Point Blvd, Suite 210, Oakland, CA 94607. They are moving soon.",
+      "rowid" : 40850
+    },
+    {
+      "body" : "I can take 3 people",
+      "rowid" : 40889
+    },
+    {
+      "body" : "I'll be there at 7",
+      "rowid" : 40913
+    },
+    {
+      "body" : "Notes from the apartment search, pasted from my laptop\n\n1. Unit on Alder St\nRent 2400 per month, deposit one month. Laundry in unit: yes. Parking: one assigned spot. Commute about 18 minutes by bike. Light is good in the afternoon, kitchen is small but has a gas stove. The landlord answered within a day. Noise from the street was noticeable during the visit. Pets allowed with a deposit. Follow up: ask about the lease length, utilities, and whether the second bedroom fits a desk.\n\n2. Unit on Birch Ave\nRent 2435 per month, deposit one month. Laundry in unit: no. Parking: street only. Commute about 19 minutes by bike. Light is good in the afternoon, kitchen is small but has a gas stove. The landlord answered within a day. Noise from the street was fine during the visit. Pets allowed with a deposit. Follow up: ask about the lease length, utilities, and whether the second bedroom fits a desk.\n\n3. Unit on Cedar Ct\nRent 2470 per month, deposit one month. Laundry in unit: no. Parking: one assigned spot. Commute about 20 minutes by bike. Light is good in the afternoon, kitchen is small but has a gas stove. The landlord answered within a day. Noise from the street was fine during the visit. Pets allowed with a deposit. Follow up: ask about the lease length, utilities, and whether the second bedroom fits a desk.\n\n4. Unit on Dogwood Ln\nRent 2505 per month, deposit one month. Laundry in unit: yes. Parking: street only. Commute about 21 minutes by bike. Light is good in the afternoon, kitchen is small but has a gas stove. The landlord answered within a day. Noise from the street was fine during the visit. Pets allowed with a deposit. Follow up: ask about the lease length, utilities, and whether the second bedroom fits a desk.\n\n5. Unit on Elm Row\nRent 2540 per month, deposit one month. Laundry in unit: no. Parking: one assigned spot. Commute about 22 minutes by bike. Light is good in the afternoon, kitchen is small but has a gas stove. The landlord answered within a day. Noise from the street was noticeable during the visit. Pets allowed with a deposit. Follow up: ask about the lease length, utilities, and whether the second bedroom fits a desk.\n\n6. Unit on Fir Way\nRent 2575 per month, deposit one month. Laundry in unit: no. Parking: street only. Commute about 23 minutes by bike. Light is good in the afternoon, kitchen is small but has a gas stove. The landlord answered within a day. Noise from the street was fine during the visit. Pets allowed with a deposit. Follow up: ask about the lease length, utilities, and whether the second bedroom fits a desk.\n\n7. Unit on Gum Tree Pl\nRent 2610 per month, deposit one month. Laundry in unit: yes. Parking: one assigned spot. Commute about 24 minutes by bike. Light is good in the afternoon, kitchen is small but has a gas stove. The landlord answered within a day. Noise from the street was fine during the visit. Pets allowed with a deposit. Follow up: ask about the lease length, utilities, and whether the second bedroom fits a desk.\n\n8. Unit on Hazel St\nRent 2645 per month, deposit one month. Laundry in unit: no. Parking: street only. Commute about 25 minutes by bike. Light is good in the afternoon, kitchen is small but has a gas stove. The landlord answered within a day. Noise from the street was fine during the visit. Pets allowed with a deposit. Follow up: ask about the lease length, utilities, and whether the second bedroom fits a desk.\n\n9. Unit on Ivy Ter\nRent 2680 per month, deposit one month. Laundry in unit: no. Parking: one assigned spot. Commute about 26 minutes by bike. Light is good in the afternoon, kitchen is small but has a gas stove. The landlord answered within a day. Noise from the street was noticeable during the visit. Pets allowed with a deposit. Follow up: ask about the lease length, utilities, and whether the second bedroom fits a desk.\n\n10. Unit on Juniper Rd\nRent 2715 per month, deposit one month. Laundry in unit: yes. Parking: street only. Commute about 27 minutes by bike. Light is good in the afternoon, kitchen is small but has a gas stove. The landlord answered within a day. Noise from the street was fine during the visit. Pets allowed with a deposit. Follow up: ask about the lease length, utilities, and whether the second bedroom fits a desk.\n\n11. Unit on Kauri Ct\nRent 2750 per month, deposit one month. Laundry in unit: no. Parking: one assigned spot. Commute about 28 minutes by bike. Light is good in the afternoon, kitchen is small but has a gas stove. The landlord answered within a day. Noise from the street was fine during the visit. Pets allowed with a deposit. Follow up: ask about the lease length, utilities, and whether the second bedroom fits a desk.\n\n12. Unit on Linden Ave\nRent 2785 per month, deposit one month. Laundry in unit: no. Parking: street only. Commute about 29 minutes by bike. Light is good in the afternoon, kitchen is small but has a gas stove. The landlord answered within a day. Noise from the street was fine during the visit. Pets allowed with a deposit. Follow up: ask about the lease length, utilities, and whether the second bedroom fits a desk.\n\n13. Unit on Maple Dr\nRent 2820 per month, deposit one month. Laundry in unit: yes. Parking: one assigned spot. Commute about 30 minutes by bike. Light is good in the afternoon, kitchen is small but has a gas stove. The landlord answered within a day. Noise from the street was noticeable during the visit. Pets allowed with a deposit. Follow up: ask about the lease length, utilities, and whether the second bedroom fits a desk.\n\n14. Unit on Nutmeg Ln\nRent 2855 per month, deposit one month. Laundry in unit: no. Parking: street only. Commute about 31 minutes by bike. Light is good in the afternoon, kitchen is small but has a gas stove. The landlord answered within a day. Noise from the street was fine during the visit. Pets allowed with a deposit. Follow up: ask about the lease length, utilities, and whether the second bedroom fits a desk.\n\n15. Unit on Oak Bluff\nRent 2890 per month, deposit one month. Laundry in unit: no. Parking: one assigned spot. Commute about 32 minutes by bike. Light is good in the afternoon, kitchen is small but has a gas stove. The landlord answered within a day. Noise from the street was fine during the visit. Pets allowed with a deposit. Follow up: ask about the lease length, utilities, and whether the second bedroom fits a desk.\n\n16. Unit on Pine Crest\nRent 2925 per month, deposit one month. Laundry in unit: yes. Parking: street only. Commute about 33 minutes by bike. Light is good in the afternoon, kitchen is small but has a gas stove. The landlord answered within a day. Noise from the street was fine during the visit. Pets allowed with a deposit. Follow up: ask about the lease length, utilities, and whether the second bedroom fits a desk.\n\n17. Unit on Quince St\nRent 2960 per month, deposit one month. Laundry in unit: no. Parking: one assigned spot. Commute about 34 minutes by bike. Light is good in the afternoon, kitchen is small but has a gas stove. The landlord answered within a day. Noise from the street was noticeable during the visit. Pets allowed with a deposit. Follow up: ask about the lease length, utilities, and whether the second bedroom fits a desk.\n\n18. Unit on Redwood Pl\nRent 2995 per month, deposit one month. Laundry in unit: no. Parking: street only. Commute about 35 minutes by bike. Light is good in the afternoon, kitchen is small but has a gas stove. The landlord answered within a day. Noise from the street was fine during the visit. Pets allowed with a deposit. Follow up: ask about the lease length, utilities, and whether the second bedroom fits a desk.\n\n19. Unit on Spruce Ave\nRent 3030 per month, deposit one month. Laundry in unit: yes. Parking: one assigned spot. Commute about 36 minutes by bike. Light is good in the afternoon, kitchen is small but has a gas stove. The landlord answered within a day. Noise from the street was fine during the visit. Pets allowed with a deposit. Follow up: ask about the lease length, utilities, and whether the second bedroom fits a desk.\n\n20. Unit on Tamarack Ct\nRent 3065 per month, deposit one month. Laundry in unit: no. Parking: street only. Commute about 37 minutes by bike. Light is good in the afternoon, kitchen is small but has a gas stove. The landlord answered within a day. Noise from the street was fine during the visit. Pets allowed with a deposit. Follow up: ask about the lease length, utilities, and whether the second bedroom fits a desk.\n\n",
+      "rowid" : 40927
+    },
+    {
+      "body" : "https://www.example.com/recipes/palak-paneer",
+      "rowid" : 40930
+    },
+    {
+      "body" : "￼",
+      "rowid" : 40937
+    },
+    {
+      "body" : "Cảm ơn nhé, vui quá!",
+      "rowid" : 40941
+    },
+    {
+      "body" : "￼￼",
+      "rowid" : 40945
+    },
+    {
+      "body" : "￼",
+      "rowid" : 40965
+    },
+    {
+      "body" : "Buy: bananas, yogurt, bread, paneer",
+      "rowid" : 40996
+    },
+    {
+      "body" : "Buy: bananas, yogurt, bread, paneer",
+      "rowid" : 40997
+    },
+    {
+      "body" : "Return library books by tonight",
+      "rowid" : 40998
+    },
+    {
+      "body" : "Return library books by tonight",
+      "rowid" : 40999
+    },
+    {
+      "body" : "Loved “made it to the top 🧗”",
+      "rowid" : 41001
+    },
+    {
+      "body" : "대박 ㅋㅋㅋ 진짜?",
+      "rowid" : 41002
+    },
+    {
+      "body" : "Priya can you bring the folding chairs on Saturday",
+      "rowid" : 41048
+    },
+    {
+      "body" : "Reminder: bring your own water bottles, the park has no fountains",
+      "rowid" : 41049
+    },
+    {
+      "body" : "Meet at the café on 5th?",
+      "rowid" : 41069
+    },
+    {
+      "body" : "the café with the blue door? yes",
+      "rowid" : 41070
+    },
+    {
+      "body" : "ok",
+      "rowid" : 41089
+    },
+    {
+      "body" : "ok",
+      "rowid" : 41090
+    },
+    {
+      "body" : "￼",
+      "rowid" : 41124
+    },
+    {
+      "body" : "Landed, will call you from the car",
+      "rowid" : 41162
+    },
+    {
+      "body" : "Landed, will call you from the car",
+      "rowid" : 41163
+    },
+    {
+      "body" : "खाना खा लिया? 🍛",
+      "rowid" : 41204
+    },
+    {
+      "body" : "￼",
+      "rowid" : 41232
+    },
+    {
+      "body" : "￼",
+      "rowid" : 41244
+    },
+    {
+      "body" : "Ok here is the plan for the Tahoe weekend: we leave Friday at 3 to beat traffic, Arjun and I drive up together, Mom and Dad come Saturday morning. The cabin has 3 bedrooms so Mom and Dad get the big one, Arjun gets the couch (sorry not sorry). Saturday is the lake and a short hike, Sunday brunch at that pancake place Dad likes and then we head back by 2. I made a shared list for groceries, please add what you want. Budget is about 180 each including gas. Say yes or no by Wednesday so I can confirm the booking!!",
+      "rowid" : 41266
+    },
+    {
+      "body" : "Book dentist cleaning",
+      "rowid" : 41267
+    },
+    {
+      "body" : "Book dentist cleaning",
+      "rowid" : 41268
+    },
+    {
+      "body" : "￼",
+      "rowid" : 41310
+    },
+    {
+      "body" : "Gift ideas for Mom: scarf, the folding chairs",
+      "rowid" : 41320
+    },
+    {
+      "body" : "Gift ideas for Mom: scarf, the folding chairs",
+      "rowid" : 41321
+    },
+    {
+      "body" : "The address for Sunday is 2219 Juniper Hollow Rd, Santa Rosa, CA 95404. Park on the street, not in the driveway.",
+      "rowid" : 41381
+    },
+    {
+      "body" : "Idea: weekly family call on Sundays",
+      "rowid" : 41383
+    },
+    {
+      "body" : "Idea: weekly family call on Sundays",
+      "rowid" : 41384
+    },
+    {
+      "body" : "Who is coming Sunday for Diwali dinner?",
+      "rowid" : 41417
+    },
+    {
+      "body" : "Me obviously",
+      "rowid" : 41418
+    },
+    {
+      "body" : "I can come after 2, have a shift in the morning",
+      "rowid" : 41419
+    },
+    {
+      "body" : "I'll be there by 5",
+      "rowid" : 41423
+    },
+    {
+      "body" : "Removed a like from “Me obviously”",
+      "rowid" : 41424
+    },
+    {
+      "body" : "Ok, come straight from work",
+      "rowid" : 41425
+    },
+    {
+      "body" : "Get kaju katli and 2 boxes of jalebi",
+      "rowid" : 41427
+    },
+    {
+      "body" : "￼Rangoli practice from last year lol",
+      "rowid" : 41428
+    },
+    {
+      "body" : "Loved an image",
+      "rowid" : 41429
+    },
+    {
+      "body" : "Laughed at “Rangoli practice from last year lol”",
+      "rowid" : 41430
+    },
+    {
+      "body" : "Emphasized “Rangoli practice from last year lol”",
+      "rowid" : 41431
+    },
+    {
+      "body" : "the 2024 one was better",
+      "rowid" : 41432
+    },
+    {
+      "body" : "https://www.example.com/food/diwali-sweets-guide",
+      "rowid" : 41434
+    },
+    {
+      "body" : "Loved “https://www.example.com/food/diwali-sweets-guide”",
+      "rowid" : 41435
+    },
+    {
+      "body" : "￼",
+      "rowid" : 41436
+    },
+    {
+      "body" : "Should we do the puja at 6 or 7?",
+      "rowid" : 41465
+    },
+    {
+      "body" : "Removed a question mark from “Should we do the puja at 6 or 7?”",
+      "rowid" : 41468
+    },
+    {
+      "body" : "Removed a dislike from “Should we do the puja at 6 or 7?”",
+      "rowid" : 41469
+    },
+    {
+      "body" : "I'm bringing gulab jamun anyway",
+      "rowid" : 41471
+    },
+    {
+      "body" : "Reacted 🎉 to “I'm bringing gulab jamun anyway”",
+      "rowid" : 41472
+    },
+    {
+      "body" : "Removed 🎉 from “I'm bringing gulab jamun anyway”",
+      "rowid" : 41473
+    },
+    {
+      "body" : "Reacted 🪔 to “I'm bringing gulab jamun anyway”",
+      "rowid" : 41474
+    },
+    {
+      "body" : "Reacted 🎉 to “I'm bringing gulab jamun anyway”",
+      "rowid" : 41475
+    },
+    {
+      "body" : "Mom said no more sweets",
+      "rowid" : 41476
+    },
+    {
+      "body" : "Removed a heart from “Mom said no more sweets”",
+      "rowid" : 41480
+    },
+    {
+      "body" : "Removed a laugh from “Mom said no more sweets”",
+      "rowid" : 41481
+    },
+    {
+      "body" : "Removed an exclamation from “Mom said no more sweets”",
+      "rowid" : 41482
+    },
+    {
+      "body" : "On my way",
+      "rowid" : 41487
+    },
+    {
+      "body" : "On my way",
+      "rowid" : 41488
+    },
+    {
+      "body" : "👨‍👩‍👧‍👦❤️🇮🇳",
+      "rowid" : 41489
+    },
+    {
+      "body" : "￼",
+      "rowid" : 41499
+    },
+    {
+      "body" : "ignore my last text, wrong chat",
+      "rowid" : 41502
+    },
+    {
+      "body" : "￼",
+      "rowid" : 41540
+    },
+    {
+      "body" : "Liked “Yes, Thursday at 10”",
+      "rowid" : 41548
+    },
+    {
+      "body" : "Water shut off Thursday 9am to 1pm, sorry for the short notice",
+      "rowid" : 41549
+    },
+    {
+      "body" : "are we still on for 7?",
+      "rowid" : 41550
+    },
+    {
+      "body" : "Yes. And I'm bringing gulab jamun again next time",
+      "rowid" : 41552
+    },
+    {
+      "body" : "Arjun no! 😂",
+      "rowid" : 41553
+    },
+    {
+      "body" : "Sending the group photo tonight",
+      "rowid" : 41554
+    },
+    {
+      "body" : "Are you coming for dinner Sunday? Papa is making biryani",
+      "rowid" : 41555
+    },
+    {
+      "body" : "Also call Nani, she was asking about you",
+      "rowid" : 41556
+    },
+    {
+      "body" : "trivia next thursday?",
+      "rowid" : 41557
+    },
+    {
+      "body" : "did you get home ok?",
+      "rowid" : 41558
+    }
+  ],
+  "schema" : {
+    "indexes" : 46,
+    "skipped_statements" : [
+      "CREATE TABLE sqlite_sequence(name,seq);",
+      "CREATE TABLE sqlite_stat1(tbl,idx,stat);"
+    ],
+    "statements" : 92,
+    "stubbed_functions" : [
+      "verify_chat",
+      "delete_attachment_path",
+      "before_delete_attachment_path",
+      "after_delete_message_plugin",
+      "delete_chat_background_before_deleting_chat",
+      "guid_for_chat",
+      "is_mic_enabled"
+    ],
+    "tables" : [
+      "_SqliteDatabaseProperties",
+      "attachment",
+      "chat",
+      "chat_handle_join",
+      "chat_lookup",
+      "chat_message_join",
+      "chat_recoverable_message_join",
+      "chat_service",
+      "deleted_messages",
+      "handle",
+      "kvtable",
+      "message",
+      "message_attachment_join",
+      "message_processing_task",
+      "persistent_tasks",
+      "recoverable_message_part",
+      "scheduled_messages_pending_cloudkit_delete",
+      "sqlite_sequence",
+      "sync_chat_slice",
+      "sync_deleted_attachments",
+      "sync_deleted_chats",
+      "sync_deleted_messages",
+      "unsynced_removed_recoverable_messages"
+    ],
+    "triggers" : [
+      "add_to_deleted_messages",
+      "add_to_sync_deleted_attachments",
+      "add_to_sync_deleted_messages",
+      "after_delete_on_attachment",
+      "after_delete_on_chat",
+      "after_delete_on_chat_handle_join",
+      "after_delete_on_chat_message_join",
+      "after_delete_on_chat_recoverable_message_join",
+      "after_delete_on_message",
+      "after_delete_on_message_attachment_join",
+      "after_delete_on_message_plugin",
+      "after_insert_on_chat_message_join",
+      "after_insert_on_message_attachment_join",
+      "before_delete_chat_update_sync_chat_deletes",
+      "before_delete_on_attachment",
+      "before_deleting_chat_delete_chat_background_trigger",
+      "chat_service_on_insert_chat_message_join",
+      "delete_associated_messages_after_delete_on_message",
+      "update_last_failed_message_date",
+      "update_message_date_after_update_on_message",
+      "verify_chat_insert",
+      "verify_chat_update"
+    ],
+    "triggers_dropped" : [
+
+    ]
+  },
+  "schema_sha256" : "204a37b717daf1cf87936d356d53ef1ef9ddf7a4b7faf7489881d061ab03d031",
+  "schema_source" : "research/chatdb-schema.sql",
+  "seed" : 20261106,
+  "tapback_net_state" : {
+    "tapback_target_a" : {
+      "parts" : {
+        "0" : [
+          "❤️ Mom",
+          "😂 Priya",
+          "‼️ You"
+        ]
+      },
+      "rowid" : 41418
+    },
+    "tapback_target_b" : {
+      "parts" : {
+        "0" : [
+          "👍 Mom"
+        ]
+      },
+      "rowid" : 41465
+    },
+    "tapback_target_c" : {
+      "parts" : {
+        "0" : [
+          "🪔 Priya",
+          "🎉 You"
+        ]
+      },
+      "rowid" : 41471
+    },
+    "tapback_target_d" : {
+      "parts" : {
+        "0" : [
+
+        ]
+      },
+      "rowid" : 41476
+    },
+    "tapback_target_multipart" : {
+      "parts" : {
+        "0" : [
+          "❤️ Mom"
+        ],
+        "1" : [
+          "😂 Arjun",
+          "‼️ Dad"
+        ]
+      },
+      "rowid" : 41428
+    }
+  },
+  "tasks" : {
+    "find_dad_address_last_month" : {
+      "answer" : "2219 Juniper Hollow Rd, Santa Rosa, CA 95404",
+      "decoy_rowid" : 40850,
+      "rowid" : 41381
+    },
+    "react_to_last_message" : {
+      "last_incoming_chat_rowid" : 19,
+      "last_incoming_rowid" : 41557,
+      "last_message_rowid" : 41558
+    },
+    "reply_to_mom" : {
+      "chat_guid" : "any;-;+14155550101",
+      "chat_rowid" : 7,
+      "handle" : "+14155550101",
+      "latest_from_mom_rowid" : 41555
+    },
+    "send_photo_to_group" : {
+      "chat_guid" : "any;+;chat836828054889214904",
+      "chat_rowid" : 12,
+      "display_name" : "Family 🏡",
+      "sample_photo" : "Attachments/76/09/CBF6F44C-5BD1-4B89-9C7E-1D3801BC9BAD/IMG_4420.HEIC"
+    },
+    "summarize_unread" : {
+      "unread_rowids_by_chat" : {
+        "7" : [
+          41555,
+          41556
+        ],
+        "12" : [
+          41552,
+          41553,
+          41554
+        ],
+        "19" : [
+          41557
+        ],
+        "31" : [
+          41550
+        ],
+        "56" : [
+          41549
+        ]
+      }
+    }
+  },
+  "time_zone" : "America/Los_Angeles"
+}

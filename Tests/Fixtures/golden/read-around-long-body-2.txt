@@ -1,0 +1,18 @@
+chat 12 Family 🏡 (group: Mom, Dad, Priya, Arjun, You) · 12 of 400 · times PST
+-- Sep 19
+41253 09:13 Arjun: traffic is crazy, running late
+41254 09:17 Mom: Drive slowly
+41259 16:37 Arjun: flight lands at 9
+41260 16:40 Dad: I'll pick you up
+41261 16:40 Arjun: thanks dad
+41262 16:42 Dad: Thank you
+-- Sep 20
+41266 17:30 Priya: Ok here is the plan for the Tahoe weekend: we leave Friday at 3 to beat traffic, Arjun and I drive up together, Mom and Dad come Saturday morning. The cabin has 3 bedrooms so Mom and Dad get the big one, Arjun gets the couch (sorry not sorry). Saturday is the lake and a short hike, Sunday brunch at that pancake place Dad likes and then we head back by 2. I made a shared list for groceries, please …(+116 chars: imessage show 41266)
+-- Sep 25
+41287 19:32 Arjun: who took my charger
+41288 19:34 Priya: not me
+41289 20:53 Dad: Check the car
+41290 20:54 Dad: Ok
+-- Sep 26
+41294 13:41 Mom: Don't forget Nani's birthday is tomorrow
+more: imessage read 12 --before 41253

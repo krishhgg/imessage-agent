@@ -1,0 +1,25 @@
+{
+ "contacts": [
+  {
+   "chats": [
+    {
+     "isGroup": true,
+     "label": "Family 🏡",
+     "rowid": 12
+    }
+   ],
+   "firstName": "Priya",
+   "handles": [
+    {
+     "id": "+14155550103",
+     "services": [
+      "iMessage"
+     ]
+    }
+   ],
+   "lastName": "Desai",
+   "shortName": "Priya"
+  }
+ ],
+ "query": "Priya"
+}

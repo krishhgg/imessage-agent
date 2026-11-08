@@ -1,0 +1,16 @@
+chat 23 Jordan Kim · 10 of 107 · times PST
+-- Oct 7
+41358 17:56 You: how was the conference
+41359 17:59 Jordan: exhausting but good
+41360 18:00 Jordan: I'll tell you about it at lunch
+-- Oct 21
+41437 16:16 You: how was the conference
+41438 16:19 Jordan: exhausting but good
+41439 16:24 Jordan: I'll tell you about it at lunch [😂You]
+-- Oct 23
+41452 09:29 You: how was the conference
+41453 09:46 Jordan: exhausting but good
+41454 09:55 Jordan: I'll tell you about it at lunch
+-- Yesterday Thu Nov 5
+41558 22:58 You: did you get home ok?
+more: imessage read 23 --before 41358

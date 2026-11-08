@@ -1,0 +1,33 @@
+{
+ "chat": {
+  "isGroup": false,
+  "label": "Jordan Kim",
+  "rowid": 23
+ },
+ "fromByte": 0,
+ "message": {
+  "agentSent": false,
+  "attachments": [],
+  "chatRowID": 23,
+  "dateDeliveredNs": 808426905717000000,
+  "dateEditedNs": 0,
+  "dateNs": 808426904511000000,
+  "dateReadNs": 808428249717000000,
+  "edited": false,
+  "errorCode": 0,
+  "fromMe": true,
+  "guid": "542BA8A9-150D-449B-9D65-74790A528785",
+  "isRead": true,
+  "partCount": 1,
+  "partUnsent": false,
+  "reactions": [],
+  "rowid": 41069,
+  "senderHandle": "jordan.kim@example.com",
+  "senderName": "You",
+  "service": "iMessage",
+  "stickers": [],
+  "text": "Meet at the café on 5th?",
+  "unsent": false
+ },
+ "totalBytes": 26
+}

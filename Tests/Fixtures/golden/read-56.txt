@@ -1,0 +1,49 @@
+chat 56 +1 (510) 555-0163 · 30 of 81 · times PST
+-- Jul 15
+40984 11:01 You: The kitchen faucet is leaking again
+40985 11:03 +1 (510) 555-0163: I'll send someone next week
+40986 11:15 You: Thank you
+-- Aug 1
+41024 18:00 You: Hi, is it ok if I get a parking permit for a second car
+41025 18:02 +1 (510) 555-0163: Yes, $40 per month, I'll add it to rent
+-- Aug 21
+41102 19:59 +1 (510) 555-0163: A package for you was left in the lobby
+-- Sep 10
+41208 13:36 +1 (510) 555-0163: Fire alarm testing next week morning, sorry for the noise
+-- Sep 20
+41264 17:17 You: Hi Marco, rent is sent via Zelle
+41265 17:19 +1 (510) 555-0163: Received, thank you
+-- Sep 23
+41274 11:44 +1 (510) 555-0163: A package for you was left in the lobby
+-- Sep 28
+41300 11:46 +1 (510) 555-0163: A package for you was left in the lobby
+-- Oct 1
+41318 19:12 +1 (510) 555-0163: Fire alarm testing Monday morning, sorry for the noise
+41319 19:15 +1 (510) 555-0163: Sounds good
+-- Oct 2
+41322 10:27 +1 (510) 555-0163: Gardeners will be here Monday, please move your car from the side lot
+-- Oct 3
+41328 16:51 +1 (510) 555-0163: Fire alarm testing tonight morning, sorry for the noise
+-- Oct 9
+41370 17:38 +1 (510) 555-0163: Hi, this is Marco. The plumber will come Sunday between 8 and noon.
+41371 17:39 You: Thanks, I'll be home
+-- Oct 17
+41402 18:25 +1 (510) 555-0163: A package for you was left in the lobby
+41403 18:27 +1 (510) 555-0163: Ok
+-- Oct 22
+41445 17:03 You: Hi, is it ok if I get a parking permit for a second car
+41446 17:21 +1 (510) 555-0163: Yes, $40 per month, I'll add it to rent
+41447 17:23 You: Sounds good
+-- Oct 27
+41497 18:19 +1 (510) 555-0163: A package for you was left in the lobby
+-- Oct 29
+41508 09:55 +1 (510) 555-0163: Hi, this is Marco. The plumber will come Sunday between 9 and noon.
+41509 09:56 You: Thanks, I'll be home
+41518 13:57 You: The kitchen faucet is leaking again
+41519 13:58 +1 (510) 555-0163: I'll send someone Saturday
+41520 14:01 You: Thank you
+-- Sun Nov 1
+41542 10:16 +1 (510) 555-0163: Reminder: building water will be off Friday from 9am to 1pm
+-- Wed Nov 4
+41549 16:20 +1 (510) 555-0163: Water shut off Thursday 9am to 1pm, sorry for the short notice
+more: imessage read 56 --before 40984

@@ -1,0 +1,18 @@
+chat 7 Mom · 12 of 303 · times PST
+-- Sep 8
+41194 08:18 Mom: Doctor appointment went fine, nothing to worry
+41195 08:21 You: Oh good, thanks for telling me
+41196 13:15 Mom: Aunty Kavita is visiting next week
+41197 13:16 You: Oh nice, for how long
+41198 13:18 Mom: 65 days. She is asking about you
+41199 13:19 You: Tell her hi!
+-- Sep 9
+41204 13:00 Mom: खाना खा लिया? 🍛
+41205 13:20 You: हाँ माँ
+-- Sep 10
+41206 11:24 Mom: Doctor appointment went fine, nothing to worry
+41207 11:25 You: Oh good, thanks for telling me
+-- Sep 11
+41218 20:37 Mom: Papa and I are going to Napa tomorrow
+41219 20:39 You: Have fun! Send pics
+more: imessage read 7 --before 41194

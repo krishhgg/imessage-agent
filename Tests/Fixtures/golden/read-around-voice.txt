@@ -1,0 +1,19 @@
+chat 7 Mom · 12 of 303 · times PST
+-- Mar 7
+40547 13:25 You: In a meeting, will call at 8
+40548 13:28 Mom: Ok beta
+-- Mar 11
+40567 18:57 Mom: Aunty Kavita is visiting next week
+40568 18:59 You: Oh nice, for how long
+40569 18:59 Mom: 40 days. She is asking about you
+40570 19:01 You: Tell her hi!
+-- Mar 14
+40580 18:20 Mom: [voice a9008 "Hi beta, call me when you get a chance, it is about Sunday. Papa wants to know if you are bringing the car."]
+40581 18:27 You: Calling now
+-- Mar 22
+40599 16:03 Mom: Call me when you are free
+40600 16:12 You: In a meeting, will call at 2
+40601 16:14 Mom: Ok beta
+-- Mar 24
+40602 21:13 Mom: How was the interview
+more: imessage read 7 --before 40547

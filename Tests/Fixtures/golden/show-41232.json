@@ -1,0 +1,47 @@
+{
+ "chat": {
+  "isGroup": true,
+  "label": "Family 🏡",
+  "rowid": 12
+ },
+ "fromByte": 0,
+ "message": {
+  "agentSent": false,
+  "attachments": [
+   {
+    "guid": "7C59F4E5-36D1-48A3-A73A-96B31EB466BD",
+    "height": 4032,
+    "kind": "photo",
+    "mimeType": "image/heic",
+    "onDisk": true,
+    "rowid": 9020,
+    "totalBytes": 1640093,
+    "transferName": "IMG_6230.HEIC",
+    "transferState": 5,
+    "uti": "public.heic",
+    "width": 3024
+   }
+  ],
+  "chatRowID": 12,
+  "dateDeliveredNs": 0,
+  "dateEditedNs": 811101790237264000,
+  "dateNs": 811101725397442000,
+  "dateReadNs": 811102142397442000,
+  "edited": false,
+  "errorCode": 0,
+  "fromMe": false,
+  "guid": "233AD94E-044A-4A88-B0C0-EBB077DD2DB8",
+  "isRead": true,
+  "partCount": 1,
+  "partUnsent": true,
+  "reactions": [],
+  "rowid": 41232,
+  "senderHandle": "+14155550104",
+  "senderName": "Arjun",
+  "service": "iMessage",
+  "stickers": [],
+  "text": "",
+  "unsent": false
+ },
+ "totalBytes": 0
+}

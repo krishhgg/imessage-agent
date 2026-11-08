@@ -1,0 +1,19 @@
+chat 23 Jordan Kim · 12 of 107 · times PST
+-- Jul 6
+40953 12:38 Jordan: you're the best
+40954 12:40 You: bet
+-- Jul 22
+41002 18:15 Jordan: 대박 ㅋㅋㅋ 진짜?
+-- Aug 5
+41032 15:57 Jordan: lunch tomorrow?
+41033 15:59 You: sure, the temple?
+41034 16:02 Jordan: see you at 9
+-- Aug 14
+41069 12:01 You: Meet at the café on 5th?
+41070 12:03 Jordan: the café with the blue door? yes
+41075 21:32 You: how was the conference
+41076 21:33 Jordan: exhausting but good
+41077 21:34 Jordan: I'll tell you about it at lunch
+-- Aug 30
+41133 09:35 Jordan: recommend a book?
+more: imessage read 23 --before 40953

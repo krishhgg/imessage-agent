@@ -1,0 +1,7 @@
+chat 12 Family 🏡 (group: Mom, Dad, Priya, Arjun, You) · 4 of 400 · times PST
+-- Yesterday Thu Nov 5
+41551 11:50 Priya: Did everyone see the photos from Sunday?
+41552 12:10 Arjun: Yes. And I'm bringing gulab jamun again next time
+41553 12:30 Mom: Arjun no! 😂
+41554 12:31 Priya: Sending the group photo tonight
+more: imessage read 12 --before 41551

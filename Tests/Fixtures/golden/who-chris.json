@@ -1,0 +1,19 @@
+{
+ "contacts": [
+  {
+   "chats": [],
+   "firstName": "Chris",
+   "handles": [
+    {
+     "id": "+13105550119",
+     "services": [
+      "iMessage"
+     ]
+    }
+   ],
+   "lastName": "Ortega",
+   "shortName": "Chris"
+  }
+ ],
+ "query": "Chris"
+}

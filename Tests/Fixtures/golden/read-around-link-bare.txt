@@ -1,0 +1,25 @@
+chat 2 You (notes) · 12 of 40 · times PST
+-- May 27
+40844 15:58 You: Buy: rice, lentils, onions, ginger
+-- May 31
+40846 10:20 You: Gift ideas for Mom: scarf, a jacket
+-- Jun 19
+40909 15:33 You: Cabin check-in after 4pm, lockbox on the porch
+-- Jun 23
+40919 09:26 You: Return library books by Monday
+-- Jun 30
+40926 12:13 You: Parking level 3, spot C14
+40927 23:10 You: Notes from the apartment search, pasted from my laptop / 1. Unit on Alder St / Rent 2400 per month, deposit one month. Laundry in unit: yes. Parking: one assigned spot. Commute about 18 minutes by bike. Light is good in the afternoon, kitchen is small but has a gas stove. The landlord answered within a day. Noise from the street was noticeable during the visit. Pets allowed with a deposit. Follow …(+8,161 chars: imessage show 40927)
+-- Jul 2
+40930 08:12 You: https://www.example.com/recipes/palak-paneer
+-- Jul 17
+40996 19:52 You: Buy: bananas, yogurt, bread, paneer
+-- Jul 18
+40998 09:55 You: Return library books by tonight
+-- Jul 27
+41007 08:15 You: Call insurance about the claim
+-- Aug 10
+41064 20:52 You: Buy: rice, lentils, onions, ginger
+-- Sep 1
+41155 19:29 You: Parking level 3, spot C14
+more: imessage read 2 --before 40844

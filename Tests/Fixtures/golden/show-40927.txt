@@ -1,0 +1,63 @@
+40927 Jun 30 23:10 in chat 2 You (notes)
+You: Notes from the apartment search, pasted from my laptop
+
+1. Unit on Alder St
+Rent 2400 per month, deposit one month. Laundry in unit: yes. Parking: one assigned spot. Commute about 18 minutes by bike. Light is good in the afternoon, kitchen is small but has a gas stove. The landlord answered within a day. Noise from the street was noticeable during the visit. Pets allowed with a deposit. Follow up: ask about the lease length, utilities, and whether the second bedroom fits a desk.
+
+2. Unit on Birch Ave
+Rent 2435 per month, deposit one month. Laundry in unit: no. Parking: street only. Commute about 19 minutes by bike. Light is good in the afternoon, kitchen is small but has a gas stove. The landlord answered within a day. Noise from the street was fine during the visit. Pets allowed with a deposit. Follow up: ask about the lease length, utilities, and whether the second bedroom fits a desk.
+
+3. Unit on Cedar Ct
+Rent 2470 per month, deposit one month. Laundry in unit: no. Parking: one assigned spot. Commute about 20 minutes by bike. Light is good in the afternoon, kitchen is small but has a gas stove. The landlord answered within a day. Noise from the street was fine during the visit. Pets allowed with a deposit. Follow up: ask about the lease length, utilities, and whether the second bedroom fits a desk.
+
+4. Unit on Dogwood Ln
+Rent 2505 per month, deposit one month. Laundry in unit: yes. Parking: street only. Commute about 21 minutes by bike. Light is good in the afternoon, kitchen is small but has a gas stove. The landlord answered within a day. Noise from the street was fine during the visit. Pets allowed with a deposit. Follow up: ask about the lease length, utilities, and whether the second bedroom fits a desk.
+
+5. Unit on Elm Row
+Rent 2540 per month, deposit one month. Laundry in unit: no. Parking: one assigned spot. Commute about 22 minutes by bike. Light is good in the afternoon, kitchen is small but has a gas stove. The landlord answered within a day. Noise from the street was noticeable during the visit. Pets allowed with a deposit. Follow up: ask about the lease length, utilities, and whether the second bedroom fits a desk.
+
+6. Unit on Fir Way
+Rent 2575 per month, deposit one month. Laundry in unit: no. Parking: street only. Commute about 23 minutes by bike. Light is good in the afternoon, kitchen is small but has a gas stove. The landlord answered within a day. Noise from the street was fine during the visit. Pets allowed with a deposit. Follow up: ask about the lease length, utilities, and whether the second bedroom fits a desk.
+
+7. Unit on Gum Tree Pl
+Rent 2610 per month, deposit one month. Laundry in unit: yes. Parking: one assigned spot. Commute about 24 minutes by bike. Light is good in the afternoon, kitchen is small but has a gas stove. The landlord answered within a day. Noise from the street was fine during the visit. Pets allowed with a deposit. Follow up: ask about the lease length, utilities, and whether the second bedroom fits a desk.
+
+8. Unit on Hazel St
+Rent 2645 per month, deposit one month. Laundry in unit: no. Parking: street only. Commute about 25 minutes by bike. Light is good in the afternoon, kitchen is small but has a gas stove. The landlord answered within a day. Noise from the street was fine during the visit. Pets allowed with a deposit. Follow up: ask about the lease length, utilities, and whether the second bedroom fits a desk.
+
+9. Unit on Ivy Ter
+Rent 2680 per month, deposit one month. Laundry in unit: no. Parking: one assigned spot. Commute about 26 minutes by bike. Light is good in the afternoon, kitchen is small but has a gas stove. The landlord answered within a day. Noise from the street was noticeable during the visit. Pets allowed with a deposit. Follow up: ask about the lease length, utilities, and whether the second bedroom fits a desk.
+
+10. Unit on Juniper Rd
+Rent 2715 per month, deposit one month. Laundry in unit: yes. Parking: street only. Commute about 27 minutes by bike. Light is good in the afternoon, kitchen is small but has a gas stove. The landlord answered within a day. Noise from the street was fine during the visit. Pets allowed with a deposit. Follow up: ask about the lease length, utilities, and whether the second bedroom fits a desk.
+
+11. Unit on Kauri Ct
+Rent 2750 per month, deposit one month. Laundry in unit: no. Parking: one assigned spot. Commute about 28 minutes by bike. Light is good in the afternoon, kitchen is small but has a gas stove. The landlord answered within a day. Noise from the street was fine during the visit. Pets allowed with a deposit. Follow up: ask about the lease length, utilities, and whether the second bedroom fits a desk.
+
+12. Unit on Linden Ave
+Rent 2785 per month, deposit one month. Laundry in unit: no. Parking: street only. Commute about 29 minutes by bike. Light is good in the afternoon, kitchen is small but has a gas stove. The landlord answered within a day. Noise from the street was fine during the visit. Pets allowed with a deposit. Follow up: ask about the lease length, utilities, and whether the second bedroom fits a desk.
+
+13. Unit on Maple Dr
+Rent 2820 per month, deposit one month. Laundry in unit: yes. Parking: one assigned spot. Commute about 30 minutes by bike. Light is good in the afternoon, kitchen is small but has a gas stove. The landlord answered within a day. Noise from the street was noticeable during the visit. Pets allowed with a deposit. Follow up: ask about the lease length, utilities, and whether the second bedroom fits a desk.
+
+14. Unit on Nutmeg Ln
+Rent 2855 per month, deposit one month. Laundry in unit: no. Parking: street only. Commute about 31 minutes by bike. Light is good in the afternoon, kitchen is small but has a gas stove. The landlord answered within a day. Noise from the street was fine during the visit. Pets allowed with a deposit. Follow up: ask about the lease length, utilities, and whether the second bedroom fits a desk.
+
+15. Unit on Oak Bluff
+Rent 2890 per month, deposit one month. Laundry in unit: no. Parking: one assigned spot. Commute about 32 minutes by bike. Light is good in the afternoon, kitchen is small but has a gas stove. The landlord answered within a day. Noise from the street was fine during the visit. Pets allowed with a deposit. Follow up: ask about the lease length, utilities, and whether the second bedroom fits a desk.
+
+16. Unit on Pine Crest
+Rent 2925 per month, deposit one month. Laundry in unit: yes. Parking: street only. Commute about 33 minutes by bike. Light is good in the afternoon, kitchen is small but has a gas stove. The landlord answered within a day. Noise from the street was fine during the visit. Pets allowed with a deposit. Follow up: ask about the lease length, utilities, and whether the second bedroom fits a desk.
+
+17. Unit on Quince St
+Rent 2960 per month, deposit one month. Laundry in unit: no. Parking: one assigned spot. Commute about 34 minutes by bike. Light is good in the afternoon, kitchen is small but has a gas stove. The landlord answered within a day. Noise from the street was noticeable during the visit. Pets allowed with a deposit. Follow up: ask about the lease length, utilities, and whether the second bedroom fits a desk.
+
+18. Unit on Redwood Pl
+Rent 2995 per month, deposit one month. Laundry in unit: no. Parking: street only. Commute about 35 minutes by bike. Light is good in the afternoon, kitchen is small but has a gas stove. The landlord answered within a day. Noise from the street was fine during the visit. Pets allowed with a deposit. Follow up: ask about the lease length, utilities, and whether the second bedroom fits a desk.
+
+19. Unit on Spruce Ave
+Rent 3030 per month, deposit one month. Laundry in unit: yes. Parking: one assigned spot. Commute about 36 minutes by bike. Light is good in the afternoon, kitchen is small but has a gas stove. The landlord answered within a day. Noise from the street was fine during the visit. Pets allowed with a deposit. Follow up: ask about the lease length, utilities, and whether the second bedroom fits a desk.
+
+20. Unit on Tamarack Ct
+Rent 3065 per month, deposit one month. Laundry in unit: no. Parking: street only. Co
+…(+311 bytes: imessage show 40927 --from 8192)

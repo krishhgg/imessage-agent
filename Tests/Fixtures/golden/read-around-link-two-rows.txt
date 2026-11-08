@@ -1,0 +1,18 @@
+chat 19 group: Jordan, Taylor, You · 12 of 196 · times PST
+-- Mar 31
+40636 15:53 Chris: 7:30
+40637 15:56 You: I'll bring Codenames
+40638 16:15 Chris: who is bringing snacks
+40639 16:15 You: I'll bring a salad
+40640 16:18 +1 (707) 555-0131: legend
+40641 16:32 You: lol
+-- Apr 3
+40659 19:20 Jordan: you have to read this before the trip https://blog.example.org/posts/cabin-checklist
+-- Apr 5
+40671 20:07 +1 (707) 555-0131: ㅋㅋㅋ that was so bad
+40672 20:10 You: never again
+40673 20:13 Jordan: we said that last time
+40674 20:13 Jordan: wait what
+-- Apr 11
+40704 22:20 You: anyone have a ladder I can borrow
+more: imessage read 19 --before 40636

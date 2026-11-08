@@ -1,0 +1,25 @@
+{
+ "contacts": [
+  {
+   "chats": [
+    {
+     "isGroup": false,
+     "label": "Sam Lee",
+     "rowid": 31
+    }
+   ],
+   "firstName": "Sam",
+   "handles": [
+    {
+     "id": "+16505550142",
+     "services": [
+      "RCS"
+     ]
+    }
+   ],
+   "lastName": "Lee",
+   "shortName": "Sam"
+  }
+ ],
+ "query": "Sam"
+}

@@ -1,0 +1,18 @@
+chat 9 Dad · 12 of 157 · times PST
+-- Aug 31
+41146 20:36 Dad: Your mother says you are not calling enough
+41147 20:38 You: 😅 I'll call tonight
+41148 20:39 You: 🙏
+-- Sep 1
+41152 18:51 Dad: Read the article I sent about the pizza
+41153 18:53 You: Will read later
+41154 18:56 Dad: It is important
+-- Sep 2
+41162 22:48 You: Landed, will call you from the car (failed)
+41163 22:49 You: Landed, will call you from the car
+-- Sep 9
+41200 08:05 You: Can you pick me up from the airport tomorrow
+41201 08:06 Dad: What time
+41202 08:09 You: Flight lands 7
+41203 08:09 Dad: Ok. Text me when you land
+more: imessage read 9 --before 41146

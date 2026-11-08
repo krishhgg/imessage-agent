@@ -1,0 +1,225 @@
+{
+ "chats": [
+  {
+   "canonical": {
+    "rawValue": "group:chat564517051022821277"
+   },
+   "displayName": "",
+   "guid": "any;+;chat564517051022821277",
+   "identifier": "chat564517051022821277",
+   "isGroup": true,
+   "label": "Jordan, Taylor",
+   "last": {
+    "agentSent": false,
+    "attachments": [],
+    "chatRowID": 19,
+    "dateDeliveredNs": 0,
+    "dateEditedNs": 0,
+    "dateNs": 815634018941987000,
+    "dateReadNs": 0,
+    "edited": false,
+    "errorCode": 0,
+    "fromMe": false,
+    "guid": "2A04A6E7-90C4-41A4-AA0B-321863E9F5BA",
+    "isRead": false,
+    "partCount": 1,
+    "partUnsent": false,
+    "reactions": [],
+    "rowid": 41557,
+    "senderHandle": "+12125550188",
+    "senderName": "Taylor",
+    "service": "iMessage",
+    "stickers": [],
+    "text": "trivia next thursday?",
+    "unsent": false
+   },
+   "memberNames": [
+    "Jordan",
+    "Taylor"
+   ],
+   "mergedChatRowIDs": [
+    19
+   ],
+   "rowid": 19,
+   "service": "iMessage",
+   "unreadCount": 1
+  },
+  {
+   "canonical": {
+    "rawValue": "handle:+14155550101"
+   },
+   "displayName": "",
+   "guid": "any;-;+14155550101",
+   "identifier": "+14155550101",
+   "isGroup": false,
+   "label": "Mom",
+   "last": {
+    "agentSent": false,
+    "attachments": [],
+    "chatRowID": 7,
+    "dateDeliveredNs": 0,
+    "dateEditedNs": 0,
+    "dateNs": 815632922051314000,
+    "dateReadNs": 0,
+    "edited": false,
+    "errorCode": 0,
+    "fromMe": false,
+    "guid": "7EA96919-2833-4891-BFD3-CE5F0E2002BB",
+    "isRead": false,
+    "partCount": 1,
+    "partUnsent": false,
+    "reactions": [],
+    "rowid": 41556,
+    "senderHandle": "+14155550101",
+    "senderName": "Mom",
+    "service": "iMessage",
+    "stickers": [],
+    "text": "Also call Nani, she was asking about you",
+    "unsent": false
+   },
+   "memberNames": [
+    "Mom"
+   ],
+   "mergedChatRowIDs": [
+    7
+   ],
+   "rowid": 7,
+   "service": "iMessage",
+   "unreadCount": 2
+  },
+  {
+   "canonical": {
+    "rawValue": "group:chat836828054889214904"
+   },
+   "displayName": "Family 🏡",
+   "guid": "any;+;chat836828054889214904",
+   "identifier": "chat836828054889214904",
+   "isGroup": true,
+   "label": "Family 🏡",
+   "last": {
+    "agentSent": false,
+    "attachments": [],
+    "chatRowID": 12,
+    "dateDeliveredNs": 0,
+    "dateEditedNs": 0,
+    "dateNs": 815603469441462000,
+    "dateReadNs": 0,
+    "edited": false,
+    "errorCode": 0,
+    "fromMe": false,
+    "guid": "A0269A7C-1D52-44BA-A25C-00FC3BEB1EC8",
+    "isRead": false,
+    "partCount": 1,
+    "partUnsent": false,
+    "reactions": [],
+    "rowid": 41554,
+    "senderHandle": "+14155550103",
+    "senderName": "Priya",
+    "service": "iMessage",
+    "stickers": [],
+    "text": "Sending the group photo tonight",
+    "unsent": false
+   },
+   "memberNames": [
+    "Mom",
+    "Dad",
+    "Priya",
+    "Arjun"
+   ],
+   "mergedChatRowIDs": [
+    12
+   ],
+   "rowid": 12,
+   "service": "iMessage",
+   "unreadCount": 3
+  },
+  {
+   "canonical": {
+    "rawValue": "handle:+16505550142"
+   },
+   "displayName": "",
+   "guid": "any;-;+16505550142",
+   "identifier": "+16505550142",
+   "isGroup": false,
+   "label": "Sam Lee",
+   "last": {
+    "agentSent": false,
+    "attachments": [],
+    "chatRowID": 31,
+    "dateDeliveredNs": 0,
+    "dateEditedNs": 0,
+    "dateNs": 815594553973877000,
+    "dateReadNs": 0,
+    "edited": false,
+    "errorCode": 0,
+    "fromMe": false,
+    "guid": "D5B6E7E7-3E21-4F67-972A-2E87113B6804",
+    "isRead": false,
+    "partCount": 1,
+    "partUnsent": false,
+    "reactions": [],
+    "rowid": 41550,
+    "senderHandle": "+16505550142",
+    "senderName": "Sam",
+    "service": "RCS",
+    "stickers": [],
+    "text": "are we still on for 7?",
+    "unsent": false
+   },
+   "memberNames": [
+    "Sam"
+   ],
+   "mergedChatRowIDs": [
+    31
+   ],
+   "rowid": 31,
+   "service": "RCS",
+   "unreadCount": 1
+  },
+  {
+   "canonical": {
+    "rawValue": "handle:+15105550163"
+   },
+   "displayName": "",
+   "guid": "any;-;+15105550163",
+   "identifier": "+15105550163",
+   "isGroup": false,
+   "label": "+1 (510) 555-0163",
+   "last": {
+    "agentSent": false,
+    "attachments": [],
+    "chatRowID": 56,
+    "dateDeliveredNs": 0,
+    "dateEditedNs": 0,
+    "dateNs": 815530805091634000,
+    "dateReadNs": 0,
+    "edited": false,
+    "errorCode": 0,
+    "fromMe": false,
+    "guid": "B7435153-2A0B-4E42-8B79-9F677FBDFAE2",
+    "isRead": false,
+    "partCount": 1,
+    "partUnsent": false,
+    "reactions": [],
+    "rowid": 41549,
+    "senderHandle": "+15105550163",
+    "senderName": "+1 (510) 555-0163",
+    "service": "SMS",
+    "stickers": [],
+    "text": "Water shut off Thursday 9am to 1pm, sorry for the short notice",
+    "unsent": false
+   },
+   "memberNames": [
+    "+1 (510) 555-0163"
+   ],
+   "mergedChatRowIDs": [
+    56
+   ],
+   "rowid": 56,
+   "service": "SMS",
+   "unreadCount": 1
+  }
+ ],
+ "hasMore": false,
+ "limit": 20
+}
