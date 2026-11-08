@@ -37,7 +37,9 @@ def normalize_handle(h):
     if "@" in h:
         return h.lower()
     digits = re.sub(r"\D", "", h)
-    if len(digits) == 10:
+    # A + before the first digit means the number already has its country code.
+    has_country_code = re.match(r"[^0-9+]*\+", h) is not None
+    if len(digits) == 10 and not has_country_code:
         digits = "1" + digits
     return "+" + digits if digits else h
 
