@@ -500,6 +500,63 @@ check "t1's Heart remove passes when an invalid sample makes it run again" \
 check "t1's Heart remove still presses when the Heart add left no Heart" \
     is "$(t1_heart t1-heart-remove absent 0)" "pass after 1 tries: react heart --remove: ok; Heart in chat.db: absent"
 
+# Test 5's case loop with a fake sampler and injector. The fake edit writes a `phase front` marker and the fake
+# injector posts 5 ms after it, so the case lands at before-field and the bridge stops there. The sampler's pass,
+# fail and rerun are about the end state, which a takeover changes, but an invalid sample can miss a hide or a
+# front-app change, so that try must run again.
+cat >"$T/tools/hid-inject" <<'EOF'
+#!/bin/bash
+out=""
+while (($#)); do
+    case "$1" in
+        --out) out="$2"; shift 2 ;;
+        *) shift ;;
+    esac
+done
+for ((i = 0; i < 500; i++)); do
+    if [[ -s "$FAKE_STATE/inject.go" ]]; then
+        echo "{\"type\":\"inject\",\"wall_ms\":$(($(cat "$FAKE_STATE/inject.go") + 5))}" >"$out"
+        rm -f "$FAKE_STATE/inject.go"
+        exit 0
+    fi
+    sleep 0.01
+done
+exit 3
+EOF
+chmod 755 "$T/tools/hid-inject"
+# t5_case <sampler codes>: runs before-field with a letter and prints the case's outcome line and how many tries ran.
+t5_case() {
+    rm -f "$FAKE_STATE/sampler.count" "$FAKE_STATE/inject.go"
+    : >"$BRIDGE_LOG"
+    # The t5 functions read the globals and call the stand-ins, which shellcheck can't see through the eval.
+    # shellcheck disable=SC2034,SC2329
+    (
+        eval "$(grep -E '^[A-Z_]+=' "$RT/t5-abort.sh")"
+        eval "$(functions_of "$RT/t5-abort.sh")"
+        TOOLS="$T/tools" FAKE_SAMPLER_RCS="$1"
+        export FAKE_SAMPLER_RCS
+        setup_case() { :; }
+        cleanup_case() { :; }
+        abort_target() { ABORT_TARGET=101; }
+        yes_no() { :; }
+        sleep() { command sleep 0.01; }
+        ui() {
+            local ms=$(($(now_ms) + 10))
+            echo "release-test $ms phase front" >>"$BRIDGE_LOG"
+            echo "$ms" >"$FAKE_STATE/inject.go"
+            UI_LINE="aborted: user took over"
+            UI_CODE="$UI_LINE"
+        }
+        run_case before-field letter >/dev/null
+        echo "$(tail -n 1 "$OUTCOMES" | cut -d' ' -f1-3) after $(cat "$FAKE_STATE/sampler.count") tries"
+    )
+}
+check "t5 passes a landed case with a valid sample" is "$(t5_case 0)" "case pass t5-before-field-letter after 1 tries"
+check "t5 judges a case whose sampler says rerun, since that is about the end state" \
+    is "$(t5_case 3)" "case pass t5-before-field-letter after 1 tries"
+check "t5 runs a case again after an invalid sample" is "$(t5_case "4 3")" "case pass t5-before-field-letter after 2 tries"
+check "t5 never passes a case whose samples are all invalid" is "$(t5_case 4)" "case rerun t5-before-field-letter after 3 tries"
+
 # Outcome lines.
 cap pass unsend 1 detail here >/dev/null
 gate fail fullscreen-panel 6 Messages showed >/dev/null

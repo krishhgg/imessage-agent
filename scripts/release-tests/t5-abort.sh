@@ -15,8 +15,8 @@
 # (near_expiry_edit in lib.sh). The terminal app needs Accessibility so hid-inject can post events.
 #
 # The release-test markers in bridge.log aim the injection and show where it landed. Each injection goes out as
-# soon as its marker shows. A case that didn't land at its point is tried again, up to 3 times. Each case passes
-# when:
+# soon as its marker shows. A case that didn't land at its point, or whose sample is invalid, is tried again, up to
+# 3 times. Each case passes when:
 #   - before Return, the result is `aborted: user took over` and no Return was posted
 #   - after Return, the result is step 7's result plus `user took over`
 #   - no key event, hide or focus restore marker comes more than 15 ms after the injection (the field reset is the
@@ -107,7 +107,7 @@ landed() {
 
 # run_case <point> <event>
 run_case() {
-    local point="$1" event="$2" name="$1-$2" try inj_file inj_pid inj since rowid text sample_ready
+    local point="$1" event="$2" name="$1-$2" try inj_file inj_pid inj since rowid text sample_ready sampler_rc
     for try in 1 2 3; do
         msg "-- $name (try $try)"
         if ! setup_case "$event"; then
@@ -152,6 +152,14 @@ run_case() {
         sleep 1.5
         kill -TERM "$sampler_pid" 2>/dev/null
         wait "$sampler_pid"
+        sampler_rc=$?
+        # The sampler's pass, fail and rerun are about the end state, which a takeover changes, so judge reads the
+        # samples instead. An invalid sample can miss a hide or a front-app change, so that try runs again.
+        if ((sampler_rc != 0 && sampler_rc != 1 && sampler_rc != 3)); then
+            msg "   the sample is invalid: $(sed -n 's/^verdict [a-z]* //p' "$RESULTS/samples/t5-$name-$try.verdict")"
+            cleanup_case
+            continue
+        fi
         inj="$(jget "$(tail -n 1 "$inj_file" 2>/dev/null)" wall_ms)"
         if [[ -z "$inj" ]]; then
             msg "   the trigger didn't come: $UI_LINE"
@@ -168,7 +176,7 @@ run_case() {
         return
     done
     UNLANDED="$UNLANDED $name"
-    echo "case rerun t5-$name 5 didn't land in 3 tries" >>"$OUTCOMES"
+    echo "case rerun t5-$name 5 didn't land with a valid sample in 3 tries" >>"$OUTCOMES"
 }
 
 # judge <case> <inj ms> <since ms> <sample file> <point> <event>: checks the result line, the markers and the sample
