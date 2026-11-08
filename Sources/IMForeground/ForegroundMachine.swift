@@ -249,9 +249,10 @@ public final class OwnershipGuard {
 /// Rule checklist:
 /// - Idle gate first (2 s of no input, 30 s budget, `busy: user active`), then the queue, then step 1 checks.
 /// - Step 1: Messages hidden, the chat already the one selected chat and checked, with no row press
-///   (`busy: chat not open in Messages` otherwise), empty composer (`busy: draft in Messages`), no edit field and
-///   no thread view (`busy: edit in progress`), parent unchanged (`newestIncoming(for:)?.guid == parent.guid`,
-///   else `aborted: parent changed`), bubble and action or menu item present (`unsupported`).
+///   (`busy: chat not open in Messages` otherwise), Messages still hidden after that check, empty composer
+///   (`busy: draft in Messages`), no edit field and no thread view (`busy: edit in progress`), parent unchanged
+///   (`newestIncoming(for:)?.guid == parent.guid`, else `aborted: parent changed`), bubble and action or menu item
+///   present (`unsupported`).
 /// - Step 3: input in the last 2 s releases the queue and returns to the idle gate. `open -b`. `t_front` within 1 s,
 ///   else watch 5 s more (`aborted: late activation`, takeover, or `aborted: activation`).
 /// - `recorder.willInvoke` before the first press after `t_front`, with the snapshot ROWID, and for an edit the target

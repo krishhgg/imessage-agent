@@ -255,7 +255,8 @@ public final class BridgeContainer {
             ?? HiddenWindowManager(app: app, ax: ax, transfers: staging, clock: clock)
         let targeting: ChatTargeting = storedTapbacks?.targeting ?? storedUnsend?.targeting
             ?? ChatTargeter(ax: ax, source: database,
-                            builder: { RowDescriptionBuilder(timeZone: timeZone, now: clock.now) }, clock: clock)
+                            builder: { RowDescriptionBuilder(timeZone: timeZone, now: clock.now) }, clock: clock,
+                            lastLaunch: { windows.lastLaunchUptime })
         if storedTapbacks == nil {
             storedTapbacks = TapbackRunner(ax: ax, windows: windows, targeting: targeting, source: database, clock: clock)
         }

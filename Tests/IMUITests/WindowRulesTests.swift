@@ -418,6 +418,60 @@ final class WindowRulesTests: XCTestCase {
         XCTAssertEqual(rig.app.calls, [.quit, .waitForExit, .launchHidden])
     }
 
+    func testTheLaunchTimeIsKeptForEachLaunchAndOnlyForALaunch() {
+        // Ready or busy: nothing launched, so no launch time.
+        for state in [Make.readyState, Make.state(hidden: false, ax: 1)] {
+            let rig = Rig(state: state)
+            _ = rig.windows.prepare(queueDeadline: rig.clock.uptime + 30)
+            XCTAssertNil(rig.windows.lastLaunchUptime, "\(state)")
+        }
+
+        // A cold launch keeps the time of the `open`, and a later request that launches nothing keeps it too.
+        let cold = Rig(state: .notRunning)
+        let clock = cold.clock
+        var openedAt: TimeInterval?
+        cold.app.onCall = { call, state in
+            guard call == .launchHidden else { return }
+            openedAt = clock.uptime
+            state = Make.readyState
+        }
+        XCTAssertNil(cold.windows.ensureHiddenWindow(queueDeadline: clock.uptime + 30))
+        XCTAssertNotNil(openedAt)
+        XCTAssertEqual(cold.windows.lastLaunchUptime, openedAt)
+        clock.advance(30)
+        XCTAssertNil(cold.windows.ensureHiddenWindow(queueDeadline: clock.uptime + 30))
+        XCTAssertEqual(cold.windows.lastLaunchUptime, openedAt)
+
+        // A relaunch keeps the time of its `open`, after the quit and the exit wait.
+        let relaunch = Rig(state: Make.state(hidden: false, ax: 0))
+        let relaunchClock = relaunch.clock
+        var relaunchedAt: TimeInterval?
+        relaunch.app.onCall = { call, state in
+            switch call {
+            case .quit:
+                state = .notRunning
+            case .launchHidden:
+                relaunchedAt = relaunchClock.uptime
+                state = Make.readyState
+            default:
+                break
+            }
+        }
+        XCTAssertNil(relaunch.windows.ensureHiddenWindow(queueDeadline: relaunchClock.uptime + 30))
+        XCTAssertEqual(relaunch.app.calls, [.quit, .waitForExit, .launchHidden])
+        XCTAssertNotNil(relaunchedAt)
+        XCTAssertEqual(relaunch.windows.lastLaunchUptime, relaunchedAt)
+
+        // A failed `open` may still have started Messages, so its time is kept as well.
+        let failing = LaunchFailingApp()
+        let failingClock = FakeClock()
+        let manager = HiddenWindowManager(app: failing, ax: ScriptedAX(log: EventLog()),
+                                          transfers: FakePendingTransfers(), clock: failingClock)
+        let before = failingClock.uptime
+        XCTAssertEqual(manager.ensureHiddenWindow(queueDeadline: before + 30), ActionResult(.noHiddenWindow))
+        XCTAssertEqual(manager.lastLaunchUptime, before)
+    }
+
     func testMessagesThatDoesNotExitIsNoHiddenWindowAndNotRelaunched() {
         let rig = Rig(state: Make.state(hidden: false, ax: 0))
         let prep = rig.windows.prepare(queueDeadline: rig.clock.uptime + 30)

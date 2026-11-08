@@ -105,8 +105,9 @@ public struct SelectionExpectation: Hashable, Sendable {
 
 public protocol ChatTargeting: AnyObject {
     /// Group check, duplicate description and duplicate signature checks, no-text-rows check, then exactly one
-    /// matching row. The action runs in place: the target's row must already be the one selected row, and the newest
-    /// loaded text bubbles must equal the signature. Otherwise it refuses. It never presses a row.
+    /// matching row, after a bounded wait if the conversation list is still loading. The action runs in place: the
+    /// target's row must already be the one selected row, and the newest loaded text bubbles must equal the
+    /// signature. Otherwise it refuses. It never presses a row.
     func selectChat(_ chat: ResolvedChat) -> ChatSelection
     /// Re-reads the loaded bubbles against the signature without pressing anything.
     func verifySelected(_ chat: ResolvedChat, excluding rowid: Int64?) -> Bool
@@ -130,13 +131,22 @@ public protocol ChatTargeting: AnyObject {
 /// 1. A group chat is `unsupported_target`. A chat with no text rows (or no conversation) is `not_loaded`.
 /// 2. Another conversation (each group on its own, 1:1 chats grouped by handle, the target left out) with the same
 ///    expected description, or whose signature cut to the target signature's length equals it, is `ambiguous`.
-/// 3. Exactly one loaded row whose full description equals the expected one (`sameRowText`). None is `not_loaded`,
+/// 3. The conversation rows. If no row's description equals the expected one and the list is still loading, it
+///    reads the list's state (`MessagesAXDriving.conversationListState`) every `pollInterval` until the list has
+///    loaded, then reads the rows again. A list still loading after `listLoadTimeout` is `not_loaded`. The list is
+///    still loading while its children are all placeholders, while no list shows within `listLoadTimeout` of the
+///    bridge's last launch of Messages (`lastLaunch`), and after a read that hit an element Messages had just
+///    replaced (`AXDriveError.staleReference`). A loaded list, or a missing one with no recent launch, is read once
+///    with no wait.
+/// 4. Exactly one loaded row whose full description equals the expected one (`sameRowText`). None is `not_loaded`,
 ///    several are `ambiguous`. No prefix matching and no scrolling. A row without the English row actions
 ///    (`UINames.requiredRowActions`) is `unsupported`: Messages isn't running in English.
-/// 4. That row must read selected and no other row may. Otherwise, with the target not selected, two or more rows
+/// 5. That row must read selected and no other row may. Otherwise, with the target not selected, two or more rows
 ///    selected, or any row's selection unknown, the result is `busy: chat not open in Messages` with the fix of
 ///    `UIResults.chatNotOpen`.
-/// 5. The newest loaded text bubbles must equal the signature within `settleTimeout`, otherwise `not_loaded`.
+/// 6. The newest loaded text bubbles must equal the signature within `settleTimeout`, otherwise `not_loaded`.
+///
+/// Any other AX error in step 3, during the wait included, refuses as `UIResults.axFailure`.
 ///
 /// No result carries the mark-read note, since no row was pressed. Bodies compare as `TextNorm.matchKey` (NFC,
 /// trimmed). A chat.db read error is `error: can't read chat.db`.
@@ -147,19 +157,30 @@ public final class ChatTargeter: ChatTargeting {
     public let clock: Clock
     /// How long the transcript of the selected chat gets to match the signature before the check fails.
     public var settleTimeout: TimeInterval = 2
+    /// How long a conversation list that is still loading gets to load. A list still loading after it is
+    /// `not_loaded`. On macOS 26.2 with Messages 26.0, the list's children were groups with no row text about 1 to
+    /// 2 s after a hidden launch, and were all rows about 6 s after it (research/live-tests/2026-11-07-sends.md,
+    /// Conversation rows after a hidden launch).
+    public var listLoadTimeout: TimeInterval = 6
     public var pollInterval: TimeInterval = 0.1
+    /// `clock.uptime` of the bridge's last launch of Messages (`HiddenWindowManager.lastLaunchUptime`), nil if it
+    /// hasn't launched Messages. A missing conversation list counts as still loading only within `listLoadTimeout`
+    /// of that launch. At any other time a window with no list stays `not_loaded` with no wait.
+    public let lastLaunch: () -> TimeInterval?
 
     public convenience init(ax: MessagesAXDriving, source: UITargetSource,
-                            builder: @escaping () -> RowDescriptionBuilder) {
-        self.init(ax: ax, source: source, builder: builder, clock: SystemClock())
+                            builder: @escaping () -> RowDescriptionBuilder,
+                            lastLaunch: @escaping () -> TimeInterval? = { nil }) {
+        self.init(ax: ax, source: source, builder: builder, clock: SystemClock(), lastLaunch: lastLaunch)
     }
 
     public init(ax: MessagesAXDriving, source: UITargetSource, builder: @escaping () -> RowDescriptionBuilder,
-                clock: Clock) {
+                clock: Clock, lastLaunch: @escaping () -> TimeInterval? = { nil }) {
         self.ax = ax
         self.source = source
         self.builder = builder
         self.clock = clock
+        self.lastLaunch = lastLaunch
     }
 
     public func selectChat(_ chat: ResolvedChat) -> ChatSelection {
@@ -181,8 +202,11 @@ public final class ChatTargeter: ChatTargeting {
             return .refused(ActionResult(.ambiguous(.target)))
         }
 
-        let rows: [ConversationRowInfo]
-        do { rows = try ax.conversationRows() } catch { return .refused(UIResults.axFailure(error)) }
+        let read: [ConversationRowInfo]?
+        do { read = try conversationRows(matching: expected.description) } catch {
+            return .refused(UIResults.axFailure(error))
+        }
+        guard let rows = read else { return .refused(ActionResult(.notLoaded)) }
         let matches = rows.filter { Self.sameRowText($0.description, expected.description) }
         guard let row = matches.first else { return .refused(ActionResult(.notLoaded)) }
         guard matches.count == 1 else { return .refused(ActionResult(.ambiguous(.target))) }
@@ -296,6 +320,40 @@ public final class ChatTargeter: ChatTargeting {
         guard !signature.isEmpty, text.count >= signature.count else { return false }
         let newest = text.suffix(signature.count).reversed().map { SignatureKey(fromMe: $0.fromMe, text: $0.text) }
         return newest == signature.map(SignatureKey.init)
+    }
+
+    /// The conversation rows, read again once the list has loaded when no row matches `description` and the list is
+    /// still loading (`listIsLoading`). Nil when it is still loading after `listLoadTimeout`. A row read that hits a
+    /// stale element counts as a list still loading, since Messages replaces the list's children while it loads.
+    /// Throws any other AX error.
+    private func conversationRows(matching description: String) throws -> [ConversationRowInfo]? {
+        do {
+            let rows = try ax.conversationRows()
+            if rows.contains(where: { Self.sameRowText($0.description, description) }) { return rows }
+            guard try listIsLoading() else { return rows }
+        } catch AXDriveError.staleReference {}
+        let deadline = clock.uptime + listLoadTimeout
+        while true {
+            let left = deadline - clock.uptime
+            if left <= 0 { return nil }
+            sleepPollStep(clock, interval: pollInterval, left: left)
+            guard try !listIsLoading() else { continue }
+            do { return try ax.conversationRows() } catch AXDriveError.staleReference { continue }
+        }
+    }
+
+    /// True while the list's children are all placeholders, while no list shows within `listLoadTimeout` of
+    /// `lastLaunch`, and when the read hits a stale element. Throws any other AX error.
+    private func listIsLoading() throws -> Bool {
+        let state: ConversationListState
+        do { state = try ax.conversationListState() } catch AXDriveError.staleReference { return true }
+        switch state {
+        case .loading: return true
+        case .loaded: return false
+        case .missing:
+            guard let launched = lastLaunch() else { return false }
+            return clock.uptime - launched <= listLoadTimeout
+        }
     }
 
     private func waitForTranscript(matching signature: [SignatureRow]) -> Bool {

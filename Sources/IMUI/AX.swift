@@ -122,6 +122,9 @@ public protocol MessagesAXDriving: AnyObject {
     /// AX windows of Messages.
     func windowCount() throws -> Int
     func conversationRows() throws -> [ConversationRowInfo]
+    /// What the conversation list shows (`ConversationListRule.state`): no list, a list still loading (children and
+    /// none of its direct children an `AXStaticText` row), or a loaded list. Reads roles only and hands out no refs.
+    func conversationListState() throws -> ConversationListState
     /// `AXPress` on a conversation row. Live, it checks the window rules after its description read and throws
     /// `messagesVisible` (or `notRunning`) instead of pressing if Messages isn't hidden with one window. Then
     /// `finalCheck`, then the press. Nothing calls it now, since `ChatTargeter.selectChat` acts only on a chat that is
@@ -393,6 +396,29 @@ enum ThreadViewRule {
     }
 }
 
+/// What `MessagesAXDriving.conversationListState` read.
+public enum ConversationListState: Hashable, Sendable {
+    /// No window, or a window with no `ConversationList` element.
+    case missing
+    /// The list has children and none of its direct children is an `AXStaticText` row.
+    case loading
+    /// Some direct child is an `AXStaticText` row, or the list has no children.
+    case loaded
+}
+
+/// When the conversation list counts as still loading. About 1 to 2 s after a hidden launch its direct children were
+/// all `AXGroup` with no description, and about 6 s after it they were all `AXStaticText` rows
+/// (research/live-tests/2026-11-07-sends.md, Conversation rows after a hidden launch). Pinned chats may show as
+/// tiles that aren't `AXStaticText`, so one child that isn't a row doesn't mean the list is loading.
+enum ConversationListRule {
+    /// `missing` with no list (`childRoles` nil), `loading` with children and none of them `AXStaticText`, otherwise
+    /// `loaded`. A list with no children reads loaded.
+    static func state(childRoles: [String]?) -> ConversationListState {
+        guard let roles = childRoles else { return .missing }
+        return !roles.isEmpty && !roles.contains("AXStaticText") ? .loading : .loaded
+    }
+}
+
 /// An `AXUIElement` usable as a dictionary key (`CFEqual` and `CFHash`).
 struct AXElement: Hashable {
     let raw: AXUIElement
@@ -440,10 +466,7 @@ public final class LiveMessagesAX: MessagesAXDriving {
     }
 
     public func conversationRows() throws -> [ConversationRowInfo] {
-        guard let window = try singleWindow(),
-              let list = try Self.first(in: window, where: {
-                  try Self.string($0, "AXIdentifier") == "ConversationList"
-              }) else { return [] }
+        guard let list = try conversationList() else { return [] }
         return try Self.children(of: list).compactMap { row in
             guard try Self.string(row, "AXRole") == "AXStaticText" else { return nil }
             let description = try Self.string(row, "AXDescription")
@@ -452,6 +475,14 @@ public final class LiveMessagesAX: MessagesAXDriving {
                                        isSelected: try Self.bool(row, "AXSelected"),
                                        actionNames: try Self.actionNamesOrThrow(row).map(shortActionName))
         }
+    }
+
+    /// `ConversationListRule.state` on the roles of the list's direct children. With no window there is no list
+    /// either, so that reads `missing` too.
+    public func conversationListState() throws -> ConversationListState {
+        guard let list = try conversationList() else { return ConversationListRule.state(childRoles: nil) }
+        let roles = try Self.children(of: list).map { try Self.string($0, "AXRole") }
+        return ConversationListRule.state(childRoles: roles)
     }
 
     /// Unused for now and kept for the chat switch flows, which wait for probes. See the protocol requirement.
@@ -695,6 +726,12 @@ public final class LiveMessagesAX: MessagesAXDriving {
         let all = try windows()
         guard all.count <= 1 else { throw AXDriveError.axError(AXError.failure.rawValue) }
         return all.first
+    }
+
+    /// The window's `ConversationList` element, nil with no window or no list.
+    private func conversationList() throws -> AXUIElement? {
+        guard let window = try singleWindow() else { return nil }
+        return try Self.first(in: window, where: { try Self.string($0, "AXIdentifier") == "ConversationList" })
     }
 
     // MARK: - AX helpers

@@ -79,6 +79,41 @@ final class PreconditionTests: XCTestCase {
         assertNothingActivated(h)
     }
 
+    func testMessagesShownDuringTheChatCheckIsBusyMessagesOpen() {
+        // The chat check can wait seconds for a conversation list that is still loading. A user who shows Messages
+        // early in that wait and then stays still for 2 s would pass the idle check before `open -b`.
+        for (hidden, frontmost) in [(false, false), (true, true)] {
+            let h = Harness()
+            h.log.onEvent = { [unowned h] event in
+                guard event == .selectChat else { return }
+                h.input.inject()
+                h.base.isHidden = hidden
+                h.base.isFrontmost = frontmost
+                h.clock.advance(6)
+            }
+            let edit = h.runEdit()
+            XCTAssertEqual(edit.result, .messagesOpen, "\(hidden) \(frontmost)")
+            XCTAssertEqual(h.log.count(.selectChat), 1)
+            XCTAssertEqual(h.log.count(.findBubble), 0, "step 1 stops at the state read after the chat check")
+            assertNothingActivated(h)
+        }
+    }
+
+    func testMessagesQuitOrRelaunchedDuringTheChatCheckIsNoHiddenWindow() {
+        var relaunched = Harness().base
+        relaunched.pid = Harness.pid + 1
+        for state in [MessagesAppState.notRunning, relaunched] {
+            let h = Harness()
+            h.log.onEvent = { [unowned h] event in
+                if event == .selectChat { h.base = state }
+            }
+            let reply = h.runReply()
+            XCTAssertEqual(reply.result.code, .noHiddenWindow, "\(state)")
+            XCTAssertEqual(h.log.count(.selectChat), 1)
+            assertNothingActivated(h)
+        }
+    }
+
     func testChatSelectionRefusalIsReturned() {
         let h = Harness()
         h.targeting.selection = .refused(ActionResult(.ambiguous(.target)))

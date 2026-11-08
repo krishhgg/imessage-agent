@@ -358,6 +358,26 @@ final class AXSupportTests: XCTestCase {
         XCTAssertEqual(ThreadViewRule.pick(two), 3)
     }
 
+    // MARK: - Conversation list loading
+
+    func testAListOfOnlyPlaceholderGroupsIsLoading() {
+        // About 1 to 2 s after a hidden launch: 11 children, all `AXGroup`.
+        XCTAssertEqual(ConversationListRule.state(childRoles: Array(repeating: "AXGroup", count: 11)), .loading)
+        XCTAssertEqual(ConversationListRule.state(childRoles: ["AXGroup", ""]), .loading, "a child with no role")
+    }
+
+    func testNoListIsMissing() {
+        // Whether that means loading depends on how long ago the bridge launched Messages, so the targeter decides.
+        XCTAssertEqual(ConversationListRule.state(childRoles: nil), .missing)
+    }
+
+    func testAnyRowOrAnEmptyListIsLoaded() {
+        XCTAssertEqual(ConversationListRule.state(childRoles: Array(repeating: "AXStaticText", count: 11)), .loaded)
+        // Pinned chats may show as tiles that aren't rows, next to the unpinned rows.
+        XCTAssertEqual(ConversationListRule.state(childRoles: ["AXGroup", "AXGroup", "AXStaticText"]), .loaded)
+        XCTAssertEqual(ConversationListRule.state(childRoles: []), .loaded, "no conversations")
+    }
+
     // MARK: - Ref table
 
     func testSameElementAndFingerprintKeepsItsID() throws {

@@ -217,6 +217,11 @@ final class ForegroundRunner {
         // `selectChat` presses no row. A chat that isn't the one selected chat is `busy: chat not open in Messages`,
         // returned like the other step 1 refusals, with nothing pressed and no mark-read note.
         if case .refused(let early) = env.targeting.selectChat(run.chat) { return early }
+        // `selectChat` can wait several seconds for a conversation list that is still loading, longer than the idle
+        // check before `open -b` covers. The user may have shown Messages during that wait, so the state is read again.
+        let after = env.app.state()
+        guard after.isRunning, after.pid == messagesPID else { return ActionResult(.noHiddenWindow) }
+        guard after.isHidden, !after.isFrontmost else { return .messagesOpen }
 
         do {
             guard let composer = try env.ax.composer() else { return .abortedCheck(ForegroundCheck.axRead) }

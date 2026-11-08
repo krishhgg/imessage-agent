@@ -124,6 +124,17 @@ public final class HiddenWindowManager {
     /// Sampling interval for the launch wait, the transfer wait and the visibility poll.
     public var pollInterval: TimeInterval = 0.05
 
+    private let lock = NSLock()
+    private var launchedAt: TimeInterval?
+
+    /// `clock.uptime` when this manager last ran `open -g -j -b` for a cold launch or relaunch, nil before its first
+    /// launch. `ChatTargeter` reads it to tell a list that hasn't shown yet after a launch from a window with no list.
+    public var lastLaunchUptime: TimeInterval? {
+        lock.lock()
+        defer { lock.unlock() }
+        return launchedAt
+    }
+
     public init(app: MessagesAppControl, ax: MessagesAXDriving, transfers: PendingTransferChecking, clock: Clock) {
         self.app = app
         self.ax = ax
@@ -232,7 +243,11 @@ public final class HiddenWindowManager {
         let deadline = clock.uptime + Limits.relaunchWindowWait
         var sawWindow = false
         var ready = false
-        // A failed `open` may still have started Messages, so the visibility poll below runs either way.
+        // A failed `open` may still have started Messages, so the visibility poll below runs either way, and the
+        // launch time is kept either way.
+        lock.lock()
+        launchedAt = clock.uptime
+        lock.unlock()
         if app.launchHidden() {
             while true {
                 let state = currentState()

@@ -38,6 +38,9 @@ final class ScriptedAX: MessagesAXDriving {
     var onWindowCount: (() -> Void)?
     var rows: [ConversationRowInfo] = []
     var rowsError: AXDriveError?
+    /// Answers `conversationListState`, called once per read. Loaded by default. Tests can switch on a clock to
+    /// script a list that loads late, or throw to script a failed read.
+    var listState: () throws -> ConversationListState = { .loaded }
     /// Returns the loaded bubbles. Tests can switch on a clock to script a transcript that settles late.
     var bubbles: () -> [BubbleInfo] = { [] }
     var bubblesError: AXDriveError?
@@ -63,6 +66,11 @@ final class ScriptedAX: MessagesAXDriving {
         log.add("ax.rows")
         if let rowsError { throw rowsError }
         return rows
+    }
+
+    func conversationListState() throws -> ConversationListState {
+        log.add("ax.listState")
+        return try listState()
     }
 
     func press(row: AXRef, finalCheck: AXFinalCheck) throws {
@@ -385,9 +393,12 @@ final class Rig {
         windows = HiddenWindowManager(app: app, ax: ax, transfers: transfers, clock: clock)
     }
 
+    /// Wired to `windows` for the last launch, as the bridge wires it.
     func targeter() -> ChatTargeter {
         let clock = self.clock
-        return ChatTargeter(ax: ax, source: source, builder: { Make.builder(now: clock.now) }, clock: clock)
+        let windows = self.windows
+        return ChatTargeter(ax: ax, source: source, builder: { Make.builder(now: clock.now) }, clock: clock,
+                            lastLaunch: { windows.lastLaunchUptime })
     }
 }
 
