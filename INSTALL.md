@@ -50,7 +50,9 @@ When the user says "done", run `"$HOME/.local/bin/imessage" doctor`, or `"$HOME/
 
 `doctor` checks that the bridge can read messages and restarts it if it can't. Then macOS asks whether iMessage Agent may control Messages, and the user clicks OK. With `--ui`, macOS also asks for Accessibility, and the user turns on iMessage Agent in that pane.
 
-`doctor` exits 0 even when a check fails, so read its lines. If a line starts with `fail` or `error:`, show it to the user and follow its `fix:`. When the fix is something the user does on the Mac, such as turning on iMessage Agent in a System Settings pane, end your turn and ask them to reply "done". Then run the same `doctor` command again. Go on to step 6 only when no line starts with `fail` or `error:`.
+`doctor` exits 0 even when a check fails, so read its lines. A line that starts with `error:`, `fail chat.db`, `fail restart`, `fail Automation` or `fail Accessibility` means the bridge can't yet read, send or, with `--ui`, run UI actions. Show it to the user and follow its `fix:`. When the fix is something the user does on the Mac, such as turning on iMessage Agent in a System Settings pane, end your turn and ask them to reply "done". Then run the same `doctor` command again. Go on to step 6 once no line starts with any of those.
+
+Show the user any other `fail` line, such as `action names`, `allowlist` or `last run`, with its `fix:`, and go on without waiting. Those checks don't stop reading or sending.
 
 ## Step 6: save the skill
 
