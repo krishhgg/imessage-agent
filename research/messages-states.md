@@ -280,7 +280,7 @@ Before the first effect, the bridge records a restore plan from its state sample
 
 Foreground mode is the exception. Its finish first takes Messages out of the front, by today's hide or by returning focus, and only then restores the chat, because the bridge never presses a row on a frontmost Messages (G6).
 
-It restores an item only if the item still has the value the bridge left. If the user changed it, the user's choice stands. It unhides only if the chat restore succeeded or had nothing to do. The restore runs before the chat.db verification wait, so the user's state comes back within the action span, not after it. The result names each item that wasn't restored. The plan lives in memory. The journal holds only flags, the Messages pid, the earlier chat's ROWID and a digest of its row description (G12), because it never stores message text, and row descriptions contain message previews.
+It restores an item only if the item still has the value the bridge left. If the user changed it, the user's choice stands. It unhides only if the chat restore succeeded or had nothing to do. The restore runs before the chat.db verification wait, so the user's state comes back within the action span, not after it. The result names each item that wasn't restored. The plan lives in memory. The journal holds only flags, the Messages pid, the earlier chat's ROWID, the highest message ROWID seen in that chat and a digest of its row description (G12), because it never stores message text, and row descriptions contain message previews.
 
 | Item | Recorded from | Restored by | Restorable |
 | --- | --- | --- | --- |
@@ -360,7 +360,7 @@ The final-check rule in BUILD-PLAN entry 50 still holds for every new press, wri
   - The path check holds: still hidden and matching the plan on the hidden path, or G16's checks in view.
   - The selected row still resolves to the target, so the user hasn't picked another chat.
   - Exactly one loaded row equals the earlier chat's description, rebuilt from chat.db at that moment.
-- The restore calls `selectChat` on the resolved chat, so the signature check runs. The captured bubbles must still be the newest ones, though bubbles that arrived since are allowed.
+- The restore calls `selectChat` on the resolved chat, so the signature check runs. The captured bubbles must still be the newest ones, though bubbles that arrived since are allowed. Crash recovery skips this part (G12).
 - Any failure stops the restore. Nothing more is pressed. The result adds `chat not restored: <target> is selected`, or `an unknown chat is selected` if the signature check failed after the press. If the bridge hid Messages, Messages stays hidden with `Messages left hidden`, and G4 doesn't run. If a window is visible, G15 shows its notice.
 - The bridge never picks a row by a partial match.
 - After a cold launch or relaunch, the same capture and restore run before Messages is left hidden or quit.
@@ -423,9 +423,10 @@ The final-check rule in BUILD-PLAN entry 50 still holds for every new press, wri
 
 **G12. Journal and crash.**
 - Before the first hide or press, the journal records the Messages pid with the `hid` and `launched` flags and their times, because the plan lives in memory and recovery needs the pid to tell whether Messages is the same process.
-- Before the first press, the journal also records the earlier chat's chat.db ROWID and a digest of the captured row description. When the capture runs after the hide, as in state 12, the bridge writes them after the hide and before the first press (G1). The journal records no text.
+- Before the first press, the journal also records the earlier chat's chat.db ROWID, the highest message ROWID seen in it (G3) and a digest of the captured row description. When the capture runs after the hide, as in state 12, the bridge writes them after the hide and before the first press (G1). The journal records no text.
 - After a crash, recovery never unhides or quits Messages on its own, because the user may have moved on.
 - If Messages is still hidden, its pid matches the one the journal recorded, and its selected row resolves to the target chat, recovery runs the G3 restore once while Messages is hidden. Otherwise, including when the entry has no recorded pid or no earlier chat, it leaves Messages alone and shows G15's notice.
+- Recovery runs G3 from the journal, because the plan is gone. The hidden and pid checks above take the place of the plan in the path check. The unread check looks above the journaled highest message ROWID. The journal holds no bubble text, so recovery skips the captured-bubble check and relies on the signature check in `selectChat` (P3), which compares the newest loaded bubbles with the earlier chat's newest rows in chat.db at that moment.
 - `doctor` says Messages may be hidden and showing another chat.
 - A quit-later timer lost in a crash leaves Messages running hidden, which is harmless.
 
@@ -651,7 +652,7 @@ The earlier approval-order probe is dropped. Local files already answer it (sect
   - The approval kept for one retry.
   - The panel text over a frontmost Messages.
   - The "Always allow this chat" text and the README say that tapbacks in that chat may hide and show Messages and switch its chat.
-- **Section 3.** Item 2: the journal flags, the Messages pid, the earlier chat's ROWID and the digest. Item 3: the idle, mouse and frontmost waits don't hold the queue. Item 4: quit later after a cold start, under a queue ticket.
+- **Section 3.** Item 2: the journal flags, the Messages pid, the earlier chat's ROWID, its highest message ROWID and the digest. Item 3: the idle, mouse and frontmost waits don't hold the queue. Item 4: quit later after a cold start, under a queue ticket.
 - **Results.** New busy reasons:
   - `Messages is in use`
   - `several Messages windows`
@@ -718,7 +719,7 @@ The earlier approval-order probe is dropped. Local files already answer it (sect
   - `HIDInputMonitor` adds the `flagsState` and `pressedMouseButtons` checks, and gesture event types if probe 13 shows the HID state reports them.
 - **IMSend.** ColdStart.swift and MessageSender.swift report when the bridge started Messages from not running.
 - **IMPolicy.**
-  - Journal.swift gets the `hid` and `launched` flags, the Messages pid, the earlier chat's ROWID, the row-description digest, and their recovery.
+  - Journal.swift gets the `hid` and `launched` flags, the Messages pid, the earlier chat's ROWID, its highest message ROWID, the row-description digest, and their recovery.
   - PolicyStore.swift gets a separate in-front setting with a consent version. An existing `foregroundMode` that is on doesn't turn it on (PolicyStore.swift:28, 304-311).
   - Approvals.swift keeps an approval valid for the same key after a busy that reached nothing.
 - **IMBridge.**
