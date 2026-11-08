@@ -90,10 +90,11 @@ public struct KeychainError: Error, Hashable, Sendable, CustomStringConvertible 
 /// while the store file exists gives `.hashMissing`. research/live-tests/2026-11-06.md has the measurements. That
 /// fits tamper detection, not tamper proofing (section 2).
 ///
-/// `readHash` turns Keychain dialogs off while it runs. A locked keychain, or an access list that no longer matches
-/// the bridge, then fails the read with `errSecInteractionNotAllowed` and the store reads `.hashUnreadable`, instead
-/// of a dialog blocking the store lock and the bridge before it serves. `writeHash` and `deleteHash` keep dialogs on,
-/// because they run right after the user approves a change.
+/// `readHash` turns Keychain dialogs off while it runs, so a read that would need a dialog fails instead of blocking
+/// the store lock and the bridge before it serves. An item this build can't read, after an update or after another
+/// program changed it, fails with `errSecAuthFailed` (measured). A locked keychain is expected to fail with
+/// `errSecInteractionNotAllowed` (not measured). Any failure reads `.hashUnreadable`. `writeHash` and `deleteHash`
+/// keep dialogs on, because they run right after the user approves a change.
 ///
 /// Tests never reach the Keychain. They inject an in-memory `KeychainHashStoring`, or give this class a fake read
 /// and a fake interaction switch.
