@@ -1,0 +1,85 @@
+== window
+AXWindow/AXStandardWindow id=SceneWindow title=len21 acts=AXRaise
+ AXGroup/iOSContentGroup 
+  AXGroup  acts=AXScrollToVisible,AXCancel,AXShowMenu
+   AXGroup  acts=AXScrollToVisible,AXCancel,AXShowMenu
+    AXGroup  acts=AXScrollToVisible,AXCancel,AXShowMenu
+     AXGroup id=TranscriptCollectionView desc=len8 acts=AXScrollToVisible,AXCancel,AXScrollUpByPage,AXShowMenu
+      AXGroup desc=len152 acts=AXScrollToVisible,AXCancel,AXScrollUpByPage,AXShowMenu
+       AXButton id=Sticker desc=len152 acts=AXPress,AXScrollToVisible,AXCancel,AXScrollUpByPage,AXShowMenu,Open URL,Unmute,Heart,Thumbs up,Thumbs down,Ha ha!,Exclamation mark,Question mark,😭,🥀,✌️,🥲,🙏🏾,Add Emoji as Tapback,Tapback Details…,Reply…,Attach Sticker…,Forward…,Copy,Pin,Delete…,Show Times
+        AXButton desc=len4 acts=AXPress,AXScrollToVisible,AXCancel,AXScrollUpByPage,AXShowMenu,Open URL,Unmute,Open URL,Unmute,Heart,Thumbs up,Thumbs down,Ha ha!,Exclamation mark,Question mark,😭,🥀,✌️,🥲,🙏🏾,Add Emoji as Tapback,Tapback Details…,Reply…,Attach Sticker…,Forward…,Copy,Pin,Delete…,Show Times
+        AXGenericElement id=LP.CaptionBar.TopCaption desc=len99 acts=AXPress,AXScrollToVisible,AXCancel,AXScrollUpByPage,AXShowMenu,Open URL,Unmute,Open URL,Unmute,Heart,Thumbs up,Thumbs down,Ha ha!,Exclamation mark,Question mark,😭,🥀,✌️,🥲,🙏🏾,Add Emoji as Tapback,Tapback Details…,Reply…,Attach Sticker…,Forward…,Copy,Pin,Delete…,Show Times
+        AXGenericElement id=LP.CaptionBar.BottomCaption desc=len11 acts=AXPress,AXScrollToVisible,AXCancel,AXScrollUpByPage,AXShowMenu,Open URL,Unmute,Open URL,Unmute,Heart,Thumbs up,Thumbs down,Ha ha!,Exclamation mark,Question mark,😭,🥀,✌️,🥲,🙏🏾,Add Emoji as Tapback,Tapback Details…,Reply…,Attach Sticker…,Forward…,Copy,Pin,Delete…,Show Times
+      AXGroup desc=len137 acts=AXScrollToVisible,AXCancel,AXScrollUpByPage,AXShowMenu
+       AXButton id=Sticker desc=len137 acts=AXPress,AXScrollToVisible,AXCancel,AXScrollUpByPage,AXShowMenu,Open URL,Unmute,Heart,Thumbs up,Thumbs down,Ha ha!,Exclamation mark,Question mark,😭,🥀,✌️,🥲,🙏🏾,Add Emoji as Tapback,Tapback Details…,Reply…,Attach Sticker…,Forward…,Copy,Pin,Delete…,Show Times
+        AXButton desc=len4 acts=AXPress,AXScrollToVisible,AXCancel,AXScrollUpByPage,AXShowMenu,Open URL,Unmute,Open URL,Unmute,Heart,Thumbs up,Thumbs down,Ha ha!,Exclamation mark,Question mark,😭,🥀,✌️,🥲,🙏🏾,Add Emoji as Tapback,Tapback Details…,Reply…,Attach Sticker…,Forward…,Copy,Pin,Delete…,Show Times
+        AXGenericElement id=LP.CaptionBar.TopCaption desc=len84 acts=AXPress,AXScrollToVisible,AXCancel,AXScrollUpByPage,AXShowMenu,Open URL,Unmute,Open URL,Unmute,Heart,Thumbs up,Thumbs down,Ha ha!,Exclamation mark,Question mark,😭,🥀,✌️,🥲,🙏🏾,Add Emoji as Tapback,Tapback Details…,Reply…,Attach Sticker…,Forward…,Copy,Pin,Delete…,Show Times
+        AXGenericElement id=LP.CaptionBar.BottomCaption desc=len11 acts=AXPress,AXScrollToVisible,AXCancel,AXScrollUpByPage,AXShowMenu,Open URL,Unmute,Open URL,Unmute,Heart,Thumbs up,Thumbs down,Ha ha!,Exclamation mark,Question mark,😭,🥀,✌️,🥲,🙏🏾,Add Emoji as Tapback,Tapback Details…,Reply…,Attach Sticker…,Forward…,Copy,Pin,Delete…,Show Times
+      AXGroup  acts=AXScrollToVisible,AXCancel,AXScrollUpByPage,AXShowMenu
+       AXStaticText desc=len23 acts=AXPress,AXScrollToVisible,AXCancel,AXScrollUpByPage,AXShowMenu
+      AXGroup desc=len26 acts=AXScrollToVisible,AXCancel,AXScrollUpByPage,AXShowMenu
+       AXGroup id=Sticker desc=len26 acts=AXScrollToVisible,AXCancel,AXScrollUpByPage,AXShowMenu,Heart,Thumbs up,Thumbs down,Ha ha!,Exclamation mark,Question mark,😭,🥀,✌️,🥲,🙏🏾,Add Emoji as Tapback,Tapback Details…,Reply…,Attach Sticker…,Forward…,Copy,Delete…,Show Times
+        AXTextArea id=CKBalloonTextView val=len2 acts=AXPress,AXScrollToVisible,AXCancel,AXScrollUpByPage,AXShowMenu,Heart,Thumbs up,Thumbs down,Ha ha!,Exclamation mark,Question mark,😭,🥀,✌️,🥲,🙏🏾,Add Emoji as Tapback,Tapback Details…,Reply…,Attach Sticker…,Forward…,Copy,Delete…,Show Times
+      AXGroup  acts=AXScrollToVisible,AXCancel,AXScrollUpByPage,AXShowMenu
+       AXStaticText desc=len23 acts=AXPress,AXScrollToVisible,AXCancel,AXScrollUpByPage,AXShowMenu
+      AXGroup desc=len67 acts=AXScrollToVisible,AXCancel,AXScrollUpByPage,AXShowMenu
+       AXLink id=Sticker desc=len67 acts=AXPress,AXScrollToVisible,AXCancel,AXScrollUpByPage,AXShowMenu,Heart,Thumbs up,Thumbs down,Ha ha!,Exclamation mark,Question mark,😭,🥀,✌️,🥲,🙏🏾,Add Emoji as Tapback,Tapback Details…,Reply…,Attach Sticker…,Forward…,Copy,Pin,Delete…,Show Times
+        AXGenericElement id=LP.CaptionBar.TopCaption desc=len31 acts=AXPress,AXScrollToVisible,AXCancel,AXScrollUpByPage,AXShowMenu,Heart,Thumbs up,Thumbs down,Ha ha!,Exclamation mark,Question mark,😭,🥀,✌️,🥲,🙏🏾,Add Emoji as Tapback,Tapback Details…,Reply…,Attach Sticker…,Forward…,Copy,Pin,Delete…,Show Times
+        AXImage  acts=AXPress,AXScrollToVisible,AXCancel,AXScrollUpByPage,AXShowMenu,Heart,Thumbs up,Thumbs down,Ha ha!,Exclamation mark,Question mark,😭,🥀,✌️,🥲,🙏🏾,Add Emoji as Tapback,Tapback Details…,Reply…,Attach Sticker…,Forward…,Copy,Pin,Delete…,Show Times
+        AXGenericElement id=LP.CaptionBar.BottomCaption desc=len10 acts=AXPress,AXScrollToVisible,AXCancel,AXScrollUpByPage,AXShowMenu,Heart,Thumbs up,Thumbs down,Ha ha!,Exclamation mark,Question mark,😭,🥀,✌️,🥲,🙏🏾,Add Emoji as Tapback,Tapback Details…,Reply…,Attach Sticker…,Forward…,Copy,Pin,Delete…,Show Times
+      AXGroup  acts=AXScrollToVisible,AXCancel,AXScrollUpByPage,AXShowMenu
+       AXStaticText desc=len4 acts=AXPress,AXScrollToVisible,AXCancel,AXScrollUpByPage,AXShowMenu
+      AXGroup  acts=AXScrollToVisible,AXCancel,AXScrollUpByPage,AXShowMenu
+       AXStaticText desc=len13 acts=AXPress,AXScrollToVisible,AXCancel,AXScrollUpByPage,AXShowMenu
+      AXGroup desc="Your iMessage, S2 spike text s2-81585dcb, 9:37 AM" acts=AXScrollToVisible,AXCancel,AXScrollUpByPage,AXShowMenu
+       AXGroup id=Sticker desc="Your iMessage, S2 spike text s2-81585dcb, 9:37 AM" acts=AXScrollToVisible,AXCancel,AXScrollUpByPage,AXShowMenu,Heart,Thumbs up,Thumbs down,Ha ha!,Exclamation mark,Question mark,😭,🥀,✌️,🥲,🙏🏾,Add Emoji as Tapback,Tapback Details…,Reply…,Attach Sticker…,Forward…,Copy,Delete…,Show Times
+        AXTextArea id=CKBalloonTextView val="S2 spike text s2-81585dcb" acts=AXPress,AXScrollToVisible,AXCancel,AXScrollUpByPage,AXShowMenu,Heart,Thumbs up,Thumbs down,Ha ha!,Exclamation mark,Question mark,😭,🥀,✌️,🥲,🙏🏾,Add Emoji as Tapback,Tapback Details…,Reply…,Attach Sticker…,Forward…,Copy,Delete…,Show Times
+      AXGroup desc="Your iMessage, s2-a8734a42.txt, Text Document · 23 bytes, 9:38 AM" acts=AXScrollToVisible,AXCancel,AXScrollUpByPage,AXPress,AXShowMenu
+       AXButton id=Sticker desc="Your iMessage, s2-a8734a42.txt, Text Document · 23 bytes, 9:38 AM" acts=AXPress,AXScrollToVisible,AXCancel,AXScrollUpByPage,AXShowMenu,Heart,Thumbs up,Thumbs down,Ha ha!,Exclamation mark,Question mark,😭,🥀,✌️,🥲,🙏🏾,Add Emoji as Tapback,Tapback Details…,Reply…,Attach Sticker…,Open,Save to Downloads,Delete…,Show Times
+       AXButton desc=len12 acts=AXPress,AXScrollToVisible,AXCancel,AXScrollUpByPage,AXShowMenu
+      AXGroup  acts=AXScrollToVisible,AXCancel,AXScrollUpByPage,AXShowMenu
+       AXStaticText desc=len13 acts=AXPress,AXScrollToVisible,AXCancel,AXScrollUpByPage,AXShowMenu
+      AXGroup desc="Your iMessage, s2-05292a55.txt, Text Document · 23 bytes, 9:38 AM" acts=AXScrollToVisible,AXCancel,AXScrollUpByPage,AXPress,AXShowMenu
+       AXButton id=Sticker desc="Your iMessage, s2-05292a55.txt, Text Document · 23 bytes, 9:38 AM" acts=AXPress,AXScrollToVisible,AXCancel,AXScrollUpByPage,AXShowMenu,Heart,Thumbs up,Thumbs down,Ha ha!,Exclamation mark,Question mark,😭,🥀,✌️,🥲,🙏🏾,Add Emoji as Tapback,Tapback Details…,Reply…,Attach Sticker…,Quick Look,Open,Save to Downloads,Forward…,Copy,Delete…,Show Times
+      AXGroup desc="Your iMessage, S2 spike cold s2-67e39189, 9:38 AM" acts=AXScrollToVisible,AXCancel,AXScrollUpByPage,AXShowMenu
+       AXGroup id=Sticker desc="Your iMessage, S2 spike cold s2-67e39189, 9:38 AM" acts=AXScrollToVisible,AXCancel,AXScrollUpByPage,AXShowMenu,Heart,Thumbs up,Thumbs down,Ha ha!,Exclamation mark,Question mark,😭,🥀,✌️,🥲,🙏🏾,Add Emoji as Tapback,Tapback Details…,Reply…,Attach Sticker…,Forward…,Copy,Delete…,Show Times
+        AXTextArea id=CKBalloonTextView val="S2 spike cold s2-67e39189" acts=AXPress,AXScrollToVisible,AXCancel,AXScrollUpByPage,AXShowMenu,Heart,Thumbs up,Thumbs down,Ha ha!,Exclamation mark,Question mark,😭,🥀,✌️,🥲,🙏🏾,Add Emoji as Tapback,Tapback Details…,Reply…,Attach Sticker…,Forward…,Copy,Delete…,Show Times
+      AXGroup  acts=AXScrollToVisible,AXCancel,AXScrollUpByPage,AXShowMenu
+       AXStaticText desc=len9 acts=AXPress,AXScrollToVisible,AXCancel,AXScrollUpByPage,AXShowMenu
+     AXGroup id=MessageEntryView  acts=AXScrollToVisible,AXCancel,AXShowMenu
+      AXButton desc=len3 acts=AXPress,AXScrollToVisible,AXCancel,AXShowMenu
+      AXTextField id=messageBodyField desc=len7 acts=AXPress,AXScrollToVisible,AXCancel,AXShowMenu
+      AXButton desc=len12 acts=AXPress,AXScrollToVisible,AXCancel,AXShowMenu
+      AXButton desc=len12 acts=AXPress,AXScrollToVisible,AXCancel,AXShowMenu
+   AXGroup  acts=AXScrollToVisible,AXCancel,AXShowMenu
+    AXGroup id=CKConversationListCollectionView  acts=AXScrollToVisible,AXCancel,AXShowMenu
+     AXTextField/AXSearchField desc=len6 acts=AXPress,AXScrollToVisible,AXCancel,AXShowMenu
+    AXGroup  acts=AXScrollToVisible,AXCancel,AXShowMenu
+     AXGroup  acts=AXScrollToVisible,AXCancel,AXShowMenu
+      AXGroup id=ConversationList desc=len13 acts=AXScrollToVisible,AXCancel,AXScrollDownByPage,AXScrollUpByPage,AXShowMenu
+       AXStaticText desc=len13 acts=AXPress,AXScrollToVisible,AXCancel,AXScrollDownByPage,AXScrollUpByPage,AXShowMenu,Unpin,Mark as Unread,Hide Alerts,Open in New Window,Delete…
+       AXStaticText desc=len12 acts=AXPress,AXScrollToVisible,AXCancel,AXScrollDownByPage,AXScrollUpByPage,AXShowMenu,Unpin,Mark as Unread,Hide Alerts,Open in New Window,Delete…
+       AXStaticText desc=len13 acts=AXPress,AXScrollToVisible,AXCancel,AXScrollDownByPage,AXScrollUpByPage,AXShowMenu,Unpin,Mark as Unread,Hide Alerts,Open in New Window,Delete…
+       AXStaticText desc=len11 acts=AXPress,AXScrollToVisible,AXCancel,AXScrollDownByPage,AXScrollUpByPage,AXShowMenu,Unpin,Mark as Unread,Hide Alerts,Open in New Window,Delete…
+       AXStaticText desc=len13 acts=AXPress,AXScrollToVisible,AXCancel,AXScrollDownByPage,AXScrollUpByPage,AXShowMenu,Unpin,Mark as Unread,Hide Alerts,Open in New Window,Delete…
+       AXStaticText desc="you@example.com, You removed a heart from “S2 spike text s2-81585dcb”, 10:07 AM" acts=AXPress,AXScrollToVisible,AXCancel,AXScrollDownByPage,AXScrollUpByPage,AXShowMenu,Pin you@example.com,Mark as Unread,Hide Alerts,Open in New Window,Delete…
+       AXStaticText desc=len42 acts=AXPress,AXScrollToVisible,AXCancel,AXScrollDownByPage,AXScrollUpByPage,AXShowMenu,Pin <contact>,Mark as Read,Hide Alerts,Open in New Window,Delete…
+       AXStaticText desc=len56 acts=AXPress,AXScrollToVisible,AXCancel,AXScrollDownByPage,AXScrollUpByPage,AXShowMenu,Pin <contact>,Mark as Unread,Hide Alerts,Open in New Window,Delete…
+       AXStaticText desc=len50 acts=AXPress,AXScrollToVisible,AXCancel,AXScrollDownByPage,AXScrollUpByPage,AXShowMenu,Pin <contact>,Mark as Read,Hide Alerts,Open in New Window,Delete…
+       AXStaticText desc=len30 acts=AXPress,AXScrollToVisible,AXCancel,AXScrollDownByPage,AXScrollUpByPage,AXShowMenu,Pin <contact>,Mark as Unread,Hide Alerts,Open in New Window,Delete…
+       AXStaticText desc=len62 acts=AXPress,AXScrollToVisible,AXCancel,AXScrollDownByPage,AXScrollUpByPage,AXShowMenu,Pin <contact>,Mark as Unread,Hide Alerts,Open in New Window,Delete…
+       AXStaticText desc=len69 acts=AXPress,AXScrollToVisible,AXCancel,AXScrollDownByPage,AXScrollUpByPage,AXShowMenu,Pin <contact>,Mark as Unread,Hide Alerts,Open in New Window,Delete…
+       AXStaticText desc=len48 acts=AXPress,AXScrollToVisible,AXCancel,AXScrollDownByPage,AXScrollUpByPage,AXShowMenu,Pin <contact>,Mark as Read,Hide Alerts,Open in New Window,Delete…
+   AXButton id=ConversationTitle desc=len21 acts=AXPress,AXScrollToVisible,AXCancel,AXShowMenu
+ AXToolbar  acts=AXShowMenu
+  AXMenuButton desc=len6 acts=AXShowMenu,AXPress,Move previous,Move next,Remove from toolbar
+   AXMenuButton desc=len6 acts=AXShowMenu,AXPress
+  AXButton id=composeButton desc=len7 acts=AXPress,Move previous,Move next,Remove from toolbar
+  AXMenuButton desc=len14 acts=AXShowMenu,AXPress,Move previous,Remove from toolbar
+   AXMenuButton desc=len14 acts=AXShowMenu,AXPress
+ AXButton/AXCloseButton  acts=AXPress
+ AXButton/AXFullScreenButton  acts=AXPress,AXZoomWindow,AXShowMenu
+  AXGroup 
+   AXGroup 
+ AXButton/AXMinimizeButton  acts=AXPress
+nodes=83

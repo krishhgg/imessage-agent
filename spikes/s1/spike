@@ -1,0 +1,3 @@
+#!/bin/bash
+# Sends one op to the spike bridge: spike status|whoami|ae|ae-script|ax|ax-prompt|panel|ping|quit
+printf '%s\n' "$1" | nc -U "$HOME/Library/Application Support/iMessageAgentSpike/bridge.sock"
