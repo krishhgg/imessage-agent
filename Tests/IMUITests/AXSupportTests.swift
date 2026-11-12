@@ -132,6 +132,13 @@ final class AXSupportTests: XCTestCase {
         XCTAssertEqual(UIResults.axFailure(AXDriveError.messagesVisible(twoHidden)),
                        WindowRules.busyResult(for: twoHidden))
         XCTAssertFalse(UIResults.mayHaveActed(AXDriveError.messagesVisible(shown)))
+        // A screen that locks between `prepare` and the press: the final check refuses with the lock's own result.
+        let locked = Make.state(locked: true)
+        XCTAssertThrowsError(try LiveMessagesAX.requireHiddenWindow(locked)) {
+            XCTAssertEqual($0 as? AXDriveError, .messagesVisible(locked))
+        }
+        XCTAssertEqual(UIResults.axFailure(AXDriveError.messagesVisible(locked)), .screenLocked)
+        XCTAssertFalse(UIResults.mayHaveActed(AXDriveError.messagesVisible(locked)))
     }
 
     func testRowPressNeedsTheHiddenWindowStateRightBeforeThePress() {
@@ -555,5 +562,25 @@ final class AXSupportTests: XCTestCase {
             XCTAssertFalse(isPlainBundleID(bad), bad)
         }
         XCTAssertTrue(isPlainBundleID(String(repeating: "a", count: 255)))
+    }
+
+    // MARK: - Screen lock flag (docs/BUILD-PLAN.md entry 52)
+
+    func testTheScreenLockFlagReadsTheSessionDictionary() {
+        let console = "kCGSSessionOnConsoleKey"
+        XCTAssertTrue(ScreenLock.isLocked(["CGSSessionScreenIsLocked": 1, console: 1]), "the measured locked session")
+        XCTAssertTrue(ScreenLock.isLocked(["CGSSessionScreenIsLocked": true]))
+        XCTAssertTrue(ScreenLock.isLocked([console: 0]), "another user on the console")
+        XCTAssertTrue(ScreenLock.isLocked([console: false]))
+        XCTAssertFalse(ScreenLock.isLocked(["CGSSessionScreenIsLocked": 0, console: 1]))
+        XCTAssertFalse(ScreenLock.isLocked([console: 1]), "unlocked: the lock key is missing")
+        XCTAssertFalse(ScreenLock.isLocked([:]), "no keys reads as unlocked")
+        XCTAssertFalse(ScreenLock.isLocked(["CGSSessionScreenIsLocked": "1"]), "a string isn't a flag")
+        XCTAssertTrue(ScreenLock.isLocked([console: 1], frontBundleID: "com.apple.loginwindow"),
+                      "the lock key missing while the lock screen is in front")
+        XCTAssertTrue(ScreenLock.isLocked([:], frontBundleID: "com.apple.loginwindow"))
+        XCTAssertFalse(ScreenLock.isLocked([console: 1], frontBundleID: "com.apple.finder"))
+        XCTAssertFalse(ScreenLock.isLocked([console: 1], frontBundleID: nil), "no front app reads as unlocked")
+        XCTAssertEqual(console, kCGSessionOnConsoleKey as String)
     }
 }
