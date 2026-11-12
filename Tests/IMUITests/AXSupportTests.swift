@@ -121,9 +121,31 @@ final class AXSupportTests: XCTestCase {
         XCTAssertFalse(BubbleDescription.carries("Your iMessage, see you, 9:38 AM", text: "see you", fromMe: false),
                        "an own prefix isn't a sender")
         XCTAssertFalse(BubbleDescription.carries("", text: "see you", fromMe: true))
+        XCTAssertFalse(BubbleDescription.carries("Jordan, hi, 9:38 AM", text: "hi", fromMe: true),
+                       "a sender isn't an own prefix")
         XCTAssertFalse(BubbleDescription.carries("Your iMessage, a\u{00A0}b, 9:38 AM", text: "a b", fromMe: true),
                        "the text compares as a text view's does, with no space folding")
         XCTAssertTrue(BubbleDescription.carries("Your iMessage, a b, 9:38\u{202F}AM", text: "a b", fromMe: true))
+    }
+
+    func testABareGroupIsAnAXGroupWithNoChildrenAndNoTextView() throws {
+        struct ReadFailed: Error {}
+        XCTAssertTrue(BubbleDescription.isBareGroup(hasTextView: false, role: { "AXGroup" }, childCount: { 0 }),
+                      "the live date bubble, 2026-11-11")
+        XCTAssertFalse(BubbleDescription.isBareGroup(hasTextView: false, role: { "AXGroup" }, childCount: { 1 }),
+                       "a group with children, such as one holding an edit field")
+        XCTAssertFalse(BubbleDescription.isBareGroup(hasTextView: false, role: { "AXButton" }, childCount: {
+            XCTFail("children read for a button"); return 0
+        }), "the file attachment S2 recorded")
+        XCTAssertFalse(BubbleDescription.isBareGroup(hasTextView: false, role: { "AXLink" }, childCount: { 0 }),
+                       "a link preview, as in S3")
+        XCTAssertFalse(BubbleDescription.isBareGroup(hasTextView: true, role: {
+            XCTFail("role read with a text view"); return "AXGroup"
+        }, childCount: { 0 }), "a plain text bubble")
+        XCTAssertThrowsError(try BubbleDescription.isBareGroup(hasTextView: false, role: { throw ReadFailed() },
+                                                               childCount: { 0 }))
+        XCTAssertThrowsError(try BubbleDescription.isBareGroup(hasTextView: false, role: { "AXGroup" },
+                                                               childCount: { throw ReadFailed() }))
     }
 
     func testDescriptionWithoutAMinuteGivesNoMinute() {

@@ -401,6 +401,15 @@ final class PreconditionTests: XCTestCase {
         XCTAssertEqual(h.runReply().result.code, .submitted, "the newest is plain text, then a skipped attachment")
     }
 
+    func testAReplyPassesStep1WhenANewerOutgoingBubbleIsBare() {
+        let h = Harness()
+        h.ax.bubbles = [Harness.parentBubble(for: h.parent),
+                        BubbleInfo(ref: AXRef(id: 54), fromMe: true, text: "", minuteLabel: "12:12 AM",
+                                   hasTextBubble: false, actionNames: [],
+                                   axDescription: "Your iMessage, see you at 5, 12:12 AM", isBareGroup: true)]
+        XCTAssertEqual(h.runReply().result.code, .submitted, "only the parent's side counts")
+    }
+
     func testReplyBubbleReadErrorFailsClosed() {
         let h = Harness()
         h.ax.failBubbles = true

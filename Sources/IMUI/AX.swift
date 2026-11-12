@@ -298,6 +298,14 @@ enum BubbleDescription {
         return TextNorm.matchKey(body) == wanted
     }
 
+    /// `BubbleInfo.isBareGroup` from a `Sticker`'s shape: no text view, the role `AXGroup` and no children. The role is
+    /// read only without a text view, and the children only for an `AXGroup`. A failed read throws.
+    static func isBareGroup(hasTextView: Bool, role: () throws -> String, childCount: () throws -> Int) rethrows
+        -> Bool {
+        guard !hasTextView, try role() == "AXGroup" else { return false }
+        return try childCount() == 0
+    }
+
     /// Messages writes bubble times with U+202F before AM or PM. S3 saw rows with a plain space, but row matching
     /// (`ChatTargeter.sameRowText`) reads both through this too.
     static func normalizeSpaces(_ s: String) -> String {
@@ -708,8 +716,9 @@ public final class LiveMessagesAX: MessagesAXDriving {
             try Self.string($0, "AXIdentifier") == "CKBalloonTextView"
         })
         let text = try textView.map { try Self.string($0, "AXValue") } ?? ""
-        let bare = try textView == nil && Self.string(sticker, "AXRole") == "AXGroup"
-            && Self.children(of: sticker).isEmpty
+        let bare = try BubbleDescription.isBareGroup(hasTextView: textView != nil,
+                                                     role: { try Self.string(sticker, "AXRole") },
+                                                     childCount: { try Self.children(of: sticker).count })
         let names = Self.actionNames(sticker).filter { $0.hasPrefix("Name:") || !$0.hasPrefix("AX") }
         let ref = refs.register(AXElement(raw: sticker), kind: .bubble, fingerprint: description,
                                 container: container.map(AXElement.init(raw:)))
