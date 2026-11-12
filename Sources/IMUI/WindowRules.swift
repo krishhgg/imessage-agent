@@ -58,7 +58,8 @@ public enum WindowRules {
 
     /// True only when `decide` says `proceed`: Messages hidden, not frontmost, one AX window, none on screen and no
     /// more than one real window on any Space.
-    /// Read-only. The last check before a hidden row press or named action, after `prepare` may have waited.
+    /// Read-only. `HiddenWindowManager.recheck` runs it as the last check before a hidden named action, after
+    /// `prepare` may have waited.
     public static func allowsHiddenAction(_ state: MessagesAppState) -> Bool {
         decide(state) == .proceed
     }
@@ -124,6 +125,18 @@ public final class HiddenWindowManager {
     /// Sampling interval for the launch wait, the transfer wait and the visibility poll.
     public var pollInterval: TimeInterval = 0.05
 
+    private let lock = NSLock()
+    private var launchedAt: TimeInterval?
+
+    /// `clock.uptime` when this manager last ran `open -g -j -b` for a cold launch or relaunch, nil before its first
+    /// launch. `ChatTargeter` reads it to tell a list that hasn't shown yet, or is still filling in its rows, after a
+    /// launch from a window with no list or a list with placeholder tiles.
+    public var lastLaunchUptime: TimeInterval? {
+        lock.lock()
+        defer { lock.unlock() }
+        return launchedAt
+    }
+
     public init(app: MessagesAppControl, ax: MessagesAXDriving, transfers: PendingTransferChecking, clock: Clock) {
         self.app = app
         self.ax = ax
@@ -175,8 +188,10 @@ public final class HiddenWindowManager {
     }
 
     /// The window rules again, launching and quitting nothing: nil while Messages is still hidden with one window,
-    /// `busy: screen locked` on a locked screen, `no_hidden_window` if it quit, otherwise `WindowRules.busyResult`. Hidden actions call it right before the
-    /// named action, because the user may have shown Messages since `prepare`.
+    /// `busy: screen locked` on a locked screen, `no_hidden_window` if it quit, otherwise `WindowRules.busyResult`.
+    /// Hidden actions call it right before the named action, because the user may have shown Messages since
+    /// `prepare`. Foreground step 1 calls it after the chat check, which can wait seconds for the list to load, and
+    /// after a `not_loaded` refusal from that check.
     public func recheck() -> ActionResult? {
         let state = currentState()
         if WindowRules.allowsHiddenAction(state) { return nil }
@@ -232,7 +247,11 @@ public final class HiddenWindowManager {
         let deadline = clock.uptime + Limits.relaunchWindowWait
         var sawWindow = false
         var ready = false
-        // A failed `open` may still have started Messages, so the visibility poll below runs either way.
+        // A failed `open` may still have started Messages, so the visibility poll below runs either way, and the
+        // launch time is kept either way.
+        lock.lock()
+        launchedAt = clock.uptime
+        lock.unlock()
         if app.launchHidden() {
             while true {
                 let state = currentState()
@@ -270,7 +289,8 @@ public final class HiddenWindowManager {
     /// `app.state()`, with an unknown AX window count (-1) filled from `countWindows`, which can block for up to 2 s.
     /// After that read succeeds, `app.state()` runs again, so `isHidden` and frontmost are sampled after every read
     /// that can block. The filled count is used only if the new state's AX count is still unknown. A new state that
-    /// shows Messages not running is returned as it is. `LiveMessagesAX` uses it before a row press.
+    /// shows Messages not running is returned as it is. `LiveMessagesAX.press(row:)`, which nothing calls now, uses it
+    /// too.
     static func state(of app: MessagesAppControl, countWindows: () throws -> Int) -> MessagesAppState {
         let first = app.state()
         guard first.isRunning, first.axWindowCount < 0, let count = try? countWindows() else { return first }

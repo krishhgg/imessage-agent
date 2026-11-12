@@ -38,13 +38,13 @@ final class ScriptedAX: MessagesAXDriving {
     var onWindowCount: (() -> Void)?
     var rows: [ConversationRowInfo] = []
     var rowsError: AXDriveError?
-    /// Returns the loaded bubbles. Tests switch on `pressedRows` or a clock to script the transcript after a press.
+    /// Answers `conversationListState`, called once per read. Loaded by default. Tests can switch on a clock to
+    /// script a list that loads late, or throw to script a failed read.
+    var listState: () throws -> ConversationListState = { .loaded }
+    /// Returns the loaded bubbles. Tests can switch on a clock to script a transcript that settles late.
     var bubbles: () -> [BubbleInfo] = { [] }
     var bubblesError: AXDriveError?
     var pressError: AXDriveError?
-    /// Runs inside `press(row:)` where the live driver checks the window rules, before the final check. A throw
-    /// refuses the press.
-    var beforeRowPress: (() throws -> Void)?
     var performError: AXDriveError?
     var onPerform: ((String, AXRef) -> Void)?
     /// Runs inside `perform`, where the live driver rereads the bubble's description and action names, before the
@@ -68,10 +68,14 @@ final class ScriptedAX: MessagesAXDriving {
         return rows
     }
 
+    func conversationListState() throws -> ConversationListState {
+        log.add("ax.listState")
+        return try listState()
+    }
+
     func press(row: AXRef, finalCheck: AXFinalCheck) throws {
         log.add("ax.pressRow:\(row.id)")
         if let pressError { throw pressError }
-        try beforeRowPress?()
         try finalCheck()
         pressedRows.append(row)
     }
@@ -345,7 +349,7 @@ enum Make {
                    actionNames: actions)
     }
 
-    static func row(_ id: UInt64, _ description: String, selected: Bool = false) -> ConversationRowInfo {
+    static func row(_ id: UInt64, _ description: String, selected: Bool? = false) -> ConversationRowInfo {
         ConversationRowInfo(ref: AXRef(id: id), description: description, isSelected: selected)
     }
 
@@ -389,9 +393,12 @@ final class Rig {
         windows = HiddenWindowManager(app: app, ax: ax, transfers: transfers, clock: clock)
     }
 
+    /// Wired to `windows` for the last launch, as the bridge wires it.
     func targeter() -> ChatTargeter {
         let clock = self.clock
-        return ChatTargeter(ax: ax, source: source, builder: { Make.builder(now: clock.now) }, clock: clock)
+        let windows = self.windows
+        return ChatTargeter(ax: ax, source: source, builder: { Make.builder(now: clock.now) }, clock: clock,
+                            lastLaunch: { windows.lastLaunchUptime })
     }
 }
 

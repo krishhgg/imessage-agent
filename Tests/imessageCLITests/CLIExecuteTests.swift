@@ -49,7 +49,7 @@ final class CLIExecuteTests: XCTestCase {
         let tookEffect: [ResultCode] = [.submitted, .delivered, .ok, .already, .pending(id: "ap-1")]
         let failed: [ResultCode] = [.failed(.rowError(22)), .failed(.transferFailed), .ghost,
                                     .ambiguous(.twoRowsMatched), .mayHaveCompleted, .expired, .denied(.user),
-                                    .denied(.approvalExpired), .busy(.queue), .busy(.messagesOpen), .notLoaded,
+                                    .denied(.approvalExpired), .busy(.queue), .busy(.messagesOpen), .busy(.chatNotOpen), .notLoaded,
                                     .notDownloaded, .unsupported, .unsupportedTarget, .untested, .noHiddenWindow,
                                     .aborted(.userTookOver), .timeout, .error(.wrongChat), .error(.severalMatches)]
         for code in tookEffect {

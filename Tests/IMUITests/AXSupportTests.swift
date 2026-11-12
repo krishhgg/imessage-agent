@@ -358,6 +358,53 @@ final class AXSupportTests: XCTestCase {
         XCTAssertEqual(ThreadViewRule.pick(two), 3)
     }
 
+    // MARK: - Conversation list loading
+
+    func testChildrenSortByRoleThenDescription() throws {
+        let row = ConversationListRule.child(role: "AXStaticText", description: {
+            XCTFail("a row's description isn't read")
+            return ""
+        })
+        XCTAssertEqual(row, .row)
+        XCTAssertEqual(ConversationListRule.child(role: "AXGroup", description: { "" }), .placeholder)
+        XCTAssertEqual(ConversationListRule.child(role: "", description: { "" }), .placeholder, "a child with no role")
+        XCTAssertEqual(ConversationListRule.child(role: "AXGroup", description: { "Jordan" }), .other)
+        XCTAssertThrowsError(try ConversationListRule.child(role: "AXGroup", description: { throw TestError() }))
+    }
+
+    func testAListWithNoRowIsLoading() {
+        // About 1 to 2 s after a hidden launch: 11 children, all `AXGroup` with no description.
+        XCTAssertEqual(ConversationListRule.state(children: Array(repeating: .placeholder, count: 11)), .loading)
+        // A placeholder next to children with a description, and no row, still reads loading.
+        XCTAssertEqual(ConversationListRule.state(children: [.other, .placeholder]), .loading)
+    }
+
+    func testAListOfDescribedChildrenWithNoRowIsLoaded() {
+        // A warm Messages that shows only pinned tiles: each has a description, so none is a placeholder and
+        // nothing waits.
+        XCTAssertEqual(ConversationListRule.state(children: [.other]), .loaded)
+        XCTAssertEqual(ConversationListRule.state(children: [.other, .other, .other]), .loaded)
+    }
+
+    func testNoListIsMissing() {
+        // Whether that means loading depends on how long ago the bridge launched Messages, so the targeter decides.
+        XCTAssertEqual(ConversationListRule.state(children: nil), .missing)
+    }
+
+    func testRowsNextToAPlaceholderArePartlyLoaded() {
+        // Between the all-placeholder list and the all-row list some rows may show while others are placeholders.
+        // The targeter decides from the time since its own launch whether that is still loading.
+        XCTAssertEqual(ConversationListRule.state(children: [.row, .placeholder, .row]), .partlyLoaded)
+        XCTAssertEqual(ConversationListRule.state(children: [.placeholder, .other, .row]), .partlyLoaded)
+    }
+
+    func testRowsWithNoPlaceholderOrAnEmptyListAreLoaded() {
+        XCTAssertEqual(ConversationListRule.state(children: Array(repeating: .row, count: 11)), .loaded)
+        // Pinned chats may show as tiles that aren't rows, next to the unpinned rows.
+        XCTAssertEqual(ConversationListRule.state(children: [.other, .other, .row]), .loaded)
+        XCTAssertEqual(ConversationListRule.state(children: []), .loaded, "no conversations")
+    }
+
     // MARK: - Ref table
 
     func testSameElementAndFingerprintKeepsItsID() throws {

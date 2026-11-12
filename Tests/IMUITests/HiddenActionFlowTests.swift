@@ -4,8 +4,8 @@ import IMStore
 @testable import IMUI
 import IMTestSupport
 
-/// Window rules after `prepare`: the user may show Messages while the bridge opens the chat, and the bridge must then
-/// press nothing more (section 4, Window rules).
+/// Window rules after `prepare`: the user may show Messages while the bridge checks the chat, and the bridge must then
+/// press nothing (section 4, Window rules).
 final class HiddenActionFlowTests: XCTestCase {
     let bubble = Make.bubble(51, text: "on my way", minute: "12:29 AM",
                              actions: UINames.classicTapbacks + [UINames.undoSend])
@@ -104,15 +104,58 @@ final class HiddenActionFlowTests: XCTestCase {
         let result = tapbacks.run(request, queueDeadline: rig.clock.uptime + 30, recorder: rig.recorder)
         XCTAssertEqual(result.result.code, .busy(.messagesOpen))
         XCTAssertEqual(result.result.fix, "hide Messages (⌘H) and retry")
-        XCTAssertTrue(result.result.notes.contains(.mayHaveMarkedRead), "the chat row was pressed")
+        XCTAssertFalse(result.result.notes.contains(.mayHaveMarkedRead), "nothing was pressed")
         XCTAssertFalse(result.result.holdsIdempotencyKey)
-        XCTAssertTrue(result.pressed)
+        XCTAssertFalse(result.pressed)
         XCTAssertTrue(rig.ax.performed.isEmpty)
         XCTAssertFalse(rig.log.contains("ax.perform"))
         XCTAssertFalse(rig.log.contains("db.reactionRows"), "nothing ran, so nothing to verify")
         XCTAssertEqual(rig.recorder.facts.count, 1, "the entry reached invoking")
         XCTAssertEqual(rig.recorder.didInvokeCount, 0, "nothing was pressed, so the entry never reaches invoked")
         XCTAssertFalse(rig.app.calls.contains(.hide), "the user's window is never hidden")
+    }
+
+    func testANotLoadedChatCheckAfterALockOrASecondWindowIsTheBusyLine() {
+        // A lock or a second window during the list wait makes the live reads come back empty or fail, which the
+        // targeter reports as `not_loaded`. The window recheck runs then, and its busy line wins.
+        let cases: [(String, MessagesAppState?, ActionResult)] = [
+            ("locked", Make.state(locked: true), .screenLocked),
+            ("two AX windows", Make.state(ax: 2), ActionResult(.busy(.messagesOpen))),
+            ("quit", Make.state(running: false), ActionResult(.noHiddenWindow)),
+            ("still hidden with one window", nil, ActionResult(.notLoaded)),
+        ]
+        for (name, state, expected) in cases {
+            let rig = Rig()
+            let (targeting, tapbacks, unsend) = runners(rig)
+            targeting.selection = .refused(ActionResult(.notLoaded))
+            if let state { targeting.onSelect = { rig.app.current = state } }
+            let request = TapbackRequest(target: Make.target(), chat: Make.chat(), kind: .heart, remove: false)
+            let tapback = tapbacks.run(request, queueDeadline: rig.clock.uptime + 30, recorder: rig.recorder)
+            XCTAssertEqual(tapback.result.code, expected.code, "tapback, \(name)")
+            XCTAssertFalse(tapback.pressed, name)
+            let undo = unsend.run(target: Make.target(), chat: Make.chat(), queueDeadline: rig.clock.uptime + 30,
+                                  recorder: rig.recorder)
+            XCTAssertEqual(undo.result.code, expected.code, "unsend, \(name)")
+            XCTAssertFalse(undo.pressed, name)
+            XCTAssertTrue(rig.ax.performed.isEmpty, name)
+            XCTAssertFalse(rig.log.contains("target.find"), name)
+        }
+    }
+
+    func testOtherChatCheckRefusalsSkipTheRecheck() {
+        // A busy, ambiguous or unsupported refusal comes back as it is, even on a locked screen.
+        for refusal in [ActionResult(.busy(.chatNotOpen)), ActionResult(.ambiguous(.target)), ActionResult(.unsupportedTarget)] {
+            let rig = Rig()
+            let (targeting, tapbacks, _) = runners(rig)
+            targeting.selection = .refused(refusal)
+            let locked = Make.state(locked: true)
+            targeting.onSelect = { rig.app.current = locked }
+            let request = TapbackRequest(target: Make.target(), chat: Make.chat(), kind: .heart, remove: false)
+            let result = tapbacks.run(request, queueDeadline: rig.clock.uptime + 30, recorder: rig.recorder)
+            XCTAssertEqual(result.result.code, refusal.code, "\(refusal)")
+            XCTAssertFalse(result.pressed)
+            XCTAssertTrue(rig.ax.performed.isEmpty)
+        }
     }
 
     func testUnsendStopsWhenTheUserShowsMessagesAfterPrepare() {
@@ -123,7 +166,8 @@ final class HiddenActionFlowTests: XCTestCase {
         let result = unsend.run(target: Make.target(), chat: Make.chat(), queueDeadline: rig.clock.uptime + 30,
                                 recorder: rig.recorder)
         XCTAssertEqual(result.result.code, .busy(.messagesOpen))
-        XCTAssertTrue(result.pressed)
+        XCTAssertFalse(result.result.notes.contains(.mayHaveMarkedRead), "nothing was pressed")
+        XCTAssertFalse(result.pressed)
         XCTAssertTrue(rig.ax.performed.isEmpty)
         XCTAssertFalse(rig.log.contains("ax.perform"))
         XCTAssertEqual(rig.recorder.facts.count, 1, "the entry reached invoking")
@@ -143,13 +187,14 @@ final class HiddenActionFlowTests: XCTestCase {
     func testRealTargeterThenUserShowsMessagesBeforeTheAction() {
         let rig = Rig()
         rig.source.summaries = [Make.summary()]
-        rig.ax.rows = [Make.row(2, "Jordan, see you, 12:20 AM")]
+        rig.ax.rows = [Make.row(2, "Jordan, see you, 12:20 AM", selected: true)]
         let transcript = [Make.bubble(51, fromMe: true, text: "on my way", minute: "12:29 AM", actions: ["Heart"]),
                           Make.bubble(52, fromMe: false, text: "see you", minute: "12:20 AM")]
-        rig.ax.bubbles = { [unowned ax = rig.ax] in ax.pressedRows.isEmpty ? [] : transcript }
+        rig.ax.bubbles = { transcript }
+        // The user shows Messages once the chat check has read the transcript.
         let shown = self.shown
         rig.app.onState = { state in
-            if rig.log.contains("ax.pressRow") { state = shown }
+            if rig.log.contains("ax.bubbles") { state = shown }
         }
         let runner = TapbackRunner(ax: rig.ax, windows: rig.windows, targeting: rig.targeter(), source: rig.source,
                                    clock: rig.clock)
@@ -157,45 +202,56 @@ final class HiddenActionFlowTests: XCTestCase {
         let request = TapbackRequest(target: target, chat: Make.chat(), kind: .heart, remove: false)
         let result = runner.run(request, queueDeadline: rig.clock.uptime + 30, recorder: rig.recorder)
         XCTAssertEqual(result.result.code, .busy(.messagesOpen))
-        XCTAssertEqual(rig.log.count(of: "ax.pressRow"), 1)
-        XCTAssertFalse(rig.log.contains("ax.perform"))
+        XCTAssertEqual(rig.log.count(of: "ax.pressRow"), 0)
+        XCTAssertNoPress(rig.log)
     }
 
-    // MARK: - Before the row press
+    // MARK: - A chat that isn't open
 
-    func testRowPressRefusedForAShownMessagesIsBusyWithNoMarkReadNote() {
+    func testTargetNotSelectedIsBusyWithNothingPressedAndNoNote() {
         let rig = Rig()
         rig.source.summaries = [Make.summary()]
-        rig.ax.rows = [Make.row(2, "Jordan, see you, 12:20 AM")]
-        rig.ax.pressError = .messagesVisible(shown)
-        XCTAssertEqual(rig.targeter().selectChat(Make.chat()), .refused(.messagesOpen))
+        rig.ax.rows = [Make.row(1, "Taylor, hey, 12:05 AM", selected: true), Make.row(2, "Jordan, see you, 12:20 AM")]
+        rig.ax.bubbles = { [Make.bubble(51, fromMe: true, text: "on my way", minute: "12:29 AM")] }
+        let busy = ActionResult(.busy(.chatNotOpen), fix: "open +15550001111 in Messages, hide it (⌘H), then retry")
+        XCTAssertEqual(rig.targeter().selectChat(Make.chat()), .refused(busy))
 
         let runner = TapbackRunner(ax: rig.ax, windows: rig.windows, targeting: rig.targeter(), source: rig.source,
                                    clock: rig.clock)
         let request = TapbackRequest(target: Make.target(), chat: Make.chat(), kind: .heart, remove: false)
+        let start = rig.clock.uptime
         let result = runner.run(request, queueDeadline: rig.clock.uptime + 30, recorder: rig.recorder)
-        XCTAssertEqual(result.result, .messagesOpen)
+        XCTAssertEqual(result.result, busy)
+        XCTAssertFalse(result.result.notes.contains(.mayHaveMarkedRead))
+        XCTAssertFalse(result.result.holdsIdempotencyKey)
         XCTAssertFalse(result.pressed)
-        XCTAssertTrue(rig.ax.pressedRows.isEmpty, "the driver refused the row press")
-        XCTAssertFalse(rig.log.contains("ax.perform"))
+        XCTAssertNoPress(rig.log)
+        XCTAssertTrue(rig.ax.pressedRows.isEmpty)
+        XCTAssertFalse(rig.log.contains("ax.bubbles"), "no transcript read")
+        XCTAssertEqual(rig.clock.uptime, start, "no visibility poll")
         XCTAssertTrue(rig.recorder.facts.isEmpty)
+        XCTAssertFalse(rig.app.calls.contains(.hide))
     }
 
-    func testRowPressSamplesTheStateAgainAfterTheFallbackWindowCount() {
+    // MARK: - The live row press, kept for the chat switch flows
+
+    func testLiveRowPressRulesSampleTheStateAgainAfterTheFallbackWindowCount() {
         for (name, during, expected) in Self.changesDuringTheFallbackRead {
             let rig = Rig(state: Make.state(hidden: true, ax: -1, onScreen: 0))
-            rig.source.summaries = [Make.summary()]
-            rig.ax.rows = [Make.row(2, "Jordan, see you, 12:20 AM")]
-            // The live driver's window rules before the press, over the fakes. Its AX read is `windowCount`, and the
-            // user changes Messages during that read.
-            rig.ax.beforeRowPress = { [unowned app = rig.app, unowned ax = rig.ax] in
-                ax.onWindowCount = { app.current = during }
-                try LiveMessagesAX.requireHiddenWindow(HiddenWindowManager.state(of: app, countWindows: {
-                    try ax.windowCount()
+            rig.ax.windows = 1
+            // The live driver's window rules before a row press, over the fakes. Its AX read is `windowCount`, and
+            // the user changes Messages during that read.
+            rig.ax.onWindowCount = { rig.app.current = during }
+            do {
+                try LiveMessagesAX.requireHiddenWindow(HiddenWindowManager.state(of: rig.app, countWindows: {
+                    try rig.ax.windowCount()
                 }))
+                XCTFail("\(name): the rules allowed the press")
+            } catch {
+                XCTAssertEqual(UIResults.axFailure(error), expected, name)
+                XCTAssertFalse(UIResults.mayHaveActed(error), name)
             }
-            XCTAssertEqual(rig.targeter().selectChat(Make.chat()), .refused(expected), name)
-            XCTAssertTrue(rig.ax.pressedRows.isEmpty, "\(name): the driver refused the row press")
+            XCTAssertTrue(rig.app.calls.isEmpty, name)
         }
     }
 }

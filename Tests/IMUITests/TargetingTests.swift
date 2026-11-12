@@ -4,8 +4,8 @@ import IMStore
 @testable import IMUI
 import IMTestSupport
 
-/// Checklist items 6 to 10: groups, the lookalike checks, exact row matching, the post-press signature check and
-/// bubble matching.
+/// Checklist items 6 to 10: groups, the lookalike checks, exact row matching, the selected-row rule, the signature
+/// check and bubble matching.
 final class TargetingTests: XCTestCase {
     // Fixture.now is Friday 2026-11-06 00:30 in Los Angeles. The default summary's newest row is at 00:20.
     let expectedRow = "Jordan, see you, 12:20 AM"
@@ -18,15 +18,17 @@ final class TargetingTests: XCTestCase {
          Make.bubble(52, fromMe: false, text: "see you", minute: "12:20 AM")]
     }
 
+    /// By default the target's row is the one selected row and Messages shows its transcript.
     func rig(rows: [ConversationRowInfo]? = nil, others: [ConversationSummary] = []) -> (Rig, ChatTargeter) {
         let rig = Rig()
         rig.source.summaries = [Make.summary()] + others
-        rig.ax.rows = rows ?? [Make.row(1, "Taylor, hey, 12:05 AM"), Make.row(2, expectedRow)]
-        rig.ax.bubbles = { [unowned ax = rig.ax] in
-            ax.pressedRows.isEmpty ? [] : self.targetTranscript()
-        }
+        rig.ax.rows = rows ?? [Make.row(1, "Taylor, hey, 12:05 AM"), Make.row(2, expectedRow, selected: true)]
+        rig.ax.bubbles = { self.targetTranscript() }
         return (rig, rig.targeter())
     }
+
+    /// The busy result for `Make.chat()`, whose label is its handle.
+    let chatNotOpen = ActionResult(.busy(.chatNotOpen), fix: "open +15550001111 in Messages, hide it (⌘H), then retry")
 
     // MARK: - Row text
 
@@ -159,7 +161,7 @@ final class TargetingTests: XCTestCase {
                                    signature: [SignatureRow(fromMe: false, body: "see you")])
         let (rig, targeter) = rig(others: [oneOff, direction, shorter])
         XCTAssertEqual(targeter.selectChat(Make.chat()), .selected)
-        XCTAssertEqual(rig.ax.pressedRows, [AXRef(id: 2)])
+        XCTAssertNoPress(rig.log)
     }
 
     func testSignatureBodiesCompareAfterNFCAndTrim() {
@@ -181,11 +183,13 @@ final class TargetingTests: XCTestCase {
 
     // MARK: - Row matching (item 8)
 
-    func testExactlyOneMatchingRowIsPressedOnce() {
+    func testExactlyOneMatchingSelectedRowIsSelectedWithNoPress() {
         let (rig, targeter) = rig()
+        rig.ax.pressError = .axError(-25204)
         XCTAssertEqual(targeter.selectChat(Make.chat()), .selected)
-        XCTAssertEqual(rig.ax.pressedRows, [AXRef(id: 2)])
-        XCTAssertEqual(rig.log.count(of: "ax.pressRow"), 1)
+        XCTAssertTrue(rig.ax.pressedRows.isEmpty)
+        XCTAssertEqual(rig.log.count(of: "ax.pressRow"), 0)
+        XCTAssertNoPress(rig.log)
     }
 
     func testNoMatchingRowIsNotLoaded() {
@@ -206,9 +210,9 @@ final class TargetingTests: XCTestCase {
     func testRowWithNarrowOrNoBreakSpacesMatchesAsBubblesDo() {
         // Bubbles show U+202F before AM or PM. A row written the same way, or with U+00A0, is the same row text.
         for (i, shown) in ["Jordan, see you, 12:20\u{202F}AM", "Jordan, see\u{00A0}you, 12:20\u{00A0}AM"].enumerated() {
-            let (rig, targeter) = rig(rows: [Make.row(1, "Taylor, hey, 12:05 AM"), Make.row(2, shown)])
+            let (rig, targeter) = rig(rows: [Make.row(1, "Taylor, hey, 12:05 AM"), Make.row(2, shown, selected: true)])
             XCTAssertEqual(targeter.selectChat(Make.chat()), .selected, "case \(i)")
-            XCTAssertEqual(rig.ax.pressedRows, [AXRef(id: 2)], "case \(i)")
+            XCTAssertNoPress(rig.log)
         }
     }
 
@@ -218,10 +222,11 @@ final class TargetingTests: XCTestCase {
         rig.source.summaries = [Make.summary(name: "Jordan\u{00A0}Kim", preview: "see\u{202F}you",
                                              signature: [SignatureRow(fromMe: false, body: "see you"),
                                                          SignatureRow(fromMe: true, body: "on my way")])]
-        rig.ax.rows = [Make.row(1, "Taylor, hey, 12:05 AM"), Make.row(2, "Jordan Kim, see you, 12:20 AM")]
-        rig.ax.bubbles = { [unowned ax = rig.ax] in ax.pressedRows.isEmpty ? [] : self.targetTranscript() }
+        rig.ax.rows = [Make.row(1, "Taylor, hey, 12:05 AM"),
+                       Make.row(2, "Jordan Kim, see you, 12:20 AM", selected: true)]
+        rig.ax.bubbles = { self.targetTranscript() }
         XCTAssertEqual(rig.targeter().selectChat(Make.chat()), .selected)
-        XCTAssertEqual(rig.ax.pressedRows, [AXRef(id: 2)])
+        XCTAssertNoPress(rig.log)
     }
 
     func testRowsThatDifferOnlyInSpaceKindAreAmbiguous() {
@@ -262,23 +267,26 @@ final class TargetingTests: XCTestCase {
     }
 
     func testRowWithoutEnglishRowActionsIsUnsupportedWithNoPress() {
-        // Messages runs in French while the system is in English: the row text still matches.
+        // Messages runs in French while the system is in English: the row text still matches. The language check
+        // comes before the selected-row rule, so a row that isn't selected is `unsupported` too, not busy.
         let french = ["Désépingler", "Marquer comme non lu", "Masquer les alertes",
                       "Ouvrir dans une nouvelle fenêtre", "Supprimer…"]
-        let row = ConversationRowInfo(ref: AXRef(id: 2), description: expectedRow, isSelected: false,
-                                      actionNames: french)
-        let (rig, targeter) = rig(rows: [row])
-        let result = targeter.selectChat(Make.chat())
-        XCTAssertEqual(result, .refused(UIResults.messagesNotEnglish))
+        for selected in [true, false] {
+            let row = ConversationRowInfo(ref: AXRef(id: 2), description: expectedRow, isSelected: selected,
+                                          actionNames: french)
+            let (rig, targeter) = rig(rows: [row])
+            let result = targeter.selectChat(Make.chat())
+            XCTAssertEqual(result, .refused(UIResults.messagesNotEnglish), "selected: \(selected)")
+            XCTAssertNoPress(rig.log)
+            XCTAssertTrue(rig.ax.pressedRows.isEmpty)
+        }
         XCTAssertEqual(UIResults.messagesNotEnglish.code, .unsupported)
         XCTAssertFalse(UIResults.messagesNotEnglish.notes.contains(.mayHaveMarkedRead))
         XCTAssertEqual(UIResults.messagesNotEnglish.rendered,
                        "unsupported fix: set Messages' language to English and retry")
-        XCTAssertNoPress(rig.log)
-        XCTAssertTrue(rig.ax.pressedRows.isEmpty)
     }
 
-    func testEnglishRowActionsOfEveryRowShapeAllowThePress() {
+    func testEnglishRowActionsOfEveryRowShapeAllowTheAction() {
         XCTAssertTrue(UINames.showsEnglishRowActions(UINames.englishRowActions))
         XCTAssertFalse(UINames.showsEnglishRowActions([]))
         XCTAssertFalse(UINames.showsEnglishRowActions(["Open in New Window"]))
@@ -286,11 +294,11 @@ final class TargetingTests: XCTestCase {
         for actions in [["AXPress", "AXShowMenu", "Pin Jordan", "Mark as Read", "Hide Alerts", "Open in New Window",
                          "Delete…"],
                         ["Unpin", "Mark as Unread", "Hide Alerts", "Open in New Window", "Delete…"]] {
-            let row = ConversationRowInfo(ref: AXRef(id: 2), description: expectedRow, isSelected: false,
+            let row = ConversationRowInfo(ref: AXRef(id: 2), description: expectedRow, isSelected: true,
                                           actionNames: actions)
             let (rig, targeter) = rig(rows: [row])
             XCTAssertEqual(targeter.selectChat(Make.chat()), .selected, "\(actions)")
-            XCTAssertEqual(rig.ax.pressedRows, [AXRef(id: 2)])
+            XCTAssertNoPress(rig.log)
         }
     }
 
@@ -305,39 +313,530 @@ final class TargetingTests: XCTestCase {
         XCTAssertNoPress(rig.log)
     }
 
-    func testPressErrorsThatProveNoPressCarryNoMarkReadNote() {
-        let (rig, targeter) = rig()
-        rig.ax.pressError = .staleReference
-        XCTAssertEqual(targeter.selectChat(Make.chat()), .refused(ActionResult(.notLoaded)))
-        rig.ax.pressError = .axError(-25204)
-        XCTAssertEqual(targeter.selectChat(Make.chat()),
-                       .refused(ActionResult(.notLoaded, notes: [.mayHaveMarkedRead])))
+    // MARK: - A conversation list still loading after a launch
+
+    /// The rows once the list has loaded, with the target selected.
+    var loadedRows: [ConversationRowInfo] {
+        [Make.row(1, "Taylor, hey, 12:05 AM"), Make.row(2, expectedRow, selected: true)]
     }
 
-    // MARK: - After the press (item 9)
+    /// Scripts a list that reads loading for `loadingReads` reads, then shows `rows`. While it loads, its children
+    /// are placeholder groups, so the row read finds none.
+    func loadingList(_ rig: Rig, loadingReads: Int, then rows: [ConversationRowInfo]) {
+        rig.ax.rows = []
+        var reads = 0
+        rig.ax.listState = { [unowned ax = rig.ax] in
+            reads += 1
+            guard reads > loadingReads else { return .loading }
+            ax.rows = rows
+            return .loaded
+        }
+    }
 
-    func testWrongTranscriptAfterThePressIsWrongChat() {
+    func testRowsThatLoadAfterSomePollsAreMatchedAndTheActionProceeds() {
+        let (rig, targeter) = rig()
+        loadingList(rig, loadingReads: 4, then: loadedRows)
+        let start = rig.clock.uptime
+        XCTAssertEqual(targeter.selectChat(Make.chat()), .selected)
+        // One loading read after the first row read, then one per poll until the list reads loaded.
+        XCTAssertEqual(rig.log.count(of: "ax.listState"), 5)
+        XCTAssertEqual(rig.clock.sleeps, Array(repeating: targeter.pollInterval, count: 4))
+        XCTAssertEqual(rig.clock.uptime - start, 4 * targeter.pollInterval, accuracy: 0.0001)
+        XCTAssertEqual(rig.log.count(of: "ax.rows"), 2, "the rows are read again once, after the list loads")
+        XCTAssertNoPress(rig.log)
+        XCTAssertTrue(rig.ax.pressedRows.isEmpty)
+    }
+
+    func testAListThatLoadsAtTheTimeoutIsMatchedAndOneThatLoadsLaterIsNotLoaded() {
+        func run(loadsAfter delay: TimeInterval) -> (ChatSelection, Rig) {
+            let (rig, targeter) = rig()
+            targeter.pollInterval = 0.25
+            let clock = rig.clock
+            let start = clock.uptime
+            let rows = loadedRows
+            rig.ax.rows = []
+            rig.ax.listState = { [unowned ax = rig.ax] in
+                guard clock.uptime - start >= delay else { return .loading }
+                ax.rows = rows
+                return .loaded
+            }
+            return (targeter.selectChat(Make.chat()), rig)
+        }
+        let atTimeout = run(loadsAfter: 6.0)
+        XCTAssertEqual(atTimeout.0, .selected)
+        XCTAssertNoPress(atTimeout.1.log)
+        let late = run(loadsAfter: 6.01)
+        XCTAssertEqual(late.0, .refused(ActionResult(.notLoaded)))
+        XCTAssertNoPress(late.1.log)
+    }
+
+    func testAListStillLoadingAtTheTimeoutIsNotLoaded() {
+        let (rig, targeter) = rig(rows: [])
+        rig.ax.listState = { .loading }
+        let start = rig.clock.uptime
+        XCTAssertEqual(targeter.selectChat(Make.chat()), .refused(ActionResult(.notLoaded)))
+        XCTAssertEqual(targeter.listLoadTimeout, 6)
+        XCTAssertEqual(rig.clock.uptime - start, targeter.listLoadTimeout, accuracy: 0.0001)
+        XCTAssertTrue(rig.clock.sleeps.allSatisfy { $0 > 0 && $0 <= targeter.pollInterval + 0.0001 },
+                      "\(rig.clock.sleeps)")
+        XCTAssertEqual(rig.log.count(of: "ax.listState"), rig.clock.sleeps.count + 1)
+        XCTAssertEqual(rig.log.count(of: "ax.rows"), 1, "no row read after the timeout")
+        XCTAssertFalse(rig.log.contains("ax.bubbles"), "no transcript wait")
+        XCTAssertNoPress(rig.log)
+        XCTAssertTrue(rig.ax.pressedRows.isEmpty)
+    }
+
+    func testALoadedListWithNoMatchIsNotLoadedWithNoWait() {
+        // Rows that don't match, as today, and a list with no rows at all, which the live read calls loaded.
+        for rows in [[Make.row(1, "Taylor, hey, 12:05 AM", selected: true)], []] {
+            let (rig, targeter) = rig(rows: rows)
+            let start = rig.clock.uptime
+            XCTAssertEqual(targeter.selectChat(Make.chat()), .refused(ActionResult(.notLoaded)), "\(rows)")
+            XCTAssertEqual(rig.log.count(of: "ax.listState"), 1)
+            // The first read and the read again once the list reads loaded (the list can load between them).
+            XCTAssertEqual(rig.log.count(of: "ax.rows"), 2)
+            XCTAssertTrue(rig.clock.sleeps.isEmpty, "zero polls")
+            XCTAssertEqual(rig.clock.uptime, start)
+            XCTAssertNoPress(rig.log)
+        }
+    }
+
+    func testAListThatLoadsWithoutTheTargetIsNotLoadedWithNoFurtherWait() {
+        let (rig, targeter) = rig()
+        loadingList(rig, loadingReads: 2, then: [Make.row(1, "Taylor, hey, 12:05 AM", selected: true)])
+        let start = rig.clock.uptime
+        XCTAssertEqual(targeter.selectChat(Make.chat()), .refused(ActionResult(.notLoaded)))
+        XCTAssertEqual(rig.clock.uptime - start, 2 * targeter.pollInterval, accuracy: 0.0001)
+        XCTAssertEqual(rig.log.count(of: "ax.listState"), 3)
+        XCTAssertNoPress(rig.log)
+    }
+
+    func testRowsThatLoadKeepTheSelectedRowRule() {
+        // After the wait the rows are checked as on any read: a target that isn't the one selected row is busy.
+        let (rig, targeter) = rig()
+        loadingList(rig, loadingReads: 3, then: [Make.row(1, "Taylor, hey, 12:05 AM", selected: true),
+                                                 Make.row(2, expectedRow)])
+        XCTAssertEqual(targeter.selectChat(Make.chat()), .refused(chatNotOpen))
+        XCTAssertFalse(rig.log.contains("ax.bubbles"))
+        XCTAssertNoPress(rig.log)
+    }
+
+    func testAnAXErrorDuringTheWaitRefusesAsAnAXFailure() {
+        let errors: [(AXDriveError, ActionResult)] = [(.notTrusted, UIResults.accessibilityMissing),
+                                                      (.notRunning, ActionResult(.noHiddenWindow)),
+                                                      (.axError(-25204), ActionResult(.notLoaded))]
+        for (error, expected) in errors {
+            // On the first loading read, and on a poll in the middle of the wait.
+            for failingRead in [1, 3] {
+                let (rig, targeter) = rig(rows: [])
+                var reads = 0
+                rig.ax.listState = {
+                    reads += 1
+                    if reads == failingRead { throw error }
+                    return .loading
+                }
+                XCTAssertEqual(targeter.selectChat(Make.chat()), .refused(expected),
+                               "\(error) on read \(failingRead)")
+                XCTAssertEqual(rig.log.count(of: "ax.listState"), failingRead)
+                XCTAssertEqual(rig.clock.sleeps.count, failingRead - 1)
+                XCTAssertFalse(rig.log.contains("ax.bubbles"))
+                XCTAssertNoPress(rig.log)
+            }
+            // On the row read again once the list has loaded.
+            let (rig, targeter) = rig(rows: [])
+            var reads = 0
+            rig.ax.listState = { [unowned ax = rig.ax] in
+                reads += 1
+                guard reads > 2 else { return .loading }
+                ax.rowsError = error
+                return .loaded
+            }
+            XCTAssertEqual(targeter.selectChat(Make.chat()), .refused(expected), "\(error) on the second row read")
+            XCTAssertEqual(rig.log.count(of: "ax.rows"), 2)
+            XCTAssertNoPress(rig.log)
+        }
+    }
+
+    func testTheLoadingReadIsNeverMadeWhenTheFirstReadMatches() {
+        // Selected, not selected, and two matches: each decides from the first read.
+        let cases: [([ConversationRowInfo], ChatSelection)] = [
+            (loadedRows, .selected),
+            ([Make.row(1, "Taylor, hey, 12:05 AM", selected: true), Make.row(2, expectedRow)], .refused(chatNotOpen)),
+            ([Make.row(1, expectedRow), Make.row(2, expectedRow)], .refused(ActionResult(.ambiguous(.target)))),
+        ]
+        for (rows, expected) in cases {
+            let (rig, targeter) = rig(rows: rows)
+            rig.ax.listState = { .loading }
+            XCTAssertEqual(targeter.selectChat(Make.chat()), expected)
+            XCTAssertEqual(rig.log.count(of: "ax.listState"), 0, "\(rows)")
+            XCTAssertEqual(rig.log.count(of: "ax.rows"), 1)
+            XCTAssertNoPress(rig.log)
+        }
+    }
+
+    func testZeroOrNegativePollIntervalStillEndsTheListWait() {
+        for interval in [0, -1] as [TimeInterval] {
+            let (rig, targeter) = rig(rows: [])
+            targeter.pollInterval = interval
+            var reads = 0
+            // Capped, so a loop that stops moving the clock fails here instead of spinning.
+            rig.ax.listState = {
+                reads += 1
+                return reads < 5000 ? .loading : .loaded
+            }
+            let start = rig.clock.uptime
+            XCTAssertEqual(targeter.selectChat(Make.chat()), .refused(ActionResult(.notLoaded)), "\(interval)")
+            XCTAssertEqual(rig.clock.uptime - start, targeter.listLoadTimeout, accuracy: 0.0001, "\(interval)")
+            XCTAssertFalse(rig.clock.sleeps.contains { $0 <= 0 }, "\(interval)")
+            XCTAssertLessThan(reads, 5000, "\(interval)")
+            XCTAssertNoPress(rig.log)
+        }
+    }
+
+    // MARK: - A stale read while the list loads
+
+    func testAStaleReadWhileTheListLoadsCountsAsStillLoading() {
+        // Messages replaces the list's children as it loads, so a read can hit one it has just destroyed. Here that
+        // happens on the first state read, on a poll, and on the row read once the list reads loaded.
+        let (rig, targeter) = rig(rows: [])
+        let rows = loadedRows
+        var reads = 0
+        rig.ax.listState = { [unowned ax = rig.ax] in
+            reads += 1
+            if reads == 1 || reads == 3 { throw AXDriveError.staleReference }
+            if reads < 5 { return .loading }
+            if reads == 5 {
+                ax.rowsError = .staleReference
+                return .loaded
+            }
+            ax.rowsError = nil
+            ax.rows = rows
+            return .loaded
+        }
+        XCTAssertEqual(targeter.selectChat(Make.chat()), .selected)
+        XCTAssertEqual(rig.log.count(of: "ax.listState"), 6)
+        XCTAssertEqual(rig.log.count(of: "ax.rows"), 3)
+        XCTAssertEqual(rig.clock.sleeps, Array(repeating: targeter.pollInterval, count: 5))
+        XCTAssertNoPress(rig.log)
+    }
+
+    func testAStaleFirstRowReadIsReadAgainOnceTheListReadsLoaded() {
+        let (rig, targeter) = rig()
+        rig.ax.rowsError = .staleReference
+        rig.ax.listState = { [unowned ax = rig.ax] in
+            ax.rowsError = nil
+            return .loaded
+        }
+        XCTAssertEqual(targeter.selectChat(Make.chat()), .selected)
+        XCTAssertEqual(rig.clock.sleeps, [targeter.pollInterval])
+        XCTAssertEqual(rig.log.count(of: "ax.listState"), 1)
+        XCTAssertEqual(rig.log.count(of: "ax.rows"), 2)
+        XCTAssertNoPress(rig.log)
+    }
+
+    func testRowsThatLoadBetweenTheRowReadAndTheStateReadAreReadAgain() {
+        // The first row read sees placeholders only, and Messages swaps in the rows before the state read.
+        let (rig, targeter) = rig()
+        let loaded = rig.ax.rows
+        rig.ax.rows = []
+        rig.ax.listState = { [unowned ax = rig.ax] in
+            ax.rows = loaded
+            return .loaded
+        }
+        XCTAssertEqual(targeter.selectChat(Make.chat()), .selected)
+        XCTAssertTrue(rig.clock.sleeps.isEmpty, "no wait")
+        XCTAssertEqual(rig.log.count(of: "ax.listState"), 1)
+        XCTAssertEqual(rig.log.count(of: "ax.rows"), 2)
+        XCTAssertNoPress(rig.log)
+    }
+
+    func testAStaleRowReadAgainAfterTheListReadsLoadedWaitsForTheList() {
+        let (rig, targeter) = rig()
+        let loaded = rig.ax.rows
+        rig.ax.rows = []
+        var states = 0
+        rig.ax.listState = { [unowned ax = rig.ax] in
+            states += 1
+            if states == 1 { ax.rowsError = .staleReference } else { ax.rowsError = nil; ax.rows = loaded }
+            return .loaded
+        }
+        XCTAssertEqual(targeter.selectChat(Make.chat()), .selected)
+        XCTAssertEqual(rig.clock.sleeps, [targeter.pollInterval])
+        XCTAssertEqual(rig.log.count(of: "ax.listState"), 2)
+        XCTAssertEqual(rig.log.count(of: "ax.rows"), 3)
+        XCTAssertNoPress(rig.log)
+    }
+
+    func testStaleReadsUntilTheTimeoutAreNotLoaded() {
+        let (rig, targeter) = rig(rows: [])
+        rig.ax.listState = { throw AXDriveError.staleReference }
+        let start = rig.clock.uptime
+        XCTAssertEqual(targeter.selectChat(Make.chat()), .refused(ActionResult(.notLoaded)))
+        XCTAssertEqual(rig.clock.uptime - start, targeter.listLoadTimeout, accuracy: 0.0001)
+        XCTAssertEqual(rig.log.count(of: "ax.rows"), 1)
+        XCTAssertFalse(rig.log.contains("ax.bubbles"))
+        XCTAssertNoPress(rig.log)
+    }
+
+    // MARK: - No list shows
+
+    /// A cold launch through the rig's window manager, as `prepare` runs before the action. Returns the time of
+    /// the `open`.
+    func launch(_ rig: Rig) -> TimeInterval {
+        let clock = rig.clock
+        var openedAt: TimeInterval?
+        rig.app.current = .notRunning
+        rig.app.onCall = { call, state in
+            guard call == .launchHidden else { return }
+            openedAt = clock.uptime
+            state = Make.readyState
+        }
+        XCTAssertNil(rig.windows.ensureHiddenWindow(queueDeadline: clock.uptime + 30))
+        XCTAssertNotNil(openedAt)
+        XCTAssertEqual(rig.windows.lastLaunchUptime, openedAt)
+        return openedAt ?? clock.uptime
+    }
+
+    func testAMissingListWithNoRecentLaunchIsNotLoadedWithNoWait() {
+        // A warm, hidden Messages whose one window shows no list, for example a lone Settings window.
+        let (warm, warmTargeter) = rig(rows: [])
+        warm.ax.listState = { .missing }
+        XCTAssertNil(warm.windows.lastLaunchUptime)
+        let start = warm.clock.uptime
+        XCTAssertEqual(warmTargeter.selectChat(Make.chat()), .refused(ActionResult(.notLoaded)))
+        XCTAssertTrue(warm.clock.sleeps.isEmpty, "zero polls")
+        XCTAssertEqual(warm.clock.uptime, start)
+        XCTAssertEqual(warm.log.count(of: "ax.listState"), 1)
+        XCTAssertNoPress(warm.log)
+
+        // The same long after the bridge's own launch.
+        let (late, lateTargeter) = rig(rows: [])
+        let launched = launch(late)
+        late.ax.listState = { .missing }
+        late.clock.advance(lateTargeter.listLoadTimeout)
+        XCTAssertGreaterThan(late.clock.uptime - launched, lateTargeter.listLoadTimeout)
+        let sleeps = late.clock.sleeps.count
+        let lateStart = late.clock.uptime
+        XCTAssertEqual(lateTargeter.selectChat(Make.chat()), .refused(ActionResult(.notLoaded)))
+        XCTAssertEqual(late.clock.sleeps.count, sleeps, "zero polls")
+        XCTAssertEqual(late.clock.uptime, lateStart)
+        XCTAssertNoPress(late.log)
+    }
+
+    func testAMissingListRightAfterALaunchWaitsForTheListToLoad() {
+        let (rig, targeter) = rig(rows: [])
+        let launched = launch(rig)
+        let clock = rig.clock
+        let rows = loadedRows
+        rig.ax.listState = { [unowned ax = rig.ax] in
+            let since = clock.uptime - launched
+            if since < 2.5 { return .missing }
+            if since < 4.5 { return .loading }
+            ax.rows = rows
+            return .loaded
+        }
+        XCTAssertEqual(targeter.selectChat(Make.chat()), .selected)
+        XCTAssertEqual(clock.uptime - launched, 4.5, accuracy: targeter.pollInterval + 0.0001)
+        XCTAssertEqual(rig.log.count(of: "ax.rows"), 2)
+        XCTAssertNoPress(rig.log)
+    }
+
+    func testAMissingListAfterALaunchCountsAsLoadingOnlyWithinTheTimeoutOfTheLaunch() {
+        let (rig, targeter) = rig(rows: [])
+        let launched = launch(rig)
+        rig.ax.listState = { .missing }
+        let start = rig.clock.uptime
+        XCTAssertGreaterThan(start, launched, "the launch wait and the visibility poll come first")
+        XCTAssertEqual(targeter.selectChat(Make.chat()), .refused(ActionResult(.notLoaded)))
+        // The wait ends once the launch is `listLoadTimeout` old, before the poll's own deadline.
+        XCTAssertEqual(rig.clock.uptime - launched, targeter.listLoadTimeout, accuracy: targeter.pollInterval + 0.0001)
+        XCTAssertLessThan(rig.clock.uptime, start + targeter.listLoadTimeout)
+        XCTAssertEqual(rig.log.count(of: "ax.rows"), 2, "read again once the missing list stops counting as loading")
+        XCTAssertFalse(rig.log.contains("ax.bubbles"))
+        XCTAssertNoPress(rig.log)
+    }
+
+    // MARK: - A list with rows and placeholders
+
+    /// Some rows show and the target's is still a placeholder, the part of a launch nothing has sampled.
+    let partlyLoaded = ConversationListRule.state(children: [.row, .placeholder])
+    let filledIn = ConversationListRule.state(children: [.row, .row])
+
+    func testAPartlyLoadedListRightAfterALaunchWaitsAndThenMatches() {
+        let (rig, targeter) = rig(rows: [Make.row(1, "Taylor, hey, 12:05 AM")])
+        let launched = launch(rig)
+        let clock = rig.clock
+        let rows = loadedRows
+        let partlyLoaded = self.partlyLoaded
+        let filledIn = self.filledIn
+        XCTAssertEqual(partlyLoaded, .partlyLoaded)
+        rig.ax.listState = { [unowned ax = rig.ax] in
+            guard clock.uptime - launched >= 3.5 else { return partlyLoaded }
+            ax.rows = rows
+            return filledIn
+        }
+        let sleeps = clock.sleeps.count
+        XCTAssertEqual(targeter.selectChat(Make.chat()), .selected)
+        XCTAssertEqual(clock.uptime - launched, 3.5, accuracy: targeter.pollInterval + 0.0001)
+        XCTAssertGreaterThan(clock.sleeps.count, sleeps, "it waited")
+        XCTAssertEqual(rig.log.count(of: "ax.rows"), clock.sleeps.count - sleeps + 1,
+                       "the first read, then one on each poll while rows show next to placeholders")
+        XCTAssertNoPress(rig.log)
+    }
+
+    func testATargetRowThatShowsNextToPlaceholdersAfterALaunchIsMatchedWithoutWaitingForTheRest() {
+        // Some placeholders never fill in. The target's row shows 1.5 s after the launch, and the wait ends there,
+        // not when the launch is `listLoadTimeout` old.
+        let (rig, targeter) = rig(rows: [Make.row(1, "Taylor, hey, 12:05 AM")])
+        let launched = launch(rig)
+        let clock = rig.clock
+        let rows = loadedRows
+        let partlyLoaded = self.partlyLoaded
+        rig.ax.listState = { [unowned ax = rig.ax] in
+            if clock.uptime - launched >= 1.5 { ax.rows = rows }
+            return partlyLoaded
+        }
+        let sleeps = clock.sleeps.count
+        XCTAssertEqual(targeter.selectChat(Make.chat()), .selected)
+        XCTAssertEqual(clock.uptime - launched, 1.5, accuracy: targeter.pollInterval + 0.0001)
+        XCTAssertLessThan(clock.uptime - launched, targeter.listLoadTimeout)
+        XCTAssertEqual(rig.log.count(of: "ax.rows"), clock.sleeps.count - sleeps + 1)
+        XCTAssertNoPress(rig.log)
+    }
+
+    func testAPartlyLoadedListThatStaysSoAfterALaunchWaitsOnlyUntilTheLaunchIsTimeoutOld() {
+        let (rig, targeter) = rig(rows: [Make.row(1, "Taylor, hey, 12:05 AM")])
+        let launched = launch(rig)
+        let partlyLoaded = self.partlyLoaded
+        rig.ax.listState = { partlyLoaded }
+        let start = rig.clock.uptime
+        let sleeps = rig.clock.sleeps.count
+        XCTAssertEqual(targeter.selectChat(Make.chat()), .refused(ActionResult(.notLoaded)))
+        XCTAssertEqual(rig.clock.uptime - launched, targeter.listLoadTimeout, accuracy: targeter.pollInterval + 0.0001)
+        XCTAssertLessThan(rig.clock.uptime, start + targeter.listLoadTimeout)
+        XCTAssertEqual(rig.log.count(of: "ax.rows"), rig.clock.sleeps.count - sleeps + 1,
+                       "the first read, one on each poll, the last once the list stops counting as loading")
+        XCTAssertFalse(rig.log.contains("ax.bubbles"))
+        XCTAssertNoPress(rig.log)
+    }
+
+    func testAPartlyLoadedListLongAfterALaunchIsNotLoadedWithNoWait() {
+        let (rig, targeter) = rig(rows: [Make.row(1, "Taylor, hey, 12:05 AM", selected: true)])
+        let launched = launch(rig)
+        let partlyLoaded = self.partlyLoaded
+        rig.ax.listState = { partlyLoaded }
+        rig.clock.advance(targeter.listLoadTimeout)
+        XCTAssertGreaterThan(rig.clock.uptime - launched, targeter.listLoadTimeout)
+        let sleeps = rig.clock.sleeps.count
+        let start = rig.clock.uptime
+        XCTAssertEqual(targeter.selectChat(Make.chat()), .refused(ActionResult(.notLoaded)))
+        XCTAssertEqual(rig.clock.sleeps.count, sleeps, "zero polls")
+        XCTAssertEqual(rig.clock.uptime, start)
+        XCTAssertEqual(rig.log.count(of: "ax.listState"), 1)
+        XCTAssertEqual(rig.log.count(of: "ax.rows"), 2)
+        XCTAssertNoPress(rig.log)
+    }
+
+    func testAWarmListWithPinnedTilesAndNoMatchIsNotLoadedWithNoWait() {
+        // The bridge never launched Messages. Tiles that aren't rows, with or without a description, sit next to
+        // rows that don't match, so the list reads loaded as before and nothing waits.
+        let tiles: [[ConversationListChild]] = [[.placeholder, .placeholder, .row, .row], [.other, .other, .row, .row]]
+        for children in tiles {
+            let (rig, targeter) = rig(rows: [Make.row(1, "Taylor, hey, 12:05 AM", selected: true),
+                                             Make.row(2, "Riley, ok, 12:01 AM")])
+            XCTAssertNil(rig.windows.lastLaunchUptime)
+            rig.ax.listState = { ConversationListRule.state(children: children) }
+            let start = rig.clock.uptime
+            XCTAssertEqual(targeter.selectChat(Make.chat()), .refused(ActionResult(.notLoaded)), "\(children)")
+            XCTAssertTrue(rig.clock.sleeps.isEmpty, "zero polls, \(children)")
+            XCTAssertEqual(rig.clock.uptime, start)
+            XCTAssertEqual(rig.log.count(of: "ax.listState"), 1)
+            XCTAssertEqual(rig.log.count(of: "ax.rows"), 2)
+            XCTAssertNoPress(rig.log)
+        }
+    }
+
+    // MARK: - The selected row (item 9)
+
+    func testTargetThatIsNotSelectedIsBusyWithItsFixAndNoPress() {
+        // Another chat is selected, or no chat is. A row press would do nothing while Messages is hidden.
+        for other in [true, false] {
+            let (rig, targeter) = rig(rows: [Make.row(1, "Taylor, hey, 12:05 AM", selected: other),
+                                             Make.row(2, expectedRow)])
+            let start = rig.clock.uptime
+            XCTAssertEqual(targeter.selectChat(Make.chat()), .refused(chatNotOpen), "other selected: \(other)")
+            XCTAssertNoPress(rig.log)
+            XCTAssertTrue(rig.ax.pressedRows.isEmpty)
+            XCTAssertFalse(rig.log.contains("ax.bubbles"), "no transcript wait")
+            XCTAssertEqual(rig.clock.uptime, start)
+        }
+        XCTAssertEqual(chatNotOpen.notes, [])
+        XCTAssertFalse(chatNotOpen.holdsIdempotencyKey)
+        XCTAssertEqual(chatNotOpen.rendered,
+                       "busy: chat not open in Messages fix: open +15550001111 in Messages, hide it (⌘H), then retry")
+    }
+
+    func testTwoSelectedRowsAreBusyWithNoPress() {
+        let (rig, targeter) = rig(rows: [Make.row(1, "Taylor, hey, 12:05 AM", selected: true),
+                                         Make.row(2, expectedRow, selected: true)])
+        XCTAssertEqual(targeter.selectChat(Make.chat()), .refused(chatNotOpen))
+        XCTAssertNoPress(rig.log)
+        XCTAssertFalse(rig.log.contains("ax.bubbles"))
+    }
+
+    func testUnknownSelectionReadIsBusyWithNoPress() {
+        // `AXSelected` that reads unknown, on the target's row or on another row, can't show that the target is the
+        // one selected chat.
+        let unknownTarget = [Make.row(1, "Taylor, hey, 12:05 AM"), Make.row(2, expectedRow, selected: nil)]
+        let unknownOther = [Make.row(1, "Taylor, hey, 12:05 AM", selected: nil),
+                            Make.row(2, expectedRow, selected: true)]
+        for (i, rows) in [unknownTarget, unknownOther].enumerated() {
+            let (rig, targeter) = rig(rows: rows)
+            XCTAssertEqual(targeter.selectChat(Make.chat()), .refused(chatNotOpen), "case \(i)")
+            XCTAssertNoPress(rig.log)
+            XCTAssertTrue(rig.ax.pressedRows.isEmpty)
+            XCTAssertFalse(rig.log.contains("ax.bubbles"), "case \(i): no transcript wait")
+        }
+    }
+
+    func testChatNotOpenFixNamesTheChatByItsLabel() {
+        var chat = Make.chat()
+        chat.label = "Jordan Kim"
+        XCTAssertEqual(UIResults.chatNotOpen(chat).fix, "open Jordan Kim in Messages, hide it (⌘H), then retry")
+        chat.label = "Jordan\nKim"
+        XCTAssertEqual(UIResults.chatNotOpen(chat).fix, "open Jordan / Kim in Messages, hide it (⌘H), then retry")
+        chat.label = ""
+        XCTAssertEqual(UIResults.chatNotOpen(chat),
+                       ActionResult(.busy(.chatNotOpen), fix: "open the chat in Messages, hide it (⌘H), then retry"))
+        chat.label = " \n "
+        XCTAssertEqual(UIResults.chatNotOpen(chat).fix, "open the chat in Messages, hide it (⌘H), then retry")
+    }
+
+    func testSelectedTargetWithAMismatchedTranscriptIsNotLoadedWithNoNote() {
         let (rig, targeter) = rig()
         rig.ax.bubbles = { [Make.bubble(9, fromMe: false, text: "someone else's chat", minute: "12:00 AM")] }
         let start = rig.clock.uptime
-        XCTAssertEqual(targeter.selectChat(Make.chat()),
-                       .refused(UIResults.wrongChat))
-        XCTAssertEqual(UIResults.wrongChat.rendered, "error: wrong chat, chat opened, may be marked read fix: retry")
-        XCTAssertFalse(UIResults.wrongChat.holdsIdempotencyKey)
+        XCTAssertEqual(targeter.selectChat(Make.chat()), .refused(ActionResult(.notLoaded)))
         XCTAssertEqual(rig.clock.uptime - start, targeter.settleTimeout, accuracy: 0.0001)
+        XCTAssertNoPress(rig.log)
+        XCTAssertTrue(rig.ax.pressedRows.isEmpty)
     }
 
-    func testTranscriptGetsTheSettleTimeToShowThePressedChat() {
-        func run(showAfter delay: TimeInterval) -> ChatSelection {
+    func testTranscriptGetsTheSettleTimeToShowTheSelectedChat() {
+        func run(showAfter delay: TimeInterval) -> (ChatSelection, EventLog) {
             let (rig, targeter) = rig()
             targeter.pollInterval = 0.25
             let clock = rig.clock
             let start = clock.uptime
             rig.ax.bubbles = { clock.uptime - start >= delay ? self.targetTranscript() : [] }
-            return targeter.selectChat(Make.chat())
+            return (targeter.selectChat(Make.chat()), rig.log)
         }
-        XCTAssertEqual(run(showAfter: 2.0), .selected)
-        XCTAssertEqual(run(showAfter: 2.01), .refused(UIResults.wrongChat))
+        let shown = run(showAfter: 2.0)
+        XCTAssertEqual(shown.0, .selected)
+        XCTAssertNoPress(shown.1)
+        let late = run(showAfter: 2.01)
+        XCTAssertEqual(late.0, .refused(ActionResult(.notLoaded)))
+        XCTAssertNoPress(late.1)
     }
 
     func testZeroPollIntervalStillEndsTheSettleWait() {
@@ -345,7 +844,7 @@ final class TargetingTests: XCTestCase {
         targeter.pollInterval = 0
         rig.ax.bubbles = { [] }
         let start = rig.clock.uptime
-        XCTAssertEqual(targeter.selectChat(Make.chat()), .refused(UIResults.wrongChat))
+        XCTAssertEqual(targeter.selectChat(Make.chat()), .refused(ActionResult(.notLoaded)))
         XCTAssertEqual(rig.clock.uptime - start, targeter.settleTimeout, accuracy: 0.0001)
         XCTAssertFalse(rig.clock.sleeps.contains { $0 <= 0 })
     }
@@ -355,8 +854,8 @@ final class TargetingTests: XCTestCase {
         rig.ax.bubbles = {
             [Make.bubble(51, fromMe: true, text: "on my way"), Make.bubble(52, fromMe: true, text: "see you")]
         }
-        XCTAssertEqual(targeter.selectChat(Make.chat()),
-                       .refused(UIResults.wrongChat))
+        XCTAssertEqual(targeter.selectChat(Make.chat()), .refused(ActionResult(.notLoaded)))
+        XCTAssertNoPress(rig.log)
     }
 
     func testNewestMatchIgnoresNonTextBubbles() {

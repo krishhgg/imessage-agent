@@ -82,6 +82,8 @@ final class ForegroundRunner {
     private var earlierApp: FrontApp?
     private var snapshot = SendSnapshot(maxRowID: 0, requestedAt: Date(timeIntervalSince1970: 0))
     private var dateEditedBefore: AppleNanos = 0
+    /// Set right before `open -b`. Every result from then on carries the mark-read note, since the chat step 1
+    /// found selected is the one Messages shows in front. Step 1 presses nothing, so its refusals carry no note.
     private var chatOpened = false
     /// Notes from the window rules, such as `error: Messages became visible`, added to every result after them.
     private var windowNotes: [ResultNote] = []
@@ -212,13 +214,24 @@ final class ForegroundRunner {
         guard state.isHidden, !state.isFrontmost else { return .messagesOpen }
         pid = messagesPID
 
-        switch env.targeting.selectChat(run.chat) {
-        case .selected:
-            chatOpened = true
-        case .refused(let early):
-            if early.code == .error(.wrongChat) { chatOpened = true }
+        // `selectChat` presses no row. A chat that isn't the one selected chat is `busy: chat not open in Messages`,
+        // returned like the other step 1 refusals, with nothing pressed and no mark-read note.
+        // `selectChat` can wait several seconds for a conversation list that is still loading, longer than the idle
+        // check before `open -b` covers. During that wait the user may have shown Messages, opened a second window
+        // or locked the screen, so the window rules run again after it, the same recheck the hidden actions make
+        // before their press. A lock or a second window that AX counts also makes the live targeter's AX reads come
+        // back empty or fail, which it reports as `not_loaded`. So a `not_loaded` refusal runs the recheck too, and
+        // its busy line wins. The other refusals are returned as they are.
+        if case .refused(let early) = env.targeting.selectChat(run.chat) {
+            if early.code == .notLoaded, let busy = env.windowRules.recheck() { return busy }
             return early
         }
+        if let busy = env.windowRules.recheck() { return busy }
+        // Later steps post keys to `pid`, so a Messages that quit or relaunched is `no_hidden_window`. This read comes
+        // after the recheck, so a relaunch during the recheck's own read, which it can't tell from the first launch,
+        // is still caught.
+        let after = env.app.state()
+        guard after.isRunning, after.pid == messagesPID else { return ActionResult(.noHiddenWindow) }
 
         do {
             guard let composer = try env.ax.composer() else { return .abortedCheck(ForegroundCheck.axRead) }
@@ -293,6 +306,7 @@ final class ForegroundRunner {
     private func activate() -> ForegroundOutcome {
         enter(.activating)
         let tOpen = env.clock.uptime
+        chatOpened = true
         // `activateForeground` returns once `open` has started, so the front app is polled while `open` runs.
         // `t_front` is when the first read that shows Messages frontmost started. A read that ends after the 1 s
         // doesn't count, so a call or read that blocked can't move either limit.

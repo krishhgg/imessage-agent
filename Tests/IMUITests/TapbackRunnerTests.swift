@@ -73,8 +73,8 @@ final class TapbackRunnerTests: XCTestCase {
         rig.recorder.failWillInvoke = true
         let result = runner.run(request(), queueDeadline: rig.clock.uptime + 30, recorder: rig.recorder)
         XCTAssertEqual(result.result.code, .error(.message("journal write failed")))
-        XCTAssertEqual(result.result.rendered,
-                       "error: journal write failed, chat opened, may be marked read fix: free disk space and retry")
+        XCTAssertEqual(result.result.rendered, "error: journal write failed fix: free disk space and retry")
+        XCTAssertFalse(result.pressed)
         XCTAssertFalse(result.result.holdsIdempotencyKey)
         XCTAssertFalse(rig.log.contains("ax.perform"))
         XCTAssertFalse(rig.log.contains("journal.didInvoke"))
@@ -114,13 +114,12 @@ final class TapbackRunnerTests: XCTestCase {
     }
 
     func testReactionSetElsewhereDuringTheWindowWorkIsAlreadyWithNoPress() {
-        // A Heart from another device lands while the chat is being opened.
+        // A Heart from another device lands during the chat check.
         let (rig, targeting, runner) = setup()
         targeting.onSelect = { rig.source.reaction = .heart }
         let result = runner.run(request(.heart), queueDeadline: rig.clock.uptime + 30, recorder: rig.recorder)
-        XCTAssertEqual(result, UIActionResult(result: ActionResult(.already, notes: [.mayHaveMarkedRead]),
-                                              currentReaction: .heart, pressed: true))
-        XCTAssertEqual(result.result.rendered, "already, chat opened, may be marked read")
+        XCTAssertEqual(result, UIActionResult(result: ActionResult(.already), currentReaction: .heart, pressed: false))
+        XCTAssertEqual(result.result.rendered, "already")
         XCTAssertTrue(rig.ax.performed.isEmpty, "the Heart would have been toggled off")
         XCTAssertFalse(rig.log.contains("ax.perform"))
         XCTAssertTrue(rig.recorder.facts.isEmpty)
@@ -135,7 +134,7 @@ final class TapbackRunnerTests: XCTestCase {
         targeting.onSelect = { rig.source.reaction = nil }
         let result = runner.run(request(.laugh, remove: true), queueDeadline: rig.clock.uptime + 30,
                                 recorder: rig.recorder)
-        XCTAssertEqual(result.result, ActionResult(.already, notes: [.mayHaveMarkedRead]))
+        XCTAssertEqual(result.result, ActionResult(.already))
         XCTAssertNil(result.currentReaction)
         XCTAssertNoPress(rig.log)
     }
@@ -144,8 +143,8 @@ final class TapbackRunnerTests: XCTestCase {
         let (rig, targeting, runner) = setup()
         targeting.onSelect = { rig.source.failing = [.currentReaction] }
         let result = runner.run(request(), queueDeadline: rig.clock.uptime + 30, recorder: rig.recorder)
-        XCTAssertEqual(result.result, UIResults.readFailed.adding([.mayHaveMarkedRead]))
-        XCTAssertTrue(result.pressed)
+        XCTAssertEqual(result.result, UIResults.readFailed)
+        XCTAssertFalse(result.pressed)
         XCTAssertFalse(rig.log.contains("ax.perform"))
         XCTAssertFalse(rig.log.contains("journal.willInvoke"))
     }
@@ -302,23 +301,28 @@ final class TapbackRunnerTests: XCTestCase {
         XCTAssertTrue(rig.recorder.facts.isEmpty)
     }
 
-    func testWrongChatAfterThePressCountsAsPressed() {
+    func testChatNotOpenIsAnEarlyRefusalWithNoPollAndNoNote() {
         let (rig, targeting, runner) = setup()
-        targeting.selection = .refused(ActionResult(.error(.wrongChat), notes: [.mayHaveMarkedRead]))
+        let busy = ActionResult(.busy(.chatNotOpen), fix: "open Jordan in Messages, hide it (⌘H), then retry")
+        targeting.selection = .refused(busy)
         let start = rig.clock.uptime
         let result = runner.run(request(), queueDeadline: start + 30, recorder: rig.recorder)
-        XCTAssertEqual(result.result, ActionResult(.error(.wrongChat), notes: [.mayHaveMarkedRead]))
-        XCTAssertTrue(result.pressed)
-        XCTAssertEqual(rig.clock.uptime - start, Limits.visibilityPoll, accuracy: 0.0001, "visibility poll ran")
-        XCTAssertFalse(rig.log.contains("ax.perform"))
+        XCTAssertEqual(result.result, busy)
+        XCTAssertFalse(result.pressed)
+        XCTAssertEqual(rig.clock.uptime, start, "no visibility poll")
+        XCTAssertFalse(rig.log.contains("target.find"))
+        XCTAssertNoPress(rig.log)
+        XCTAssertTrue(rig.recorder.facts.isEmpty, "no willInvoke")
     }
 
-    func testBubbleNotLoadedAfterTheChatPressCarriesTheNote() {
+    func testBubbleNotLoadedAfterTheChatCheckHasNoNoteAndNoPoll() {
         let (rig, targeting, runner) = setup()
         targeting.lookup = .refused(ActionResult(.notLoaded))
-        let result = runner.run(request(), queueDeadline: rig.clock.uptime + 30, recorder: rig.recorder)
-        XCTAssertEqual(result.result, ActionResult(.notLoaded, notes: [.mayHaveMarkedRead]))
-        XCTAssertTrue(result.pressed)
+        let start = rig.clock.uptime
+        let result = runner.run(request(), queueDeadline: start + 30, recorder: rig.recorder)
+        XCTAssertEqual(result.result, ActionResult(.notLoaded))
+        XCTAssertFalse(result.pressed)
+        XCTAssertEqual(rig.clock.uptime, start, "no visibility poll")
         XCTAssertFalse(rig.log.contains("ax.perform"))
     }
 
@@ -329,7 +333,8 @@ final class TapbackRunnerTests: XCTestCase {
         let (rig, targeting, runner) = setup()
         targeting.lookup = .found(noHeart)
         let result = runner.run(request(.heart), queueDeadline: rig.clock.uptime + 30, recorder: rig.recorder)
-        XCTAssertEqual(result.result, ActionResult(.unsupported, notes: [.mayHaveMarkedRead]))
+        XCTAssertEqual(result.result, ActionResult(.unsupported))
+        XCTAssertFalse(result.pressed)
         XCTAssertFalse(rig.log.contains("ax.perform"))
         XCTAssertFalse(rig.log.contains("journal.willInvoke"))
     }
@@ -353,7 +358,8 @@ final class TapbackRunnerTests: XCTestCase {
         let (rig, _, runner) = setup()
         rig.ax.performError = .actionMissing("Heart")
         let result = runner.run(request(), queueDeadline: rig.clock.uptime + 30, recorder: rig.recorder)
-        XCTAssertEqual(result.result, ActionResult(.unsupported, notes: [.mayHaveMarkedRead]))
+        XCTAssertEqual(result.result, ActionResult(.unsupported), "the Heart didn't run, so no mark-read note")
+        XCTAssertFalse(result.pressed)
         XCTAssertFalse(rig.log.contains("db.reactionRows"), "nothing was performed, so nothing to verify")
         XCTAssertEqual(rig.recorder.didInvokeCount, 1, "the journal entry is closed")
     }
@@ -368,7 +374,8 @@ final class TapbackRunnerTests: XCTestCase {
             let (rig, _, runner) = setup()
             rig.ax.performError = error
             let result = runner.run(request(), queueDeadline: rig.clock.uptime + 30, recorder: rig.recorder)
-            XCTAssertEqual(result.result, expected.adding([.mayHaveMarkedRead]), "\(error)")
+            XCTAssertEqual(result.result, expected, "\(error): nothing ran, so no mark-read note")
+            XCTAssertFalse(result.pressed, "\(error)")
             XCTAssertFalse(result.result.holdsIdempotencyKey, "\(error)")
             XCTAssertFalse(rig.log.contains("db.reactionRows"), "\(error): nothing ran, so nothing to verify")
             XCTAssertEqual(rig.recorder.didInvokeCount, 1, "\(error): the journal entry is closed")
@@ -457,10 +464,10 @@ final class TapbackRunnerTests: XCTestCase {
     func testEndToEndWithTheRealTargeter() {
         let rig = Rig()
         rig.source.summaries = [Make.summary()]
-        rig.ax.rows = [Make.row(2, "Jordan, see you, 12:20 AM")]
+        rig.ax.rows = [Make.row(1, "Taylor, hey, 12:05 AM"), Make.row(2, "Jordan, see you, 12:20 AM", selected: true)]
         let transcript = [Make.bubble(51, fromMe: true, text: "on my way", minute: "12:29 AM", actions: ["Heart"]),
                           Make.bubble(52, fromMe: false, text: "see you", minute: "12:20 AM")]
-        rig.ax.bubbles = { [unowned ax = rig.ax] in ax.pressedRows.isEmpty ? [] : transcript }
+        rig.ax.bubbles = { transcript }
         verifyingRow(rig, type: 2000)
         let runner = TapbackRunner(ax: rig.ax, windows: rig.windows, targeting: rig.targeter(), source: rig.source,
                                    clock: rig.clock)
@@ -468,8 +475,26 @@ final class TapbackRunnerTests: XCTestCase {
         let result = runner.run(request(target: target), queueDeadline: rig.clock.uptime + 30,
                                 recorder: rig.recorder)
         XCTAssertEqual(result.result, ActionResult(.ok, notes: [.mayHaveMarkedRead]))
-        XCTAssertEqual(rig.log.count(of: "ax.pressRow"), 1)
+        XCTAssertEqual(rig.log.count(of: "ax.pressRow"), 0)
         XCTAssertEqual(rig.ax.performed.map(\.action), ["Heart"])
+    }
+
+    func testEndToEndWithTheRealTargeterOnAChatThatIsNotOpen() {
+        let rig = Rig()
+        rig.source.summaries = [Make.summary()]
+        rig.ax.rows = [Make.row(1, "Taylor, hey, 12:05 AM", selected: true), Make.row(2, "Jordan, see you, 12:20 AM")]
+        rig.ax.bubbles = { [Make.bubble(51, fromMe: true, text: "on my way", minute: "12:29 AM", actions: ["Heart"])] }
+        let runner = TapbackRunner(ax: rig.ax, windows: rig.windows, targeting: rig.targeter(), source: rig.source,
+                                   clock: rig.clock)
+        let target = Make.target(body: "on my way", dateNs: Make.nanos(2026, 11, 6, 0, 29))
+        let result = runner.run(request(target: target), queueDeadline: rig.clock.uptime + 30,
+                                recorder: rig.recorder)
+        XCTAssertEqual(result.result,
+                       ActionResult(.busy(.chatNotOpen), fix: "open +15550001111 in Messages, hide it (⌘H), then retry"))
+        XCTAssertFalse(result.pressed)
+        XCTAssertNoPress(rig.log)
+        XCTAssertTrue(rig.ax.performed.isEmpty)
+        XCTAssertTrue(rig.recorder.facts.isEmpty)
     }
 
     // MARK: - Reconciliation

@@ -13,7 +13,8 @@ final class FinalCheckTests: XCTestCase {
         // 119.5 s old, and the driver's description and action-name reads take 1 s.
         rig.ax.beforePerformRevalidation = { rig.clock.advance(1) }
         let result = helper.run(runner, rig, helper.target(age: 119.5))
-        XCTAssertEqual(result.result, ActionResult(.expired, notes: [.mayHaveMarkedRead]))
+        XCTAssertEqual(result.result, ActionResult(.expired), "nothing was pressed, so no mark-read note")
+        XCTAssertFalse(result.pressed)
         XCTAssertTrue(rig.ax.performed.isEmpty, "Undo Send pressed after expiry during the driver's reads")
         XCTAssertFalse(rig.log.contains("ax.perform"))
         // The same state as a window that closes during the journal flush: invoking, never invoked, no key held.

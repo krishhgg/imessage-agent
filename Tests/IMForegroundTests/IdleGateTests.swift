@@ -129,7 +129,7 @@ final class IdleGateTests: XCTestCase {
         let h = Harness()
         h.log.onEvent = { [unowned h] event in if event == .selectChat { h.input.inject() } }
         let outcome = h.runEdit(queueDeadline: 1100)
-        XCTAssertEqual(outcome.result, ActionResult(.busy(.userActive), notes: [.mayHaveMarkedRead]))
+        XCTAssertEqual(outcome.result, ActionResult(.busy(.userActive)), "nothing was pressed or brought forward")
         XCTAssertNil(outcome.ticket)
         XCTAssertNil(h.queue.holder)
         XCTAssertEqual(h.log.acquireTimeouts.count, h.log.count(.release))

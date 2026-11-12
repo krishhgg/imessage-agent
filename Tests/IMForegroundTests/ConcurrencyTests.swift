@@ -194,6 +194,7 @@ final class AlwaysOn: ForegroundModeSwitching {
 
 final class NoWindowRules: HiddenWindowPreparing {
     func prepare(queueDeadline: TimeInterval) -> WindowPreparation { WindowPreparation(early: nil, notes: []) }
+    func recheck() -> ActionResult? { nil }
 }
 
 final class WorldApp: MessagesAppControl {
@@ -244,6 +245,7 @@ final class WorldAX: MessagesAXDriving {
 
     func windowCount() throws -> Int { 1 }
     func conversationRows() throws -> [ConversationRowInfo] { [] }
+    func conversationListState() throws -> ConversationListState { .loaded }
     func press(row: AXRef, finalCheck: AXFinalCheck) throws {
         try finalCheck()
     }

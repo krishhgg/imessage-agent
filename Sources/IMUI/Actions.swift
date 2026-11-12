@@ -118,14 +118,15 @@ public struct TapbackRequest: Hashable, Sendable {
 /// `react` (section 4, Tapback semantics). Owner: IMUI.
 ///
 /// 1. Read the current reaction from chat.db. Already matching, or `--remove` of a kind that isn't set: `already`.
-/// 2. Window rules, chat selection, bubble lookup. Then read the reaction again, since the window work can take
-///    about 20 s and another device may have set it: nothing left to change is `already` with the mark-read note.
+/// 2. Window rules, the chat check, bubble lookup. The chat must already be the one selected chat, otherwise the
+///    result is `busy: chat not open in Messages` with nothing pressed. Then read the reaction again, since the
+///    window work can take about 20 s and another device may have set it: nothing left to change is `already`.
 ///    Action name missing: `unsupported`.
 /// 3. `recorder.willInvoke` with the snapshot ROWID, the target GUID, part and ROWID, then press, then
 ///    `recorder.didInvoke`. A refusal at the press's final check pressed nothing and skips `didInvoke`.
 /// 4. The 1 s visibility poll, then reads until 10 s after the press for type 2000 to 2006 (add) or 3000 to 3006
 ///    (remove) on `p:0/<guid>`: `ok`, else `may_have_completed`.
-/// 5. Add the visibility note if a window showed, and the mark-read note once a row was pressed.
+/// 5. Add the visibility note if a window showed, and the mark-read note once the tapback was pressed.
 ///
 /// An AX error that proves the action didn't run maps to its own result: a vanished action name is `unsupported`,
 /// a stale bubble `not_loaded`, no Accessibility grant `error: Accessibility not granted`, and Messages gone
@@ -179,40 +180,43 @@ public final class TapbackRunner {
         case .found(let found):
             bubble = found
         }
-        // The window work and the chat press can take about 20 s, so read the reaction again before pressing.
+        // The window work and the transcript wait can take about 20 s, so read the reaction again before pressing.
         let current: TapbackKind?
         do {
             current = try source.currentUserReaction(messageGUID: target.guid, part: 0)
         } catch {
-            return UIActionResult(result: flow.finish(UIResults.readFailed), currentReaction: initial, pressed: true)
+            return UIActionResult(result: flow.finish(UIResults.readFailed), currentReaction: initial,
+                                  pressed: flow.pressed)
         }
         if Self.nothingToChange(request, current: current) {
-            return UIActionResult(result: flow.finish(ActionResult(.already)), currentReaction: current, pressed: true)
+            return UIActionResult(result: flow.finish(ActionResult(.already)), currentReaction: current,
+                                  pressed: flow.pressed)
         }
         guard bubble.actionNames.contains(actionName) else {
             return UIActionResult(result: flow.finish(ActionResult(.unsupported)), currentReaction: current,
-                                  pressed: true)
+                                  pressed: flow.pressed)
         }
 
         let snapshot: Int64
         do { snapshot = try source.maxMessageRowID() } catch {
-            return UIActionResult(result: flow.finish(UIResults.readFailed), currentReaction: current, pressed: true)
+            return UIActionResult(result: flow.finish(UIResults.readFailed), currentReaction: current,
+                                  pressed: flow.pressed)
         }
         do {
             try recorder.willInvoke(InvocationFacts(snapshotRowID: snapshot, targetGUID: target.guid, targetPart: 0,
                                                     targetRowID: target.rowid))
         } catch {
             return UIActionResult(result: flow.finish(UIResults.journalWriteFailed), currentReaction: current,
-                                  pressed: true)
+                                  pressed: flow.pressed)
         }
         switch flow.perform(actionName, on: bubble, ax: ax) {
         case .refused(let result):
             // The final check pressed nothing, so the entry goes from `invoking` to final without `invoked`.
-            return UIActionResult(result: flow.finish(result), currentReaction: current, pressed: true)
+            return UIActionResult(result: flow.finish(result), currentReaction: current, pressed: flow.pressed)
         case .notPerformed(let error):
             try? recorder.didInvoke()
             let result = UIResults.notPerformed(error, missingAction: ActionResult(.unsupported))
-            return UIActionResult(result: flow.finish(result), currentReaction: current, pressed: true)
+            return UIActionResult(result: flow.finish(result), currentReaction: current, pressed: flow.pressed)
         case .performed:
             try? recorder.didInvoke()
         }
@@ -220,7 +224,7 @@ public final class TapbackRunner {
         let verified = waitForVerifyingRow(request, aboveRowID: snapshot, deadline: flow.verifyDeadline)
         let after = rereadReaction(request, verified: verified, fallback: current)
         return UIActionResult(result: flow.finish(ActionResult(verified ? .ok : .mayHaveCompleted)),
-                              currentReaction: after, pressed: true)
+                              currentReaction: after, pressed: flow.pressed)
     }
 
     /// Reconciliation for a journal entry: one read of chat.db, never presses (section 4). `ReconcileAdapter` passes
@@ -285,7 +289,8 @@ public final class TapbackRunner {
 /// `recorder.willInvoke` with the target GUID, part and ROWID, presses "Undo Send", runs the 1 s
 /// visibility poll, then reads until 10 s after the press for date_edited set and an empty body: `ok`, else
 /// `may_have_completed`. A missing action name is `unsupported`, or `expired` if the window closed. Other AX errors
-/// that prove nothing ran map as in `TapbackRunner`.
+/// that prove nothing ran map as in `TapbackRunner`. A chat that isn't the one selected chat in Messages is
+/// `busy: chat not open in Messages`, with nothing pressed and no `willInvoke`.
 ///
 /// IMBridge runs the check after approval with `ActionWindows.undoSendOpen`; `run` starts when the request leaves
 /// the queue. Incoming, group, multipart and non-text targets are `unsupported_target`. A message chat.db already
@@ -333,7 +338,7 @@ public final class UnsendRunner {
             bubble = found
         }
         func after(_ result: ActionResult) -> UIActionResult {
-            UIActionResult(result: flow.finish(result), currentReaction: nil, pressed: true)
+            UIActionResult(result: flow.finish(result), currentReaction: nil, pressed: flow.pressed)
         }
         guard bubble.actionNames.contains(UINames.undoSend) else {
             return after(ActionResult(windowOpen(target) ? .unsupported : .expired))
@@ -427,12 +432,15 @@ struct PressRefusal: Error {
     let result: ActionResult
 }
 
-/// The part every hidden UI action shares: window rules, the chat press, the bubble lookup, the named-action press,
-/// and the closing notes. Tracks whether anything was pressed, so the visibility poll and the mark-read note run
-/// exactly when they should.
+/// The part every hidden UI action shares: window rules, the chat check, the bubble lookup, the named-action press,
+/// and the closing notes. `selectChat` presses nothing, so only the named-action press brings the visibility poll
+/// and the mark-read note.
 struct HiddenActionFlow {
     let windows: HiddenWindowManager
     let targeting: ChatTargeting
+    /// Set once the named action ran, or came back with an AX error that doesn't prove it didn't. Only then does
+    /// `finish` add the visibility note and the mark-read note. A refusal at the press's final check and an error
+    /// that proves nothing ran leave it false.
     private(set) var pressed = false
     /// `uptime` when the named action returned plus `Limits.uiVerifyTimeout`. Verification reads until then.
     private(set) var verifyDeadline: TimeInterval = 0
@@ -450,12 +458,13 @@ struct HiddenActionFlow {
         let prep = windows.prepare(queueDeadline: queueDeadline)
         notes.append(contentsOf: prep.notes)
         if let early = prep.early { return .refused(early) }
-        switch targeting.selectChat(chat) {
-        case .refused(let result):
-            if result.notes.contains(.mayHaveMarkedRead) { pressed = true }
+        // `selectChat` presses nothing, so a refusal there, `busy: chat not open in Messages` included, and the
+        // results up to the bubble press leave `pressed` false. A lock or a second window during its list wait makes
+        // the live AX reads come back empty or fail, which it reports as `not_loaded`, so that refusal runs the
+        // window recheck and its busy line wins, as in foreground step 1.
+        if case .refused(let result) = targeting.selectChat(chat) {
+            if result.code == .notLoaded, let busy = windows.recheck() { return .refused(busy) }
             return .refused(result)
-        case .selected:
-            pressed = true
         }
         return targeting.findBubble(target)
     }
@@ -479,6 +488,8 @@ struct HiddenActionFlow {
         } catch let error as AXDriveError where !UIResults.mayHaveActed(error) {
             outcome = .notPerformed(error)
         } catch {}
+        // An error that proves the action didn't run pressed nothing, so `finish` adds no note for it.
+        if case .performed = outcome { pressed = true }
         verifyDeadline = windows.clock.uptime + Limits.uiVerifyTimeout
         pollAfterAction = windows.visibilityCheck()
         return outcome

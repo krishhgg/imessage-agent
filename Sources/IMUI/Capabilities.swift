@@ -16,7 +16,8 @@ public enum Capability: Hashable, Sendable {
     case edit
     /// Release test 4, threaded-reply part.
     case threadedReply
-    /// Release test 1, the hidden chat switch. Every UI action needs it.
+    /// Release test 1, the hidden chat switch. No action needs it now: every UI action runs in place on a chat that is
+    /// already selected, with no switch. It stays for the chat switch flows, which wait for probes.
     case hiddenChatSwitch
     /// Release test 3. Every UI action needs it.
     case targeting
@@ -103,12 +104,13 @@ public enum Capability: Hashable, Sendable {
         }
     }
 
-    /// Capabilities that must also be supported before this one is. A failed chat switch or test 3 turns off every
-    /// UI action, and tests 5 and 6b turn off both foreground actions.
+    /// Capabilities that must also be supported before this one is. A failed test 3 turns off every UI action, and
+    /// tests 5 and 6b turn off both foreground actions. A failed chat switch turns off none, since acting in place
+    /// switches no chat.
     public var prerequisites: [Capability] {
         switch self {
-        case .edit, .threadedReply: return [.hiddenChatSwitch, .targeting, .foregroundMode]
-        case .tapbackOwnMessages, .tapbackIncoming, .emojiTapback, .unsend: return [.hiddenChatSwitch, .targeting]
+        case .edit, .threadedReply: return [.targeting, .foregroundMode]
+        case .tapbackOwnMessages, .tapbackIncoming, .emojiTapback, .unsend: return [.targeting]
         case .hiddenChatSwitch, .targeting, .foregroundMode, .imageSend, .attachmentConversion, .groupSend: return []
         }
     }

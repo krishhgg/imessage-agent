@@ -220,4 +220,69 @@ final class ForegroundPipelineTests: XCTestCase {
         XCTAssertFalse(h.queue.isHeld)
         XCTAssertFalse(try h.onlyEntry().foreground)
     }
+
+    func testAnEditOrThreadedReplyOnAChatThatIsNotOpenIsAnEarlyBusyRefusal() throws {
+        let busy = ActionResult(.busy(.chatNotOpen), fix: "open Mom in Messages, hide it (⌘H), then retry")
+        for reply in [false, true] {
+            let h = try foregroundHarness()
+            h.targeting.selection = .refused(busy)
+            let result: ActionResult?
+            if reply {
+                let outcome = try XCTUnwrap(h.send("Yes!", thread: true).sendOutcome)
+                XCTAssertTrue(outcome.approved)
+                result = outcome.parts.first?.result
+            } else {
+                let rowid = try h.insertOwnMessage(62_011, text: "see you at 5", age: 30)
+                let outcome = try XCTUnwrap(h.call(.ui(UIArgs(action: .edit(rowid: rowid, text: "see you at 6"))))
+                    .uiOutcome)
+                XCTAssertTrue(outcome.approved)
+                result = outcome.result
+            }
+            XCTAssertEqual(result, busy, "reply: \(reply)")
+            XCTAssertEqual(h.targeting.selected.count, 1)
+            XCTAssertTrue(h.ax.performed.isEmpty)
+            XCTAssertEqual(h.app.calls.filter { $0 == "activateForeground" }, [])
+            let entry = try h.onlyEntry()
+            XCTAssertEqual(entry.state, .final)
+            XCTAssertNil(entry.facts)
+            XCTAssertFalse(entry.foreground)
+            XCTAssertEqual(h.journal.lookup(entry.key, again: false), .fresh, "the key isn't held")
+            XCTAssertFalse(h.queue.isHeld)
+            XCTAssertEqual(h.queue.acquisitions, 1)
+        }
+    }
+
+    func testTheRateCheckWrapperForwardsTheWindowRecheckWithoutTheRateCheck() {
+        // Step 1's recheck after the chat check goes through the wrapper for an approved threaded reply. It must
+        // return the base's busy line, and the rate check runs only in `prepare`.
+        let base = RecheckCountingWindowRules(answer: .screenLocked)
+        var rateChecks = 0
+        let guarded = RateRecheck {
+            rateChecks += 1
+            return nil
+        }.guarding(base)
+        XCTAssertEqual(guarded.recheck(), .screenLocked)
+        XCTAssertEqual(base.rechecks, 1)
+        XCTAssertEqual(rateChecks, 0, "recheck() doesn't run the rate check")
+
+        base.answer = nil
+        XCTAssertNil(guarded.recheck())
+        XCTAssertEqual(base.rechecks, 2)
+        XCTAssertEqual(rateChecks, 0)
+    }
+}
+
+/// Window rules whose `recheck` answers `answer` and counts its calls.
+private final class RecheckCountingWindowRules: HiddenWindowPreparing {
+    var answer: ActionResult?
+    private(set) var rechecks = 0
+
+    init(answer: ActionResult?) { self.answer = answer }
+
+    func prepare(queueDeadline: TimeInterval) -> WindowPreparation { WindowPreparation(early: nil, notes: []) }
+
+    func recheck() -> ActionResult? {
+        rechecks += 1
+        return answer
+    }
 }
