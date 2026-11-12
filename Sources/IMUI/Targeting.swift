@@ -231,8 +231,8 @@ public final class ChatTargeter: ChatTargeting {
 
     /// With `rowid`, the bound message is left out of both sides: loaded bubbles with its direction, body and minute
     /// are dropped, and one signature row with its direction and body is dropped. When the bound row leaves the
-    /// signature empty, no other bubble that shows text (`BubbleInfo.showsText`) may be loaded. Any read error, a group chat, a bound row in another
-    /// conversation or an empty signature is false.
+    /// signature empty, no other bubble that shows text (`BubbleInfo.showsText`) may be loaded. Any read error, a
+    /// group chat, a bound row in another conversation or an empty signature is false.
     public func verifySelected(_ chat: ResolvedChat, excluding rowid: Int64?) -> Bool {
         guard let expected = selectionExpectation(chat, excluding: rowid) else { return false }
         return verifySelected(expected)

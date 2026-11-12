@@ -119,6 +119,9 @@ final class AXSupportTests: XCTestCase {
                        "nor does a text equal to an attachment's kind and size match one")
         XCTAssertFalse(BubbleDescription.carries("Your iMessage, s2-a8734a42.txt, Text Document · 23 bytes, 9:38 AM",
                                                  text: "s2-a8734a42.txt, Text Document · 23 bytes", fromMe: true))
+        XCTAssertFalse(BubbleDescription.carries("Your iMessage, photo.heic, Image · 2 MB , 9:38 AM",
+                                                 text: "photo.heic, Image · 2 MB", fromMe: true),
+                       "both checks see the trimmed text")
         XCTAssertTrue(BubbleDescription.carries("Your iMessage, lunch · 2 people, 9:38 AM", text: "lunch · 2 people",
                                                 fromMe: true), "a middle dot alone isn't an attachment")
         XCTAssertTrue(BubbleDescription.carries("Your iMessage, at 5 · 2 MB, 9:38 AM", text: "at 5 · 2 MB", fromMe: true),

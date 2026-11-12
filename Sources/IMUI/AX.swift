@@ -295,12 +295,14 @@ enum BubbleDescription {
         } else {
             guard !sender.isEmpty, !ownPrefixes.contains(sender), !body.contains(", ") else { return false }
         }
-        return !endsLikeAnAttachment(body) && TextNorm.matchKey(body) == wanted
+        let key = TextNorm.matchKey(body)
+        return !endsLikeAnAttachment(key) && key == wanted
     }
 
     /// True when `body` ends as an attachment description's middle does, with a kind and a size:
-    /// "s2-a8734a42.txt, Text Document · 23 bytes" (S2). No recorded attachment is a bare group, but a description
-    /// that reads like one never stands in for a text row.
+    /// "s2-a8734a42.txt, Text Document · 23 bytes", as S2 recorded it, with U+00B7 and plain spaces. `carries` passes
+    /// the text after `TextNorm.matchKey`, the form it compares. No recorded attachment is a bare group, but a
+    /// description that reads like one never stands in for a text row.
     static func endsLikeAnAttachment(_ body: String) -> Bool {
         guard let comma = body.range(of: ", ", options: .backwards),
               let dot = body[comma.upperBound...].range(of: " · ", options: .backwards) else { return false }

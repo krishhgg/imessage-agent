@@ -1040,6 +1040,21 @@ final class TargetingTests: XCTestCase {
         XCTAssertNoPress(rig.log)
     }
 
+    func testABareGroupThatReadsLikeAnAttachmentNeverStandsInForText() {
+        // No recorded attachment is a bare group. If one were, a text row equal to its description's middle still
+        // wouldn't match it.
+        let body = "photo.heic, Image · 2 MB"
+        let photo = Make.bubble(52, text: "", minute: "12:10 AM", hasText: false,
+                                description: "Your iMessage, \(body), 12:10 AM", bare: true)
+        let (rig, targeter) = rig()
+        rig.ax.bubbles = { [photo] }
+        XCTAssertEqual(targeter.findBubble(target(body: body)), .refused(ActionResult(.notLoaded)))
+        let signature = Make.summary(signature: [SignatureRow(fromMe: true, body: body),
+                                                 SignatureRow(fromMe: true, body: "on my way")]).signature
+        XCTAssertFalse(ChatTargeter.newestMatch([Make.bubble(51, text: "on my way"), photo], signature))
+        XCTAssertNoPress(rig.log)
+    }
+
     func testAnIncomingDateBubbleIsFoundOnlyWhenItsDescriptionSplitsOneWay() {
         let (rig, targeter) = rig()
         rig.ax.bubbles = { [Make.dateBubble(52, fromMe: false, text: "see you at 5", minute: "12:10 AM")] }
