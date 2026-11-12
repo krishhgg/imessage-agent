@@ -44,9 +44,13 @@ public struct BubbleInfo: Hashable, Sendable {
     public var actionNames: [String]
     /// The bubble's AX description, NFC: "Your iMessage, <text>, 4:33 PM" or "<sender>, <text>, <time>".
     public var axDescription: String
+    /// An `AXGroup` with no children and no text view. Messages 26 shows a text holding a date or time it detected
+    /// this way, with the text only in the description (live test, 2026-11-11). The file attachment S2 recorded was
+    /// an `AXButton`, so it is not bare.
+    public var isBareGroup: Bool
 
     public init(ref: AXRef, fromMe: Bool, text: String, minuteLabel: String, hasTextBubble: Bool,
-                actionNames: [String], axDescription: String = "") {
+                actionNames: [String], axDescription: String = "", isBareGroup: Bool = false) {
         self.ref = ref
         self.fromMe = fromMe
         self.text = text
@@ -54,17 +58,20 @@ public struct BubbleInfo: Hashable, Sendable {
         self.hasTextBubble = hasTextBubble
         self.actionNames = actionNames
         self.axDescription = axDescription
+        self.isBareGroup = isBareGroup && !hasTextBubble
     }
 
+    /// A bubble that shows a text row: one with a text view, or a bare group. Anything else, such as an
+    /// attachment, is not compared with text rows at all.
+    public var showsText: Bool { hasTextBubble || isBareGroup }
+
     /// True when this bubble shows `text` from that direction. A bubble with a `CKBalloonTextView` compares that
-    /// view's text. Messages 26 shows a text message whose text holds a date or time it detected as a bubble with no
-    /// text view, and its text is only in the description (live test, 2026-11-11). Such a bubble counts only when
-    /// its description is exactly the direction, `text` and a minute (`BubbleDescription.carries`). Attachments
-    /// have no text view either, and their descriptions add a kind and a size, so they don't match a text row.
+    /// view's text. A bare group compares its description (`BubbleDescription.carries`). Any other bubble shows no
+    /// text, whatever its description says.
     public func shows(_ text: String, fromMe: Bool) -> Bool {
         guard self.fromMe == fromMe else { return false }
         if hasTextBubble { return TextNorm.matchKey(self.text) == TextNorm.matchKey(text) }
-        return BubbleDescription.carries(axDescription, text: text, fromMe: fromMe)
+        return isBareGroup && BubbleDescription.carries(axDescription, text: text, fromMe: fromMe)
     }
 }
 
@@ -268,10 +275,11 @@ enum BubbleDescription {
         return (ownPrefixes.contains(first), isMinute(last) ? last : "")
     }
 
-    /// True when `description` is exactly the direction, `text` and a minute: "<own prefix>, <text>, <minute>" for
-    /// the user's own message, or "<sender>, <text>, <minute>" otherwise, with the sender as the first component.
-    /// A sender with ", " in it never matches, so the check fails closed. Spaces compare as in `normalizeSpaces`,
-    /// and the text as in `TextNorm.matchKey`.
+    /// True when `description` reads only one way, as the direction, `text` and a minute. The user's own message is
+    /// "<own prefix>, <text>, <minute>": the prefix is fixed, so `text` may hold ", ". Anyone else's is
+    /// "<sender>, <text>, <minute>", and the sender is a name with no fixed end, so that form counts only with
+    /// exactly three components. A sender or a text with ", " in it could be split another way, so it never
+    /// matches. Spaces compare as in `normalizeSpaces`, and the text as in `TextNorm.matchKey`.
     static func carries(_ description: String, text: String, fromMe: Bool) -> Bool {
         let wanted = TextNorm.matchKey(normalizeSpaces(text))
         guard !wanted.isEmpty else { return false }
@@ -279,10 +287,13 @@ enum BubbleDescription {
         guard let last = full.range(of: ", ", options: .backwards), isMinute(String(full[last.upperBound...])),
               let first = full.range(of: ", "), first.upperBound <= last.lowerBound else { return false }
         let sender = String(full[..<first.lowerBound])
-        guard fromMe ? ownPrefixes.contains(sender) : !sender.isEmpty && !ownPrefixes.contains(sender) else {
-            return false
+        let body = String(full[first.upperBound..<last.lowerBound])
+        if fromMe {
+            guard ownPrefixes.contains(sender) else { return false }
+        } else {
+            guard !sender.isEmpty, !ownPrefixes.contains(sender), !body.contains(", ") else { return false }
         }
-        return TextNorm.matchKey(String(full[first.upperBound..<last.lowerBound])) == wanted
+        return TextNorm.matchKey(body) == wanted
     }
 
     /// Messages writes bubble times with U+202F before AM or PM. S3 saw rows with a plain space, but row matching
@@ -695,13 +706,15 @@ public final class LiveMessagesAX: MessagesAXDriving {
             try Self.string($0, "AXIdentifier") == "CKBalloonTextView"
         })
         let text = try textView.map { try Self.string($0, "AXValue") } ?? ""
+        let bare = try textView == nil && Self.string(sticker, "AXRole") == "AXGroup"
+            && Self.children(of: sticker).isEmpty
         let names = Self.actionNames(sticker).filter { $0.hasPrefix("Name:") || !$0.hasPrefix("AX") }
         let ref = refs.register(AXElement(raw: sticker), kind: .bubble, fingerprint: description,
                                 container: container.map(AXElement.init(raw:)))
         return BubbleInfo(ref: ref, fromMe: parsed.fromMe, text: text.precomposedStringWithCanonicalMapping,
                           minuteLabel: parsed.minute, hasTextBubble: textView != nil,
                           actionNames: names.map(shortActionName),
-                          axDescription: description.precomposedStringWithCanonicalMapping)
+                          axDescription: description.precomposedStringWithCanonicalMapping, isBareGroup: bare)
     }
 
     /// An inline edit field (S3): an `AXTextField` inside a `Sticker` group, other than the composer and the search

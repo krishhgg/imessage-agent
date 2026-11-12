@@ -877,7 +877,7 @@ final class TargetingTests: XCTestCase {
         let photo = Make.bubble(53, fromMe: false, text: "", minute: "12:21 AM", hasText: false,
                                 description: "Jordan, IMG_0001.heic, Image · 2 MB, 12:21 AM")
         XCTAssertTrue(ChatTargeter.newestMatch(dated + [photo], signature))
-        // A date bubble with other text doesn't stand in for the row, so the older text bubble is compared and fails.
+        // A date bubble with other text must show the row like any text bubble, so the match fails.
         let other = [Make.bubble(51, fromMe: true, text: "on my way"),
                      Make.dateBubble(52, fromMe: false, text: "dinner at 8 tomorrow", minute: "12:20 AM")]
         XCTAssertFalse(ChatTargeter.newestMatch(other, signature))
@@ -885,6 +885,30 @@ final class TargetingTests: XCTestCase {
         let flipped = [Make.bubble(51, fromMe: true, text: "on my way"),
                        Make.dateBubble(52, fromMe: true, text: "dinner at 7 tomorrow", minute: "12:20 AM")]
         XCTAssertFalse(ChatTargeter.newestMatch(flipped, signature))
+    }
+
+    func testNewestMatchRefusesANewerDateBubbleThatIsNotInTheSignature() {
+        // The transcript has a newer text than chat.db's newest rows, as another chat with the same older rows would.
+        let signature = Make.summary(signature: [SignatureRow(fromMe: false, body: "dinner at 7 tomorrow"),
+                                                 SignatureRow(fromMe: true, body: "on my way")]).signature
+        let bubbles = [Make.bubble(51, fromMe: true, text: "on my way"),
+                       Make.dateBubble(52, fromMe: false, text: "dinner at 7 tomorrow", minute: "12:20 AM"),
+                       Make.dateBubble(53, fromMe: false, text: "dinner at 8 tomorrow", minute: "12:21 AM")]
+        XCTAssertFalse(ChatTargeter.newestMatch(bubbles, signature))
+        let plain = [Make.bubble(51, fromMe: true, text: "on my way"),
+                     Make.bubble(52, fromMe: false, text: "see you"),
+                     Make.dateBubble(53, fromMe: false, text: "lunch at 1pm", minute: "12:21 AM")]
+        XCTAssertFalse(ChatTargeter.newestMatch(plain, Make.summary().signature))
+    }
+
+    func testNewestMatchNeverReadsAnAttachmentAsText() {
+        // A text row whose body is exactly what a file bubble's description holds after the prefix.
+        let name = "s2-a8734a42.txt, Text Document · 23 bytes"
+        let signature = Make.summary(signature: [SignatureRow(fromMe: true, body: name),
+                                                 SignatureRow(fromMe: true, body: "on my way")]).signature
+        let bubbles = [Make.bubble(51, fromMe: true, text: "on my way"),
+                       Make.fileBubble(52, name: "s2-a8734a42.txt", minute: "12:20 AM")]
+        XCTAssertFalse(ChatTargeter.newestMatch(bubbles, signature))
     }
 
     func testVerifySelectedPassesWhenTheNewestTextHasADetectedDate() {
@@ -1008,6 +1032,28 @@ final class TargetingTests: XCTestCase {
         XCTAssertNoPress(rig.log)
     }
 
+    func testAnAttachmentIsNeverFoundForATextTarget() {
+        let (rig, targeter) = rig()
+        rig.ax.bubbles = { [Make.fileBubble(52, name: "s2-a8734a42.txt", minute: "12:10 AM")] }
+        XCTAssertEqual(targeter.findBubble(target(body: "s2-a8734a42.txt, Text Document · 23 bytes")),
+                       .refused(ActionResult(.notLoaded)))
+        XCTAssertNoPress(rig.log)
+    }
+
+    func testAnIncomingDateBubbleIsFoundOnlyWhenItsDescriptionSplitsOneWay() {
+        let (rig, targeter) = rig()
+        rig.ax.bubbles = { [Make.dateBubble(52, fromMe: false, text: "see you at 5", minute: "12:10 AM")] }
+        XCTAssertEqual(targeter.findBubble(target(body: "see you at 5", fromMe: false)).bubbleID, 52)
+        // A sender named "Kim, Jordan" sending "see you at 5" reads the same as "Kim" sending "Jordan, see you at 5".
+        rig.ax.bubbles = { [Make.dateBubble(52, fromMe: false, text: "see you at 5", minute: "12:10 AM",
+                                            sender: "Kim, Jordan")] }
+        XCTAssertEqual(targeter.findBubble(target(body: "Jordan, see you at 5", fromMe: false)),
+                       .refused(ActionResult(.notLoaded)))
+        XCTAssertEqual(targeter.findBubble(target(body: "see you at 5", fromMe: false)),
+                       .refused(ActionResult(.notLoaded)))
+        XCTAssertNoPress(rig.log)
+    }
+
     func testADateBubbleAndATextBubbleWithTheSameTextAndMinuteAreAmbiguous() {
         let (rig, targeter) = rig()
         rig.ax.bubbles = { [Make.bubble(51, text: "at 5pm", minute: "12:10 AM"),
@@ -1025,6 +1071,19 @@ final class TargetingTests: XCTestCase {
         rig.ax.bubbles = { [Make.bubble(52, fromMe: false, text: "see you", minute: "12:20 AM"),
                             Make.dateBubble(53, fromMe: true, text: bound.body, minute: "12:30 AM")] }
         XCTAssertTrue(rig.targeter().verifySelected(Make.chat(), excluding: 77))
+    }
+
+    func testVerifySelectedRefusesADateBubbleLeftOverOnceTheBoundRowIsDropped() {
+        let rig = Rig()
+        let bound = Make.target(rowid: 77, fromMe: true, body: "on my way", dateNs: Make.nanos(2026, 11, 6, 0, 10))
+        rig.source.summaries = [Make.summary(signature: [SignatureRow(fromMe: true, body: "on my way")])]
+        rig.source.targets = [77: bound]
+        rig.ax.bubbles = { [Make.bubble(51, fromMe: true, text: "on my way", minute: "12:10 AM"),
+                            Make.dateBubble(52, fromMe: false, text: "see you at 5", minute: "12:20 AM")] }
+        XCTAssertFalse(rig.targeter().verifySelected(Make.chat(), excluding: 77))
+        rig.ax.bubbles = { [Make.bubble(51, fromMe: true, text: "on my way", minute: "12:10 AM"),
+                            Make.fileBubble(52, fromMe: false, name: "IMG_0001.heic", minute: "12:20 AM")] }
+        XCTAssertTrue(rig.targeter().verifySelected(Make.chat(), excluding: 77), "an attachment is skipped as before")
     }
 
     func testTwoLoadedMatchesAreAmbiguous() {

@@ -231,7 +231,7 @@ public final class ChatTargeter: ChatTargeting {
 
     /// With `rowid`, the bound message is left out of both sides: loaded bubbles with its direction, body and minute
     /// are dropped, and one signature row with its direction and body is dropped. When the bound row leaves the
-    /// signature empty, no other text bubble may be loaded. Any read error, a group chat, a bound row in another
+    /// signature empty, no other bubble that shows text (`BubbleInfo.showsText`) may be loaded. Any read error, a group chat, a bound row in another
     /// conversation or an empty signature is false.
     public func verifySelected(_ chat: ResolvedChat, excluding rowid: Int64?) -> Bool {
         guard let expected = selectionExpectation(chat, excluding: rowid) else { return false }
@@ -268,7 +268,7 @@ public final class ChatTargeter: ChatTargeting {
         return candidates.contains { index in
             var rest = signature
             rest.remove(at: index)
-            return rest.isEmpty ? !bubbles.contains(where: \.hasTextBubble) : Self.newestMatch(bubbles, rest)
+            return rest.isEmpty ? !bubbles.contains(where: \.showsText) : Self.newestMatch(bubbles, rest)
         }
     }
 
@@ -314,24 +314,17 @@ public final class ChatTargeter: ChatTargeting {
         BubbleDescription.normalizeSpaces(a) == BubbleDescription.normalizeSpaces(b)
     }
 
-    /// The newest `signature.count` loaded text bubbles, newest first, equal the signature by direction and body.
-    /// Walking from the newest bubble, each bubble with a text view must show the next signature row. A bubble with
-    /// no text view counts as that row only when its description carries it (`BubbleInfo.shows`), which is how a
-    /// text with a detected date or time shows. Any other one, such as an attachment, is skipped as before.
+    /// The newest `signature.count` loaded bubbles that show text (`BubbleInfo.showsText`), newest first, equal the
+    /// signature by direction and body. A bare group is a text with a detected date or time, so it must show its
+    /// row like any text bubble, and one that doesn't refuses the match. Other bubbles, such as attachments, are
+    /// skipped as before.
     static func newestMatch(_ bubbles: [BubbleInfo], _ signature: [SignatureRow]) -> Bool {
-        guard !signature.isEmpty else { return false }
-        var next = 0
-        for bubble in bubbles.reversed() {
-            let row = signature[next]
-            if bubble.hasTextBubble {
-                guard SignatureKey(fromMe: bubble.fromMe, text: bubble.text) == SignatureKey(row) else { return false }
-            } else if !bubble.shows(row.body, fromMe: row.fromMe) {
-                continue
-            }
-            next += 1
-            if next == signature.count { return true }
+        let text = bubbles.filter(\.showsText)
+        guard !signature.isEmpty, text.count >= signature.count else { return false }
+        return zip(text.suffix(signature.count).reversed(), signature).allSatisfy { bubble, row in
+            bubble.hasTextBubble ? SignatureKey(fromMe: bubble.fromMe, text: bubble.text) == SignatureKey(row)
+                : bubble.shows(row.body, fromMe: row.fromMe)
         }
-        return false
     }
 
     /// The conversation rows, read again once the list has loaded when no row matches `description` and the list is
