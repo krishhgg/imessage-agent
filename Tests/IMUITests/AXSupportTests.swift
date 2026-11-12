@@ -114,6 +114,15 @@ final class AXSupportTests: XCTestCase {
         XCTAssertFalse(BubbleDescription.carries("Jordan, lunch at 1, ok?, 12:07 PM", text: "lunch at 1, ok?", fromMe: false))
         XCTAssertFalse(BubbleDescription.carries("Your iMessage, photo.heic, Image · 2 MB, 9:38 AM", text: "photo.heic",
                                                  fromMe: true), "an attachment adds its kind and size")
+        XCTAssertFalse(BubbleDescription.carries("Your iMessage, photo.heic, Image · 2 MB, 9:38 AM",
+                                                 text: "photo.heic, Image · 2 MB", fromMe: true),
+                       "nor does a text equal to an attachment's kind and size match one")
+        XCTAssertFalse(BubbleDescription.carries("Your iMessage, s2-a8734a42.txt, Text Document · 23 bytes, 9:38 AM",
+                                                 text: "s2-a8734a42.txt, Text Document · 23 bytes", fromMe: true))
+        XCTAssertTrue(BubbleDescription.carries("Your iMessage, lunch · 2 people, 9:38 AM", text: "lunch · 2 people",
+                                                fromMe: true), "a middle dot alone isn't an attachment")
+        XCTAssertTrue(BubbleDescription.carries("Your iMessage, at 5 · 2 MB, 9:38 AM", text: "at 5 · 2 MB", fromMe: true),
+                      "nor is a size without a kind after a comma")
         XCTAssertFalse(BubbleDescription.carries("Your iMessage, see you at 5, Yesterday", text: "see you at 5", fromMe: true),
                        "no minute")
         XCTAssertFalse(BubbleDescription.carries("Your iMessage, 9:38 AM", text: "9:38 AM", fromMe: true), "no text part")

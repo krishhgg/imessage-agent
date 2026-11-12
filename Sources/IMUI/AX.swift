@@ -295,7 +295,19 @@ enum BubbleDescription {
         } else {
             guard !sender.isEmpty, !ownPrefixes.contains(sender), !body.contains(", ") else { return false }
         }
-        return TextNorm.matchKey(body) == wanted
+        return !endsLikeAnAttachment(body) && TextNorm.matchKey(body) == wanted
+    }
+
+    /// True when `body` ends as an attachment description's middle does, with a kind and a size:
+    /// "s2-a8734a42.txt, Text Document · 23 bytes" (S2). No recorded attachment is a bare group, but a description
+    /// that reads like one never stands in for a text row.
+    static func endsLikeAnAttachment(_ body: String) -> Bool {
+        guard let comma = body.range(of: ", ", options: .backwards),
+              let dot = body[comma.upperBound...].range(of: " · ", options: .backwards) else { return false }
+        let size = body[dot.upperBound...].split(separator: " ", omittingEmptySubsequences: false)
+        guard size.count == 2, let number = size.first, !number.isEmpty,
+              number.allSatisfy({ $0.isASCII && ($0.isNumber || $0 == "." || $0 == ",") }) else { return false }
+        return ["byte", "bytes", "KB", "MB", "GB"].contains(String(size[1]))
     }
 
     /// `BubbleInfo.isBareGroup` from a `Sticker`'s shape: no text view, the role `AXGroup` and no children. The role is
