@@ -344,9 +344,17 @@ enum Make {
     }
 
     static func bubble(_ id: UInt64, fromMe: Bool = true, text: String = "on my way", minute: String = "",
-                       hasText: Bool = true, actions: [String] = UINames.classicTapbacks) -> BubbleInfo {
+                       hasText: Bool = true, actions: [String] = UINames.classicTapbacks,
+                       description: String = "") -> BubbleInfo {
         BubbleInfo(ref: AXRef(id: id), fromMe: fromMe, text: text, minuteLabel: minute, hasTextBubble: hasText,
-                   actionNames: actions)
+                   actionNames: actions, axDescription: description)
+    }
+
+    /// A text bubble Messages shows with no text view, because it detected a date or time in it (live, 2026-11-11).
+    static func dateBubble(_ id: UInt64, fromMe: Bool = true, text: String, minute: String,
+                           sender: String = "Jordan") -> BubbleInfo {
+        bubble(id, fromMe: fromMe, text: "", minute: minute, hasText: false,
+               description: "\(fromMe ? "Your iMessage" : sender), \(text), \(minute)")
     }
 
     static func row(_ id: UInt64, _ description: String, selected: Bool? = false) -> ConversationRowInfo {

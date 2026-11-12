@@ -42,15 +42,29 @@ public struct BubbleInfo: Hashable, Sendable {
     public var hasTextBubble: Bool
     /// Named actions with the `Name:` prefix and trailing lines stripped, for example "Heart", "Undo Send", "Edit".
     public var actionNames: [String]
+    /// The bubble's AX description, NFC: "Your iMessage, <text>, 4:33 PM" or "<sender>, <text>, <time>".
+    public var axDescription: String
 
     public init(ref: AXRef, fromMe: Bool, text: String, minuteLabel: String, hasTextBubble: Bool,
-                actionNames: [String]) {
+                actionNames: [String], axDescription: String = "") {
         self.ref = ref
         self.fromMe = fromMe
         self.text = text
         self.minuteLabel = minuteLabel
         self.hasTextBubble = hasTextBubble
         self.actionNames = actionNames
+        self.axDescription = axDescription
+    }
+
+    /// True when this bubble shows `text` from that direction. A bubble with a `CKBalloonTextView` compares that
+    /// view's text. Messages 26 shows a text message whose text holds a date or time it detected as a bubble with no
+    /// text view, and its text is only in the description (live test, 2026-11-11). Such a bubble counts only when
+    /// its description is exactly the direction, `text` and a minute (`BubbleDescription.carries`). Attachments
+    /// have no text view either, and their descriptions add a kind and a size, so they don't match a text row.
+    public func shows(_ text: String, fromMe: Bool) -> Bool {
+        guard self.fromMe == fromMe else { return false }
+        if hasTextBubble { return TextNorm.matchKey(self.text) == TextNorm.matchKey(text) }
+        return BubbleDescription.carries(axDescription, text: text, fromMe: fromMe)
     }
 }
 
@@ -252,6 +266,23 @@ enum BubbleDescription {
         let first = text.range(of: ", ").map { String(text[..<$0.lowerBound]) } ?? text
         let last = text.range(of: ", ", options: .backwards).map { String(text[$0.upperBound...]) } ?? ""
         return (ownPrefixes.contains(first), isMinute(last) ? last : "")
+    }
+
+    /// True when `description` is exactly the direction, `text` and a minute: "<own prefix>, <text>, <minute>" for
+    /// the user's own message, or "<sender>, <text>, <minute>" otherwise, with the sender as the first component.
+    /// A sender with ", " in it never matches, so the check fails closed. Spaces compare as in `normalizeSpaces`,
+    /// and the text as in `TextNorm.matchKey`.
+    static func carries(_ description: String, text: String, fromMe: Bool) -> Bool {
+        let wanted = TextNorm.matchKey(normalizeSpaces(text))
+        guard !wanted.isEmpty else { return false }
+        let full = normalizeSpaces(description.precomposedStringWithCanonicalMapping)
+        guard let last = full.range(of: ", ", options: .backwards), isMinute(String(full[last.upperBound...])),
+              let first = full.range(of: ", "), first.upperBound <= last.lowerBound else { return false }
+        let sender = String(full[..<first.lowerBound])
+        guard fromMe ? ownPrefixes.contains(sender) : !sender.isEmpty && !ownPrefixes.contains(sender) else {
+            return false
+        }
+        return TextNorm.matchKey(String(full[first.upperBound..<last.lowerBound])) == wanted
     }
 
     /// Messages writes bubble times with U+202F before AM or PM. S3 saw rows with a plain space, but row matching
@@ -669,7 +700,8 @@ public final class LiveMessagesAX: MessagesAXDriving {
                                 container: container.map(AXElement.init(raw:)))
         return BubbleInfo(ref: ref, fromMe: parsed.fromMe, text: text.precomposedStringWithCanonicalMapping,
                           minuteLabel: parsed.minute, hasTextBubble: textView != nil,
-                          actionNames: names.map(shortActionName))
+                          actionNames: names.map(shortActionName),
+                          axDescription: description.precomposedStringWithCanonicalMapping)
     }
 
     /// An inline edit field (S3): an `AXTextField` inside a `Sticker` group, other than the composer and the search

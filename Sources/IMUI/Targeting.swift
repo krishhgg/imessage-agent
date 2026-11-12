@@ -256,11 +256,11 @@ public final class ChatTargeter: ChatTargeting {
     public func verifySelected(_ expected: SelectionExpectation) -> Bool {
         if expected.chat.isGroup || expected.chat.canonical.isGroup { return false }
         let signature = expected.signature
-        guard var bubbles = try? ax.loadedBubbles().filter(\.hasTextBubble) else { return false }
+        guard var bubbles = try? ax.loadedBubbles() else { return false }
         guard let bound = expected.bound else { return !signature.isEmpty && Self.newestMatch(bubbles, signature) }
         let minute = builder().minuteLabel(forNanos: bound.dateNs)
         let key = TextNorm.matchKey(bound.body)
-        bubbles.removeAll { $0.fromMe == bound.fromMe && TextNorm.matchKey($0.text) == key && $0.minuteLabel == minute }
+        bubbles.removeAll { $0.minuteLabel == minute && $0.shows(bound.body, fromMe: bound.fromMe) }
         let candidates = signature.indices.filter {
             signature[$0].fromMe == bound.fromMe && TextNorm.matchKey(signature[$0].body) == key
         }
@@ -268,7 +268,7 @@ public final class ChatTargeter: ChatTargeting {
         return candidates.contains { index in
             var rest = signature
             rest.remove(at: index)
-            return rest.isEmpty ? bubbles.isEmpty : Self.newestMatch(bubbles, rest)
+            return rest.isEmpty ? !bubbles.contains(where: \.hasTextBubble) : Self.newestMatch(bubbles, rest)
         }
     }
 
@@ -287,11 +287,7 @@ public final class ChatTargeter: ChatTargeting {
         let bubbles: [BubbleInfo]
         do { bubbles = try ax.loadedBubbles() } catch { return .refused(UIResults.axFailure(error)) }
         let minute = builder().minuteLabel(forNanos: target.dateNs)
-        let key = TextNorm.matchKey(target.body)
-        let matches = bubbles.filter {
-            $0.hasTextBubble && $0.fromMe == target.fromMe && TextNorm.matchKey($0.text) == key
-                && $0.minuteLabel == minute
-        }
+        let matches = bubbles.filter { $0.minuteLabel == minute && $0.shows(target.body, fromMe: target.fromMe) }
         guard let bubble = matches.first else { return .refused(ActionResult(.notLoaded)) }
         guard matches.count == 1 else { return .refused(ActionResult(.ambiguous(.target))) }
         return .found(bubble)
@@ -319,11 +315,23 @@ public final class ChatTargeter: ChatTargeting {
     }
 
     /// The newest `signature.count` loaded text bubbles, newest first, equal the signature by direction and body.
+    /// Walking from the newest bubble, each bubble with a text view must show the next signature row. A bubble with
+    /// no text view counts as that row only when its description carries it (`BubbleInfo.shows`), which is how a
+    /// text with a detected date or time shows. Any other one, such as an attachment, is skipped as before.
     static func newestMatch(_ bubbles: [BubbleInfo], _ signature: [SignatureRow]) -> Bool {
-        let text = bubbles.filter(\.hasTextBubble)
-        guard !signature.isEmpty, text.count >= signature.count else { return false }
-        let newest = text.suffix(signature.count).reversed().map { SignatureKey(fromMe: $0.fromMe, text: $0.text) }
-        return newest == signature.map(SignatureKey.init)
+        guard !signature.isEmpty else { return false }
+        var next = 0
+        for bubble in bubbles.reversed() {
+            let row = signature[next]
+            if bubble.hasTextBubble {
+                guard SignatureKey(fromMe: bubble.fromMe, text: bubble.text) == SignatureKey(row) else { return false }
+            } else if !bubble.shows(row.body, fromMe: row.fromMe) {
+                continue
+            }
+            next += 1
+            if next == signature.count { return true }
+        }
+        return false
     }
 
     /// The conversation rows, read again once the list has loaded when no row matches `description` and the list is

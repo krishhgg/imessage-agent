@@ -91,6 +91,34 @@ final class AXSupportTests: XCTestCase {
         XCTAssertFalse(BubbleDescription.parse("Your iMessageX, hi, 1:00 PM").fromMe)
     }
 
+    func testDescriptionCarriesTheTextOfADateBubble() {
+        // The live bubble from 2026-11-11: a detected date, so no text view, and the text only in the description.
+        let live = "Your iMessage, imessage-agent live test 2026-11-11: send after re-approval (heart target), 4:33\u{202F}PM"
+        XCTAssertTrue(BubbleDescription.carries(live, text: "imessage-agent live test 2026-11-11: send after re-approval (heart target)",
+                                                fromMe: true))
+        XCTAssertFalse(BubbleDescription.carries(live, text: "imessage-agent live test 2026-11-11", fromMe: true))
+        XCTAssertFalse(BubbleDescription.carries(live, text: "imessage-agent live test 2026-11-11: send after re-approval (heart target)",
+                                                 fromMe: false), "direction must match")
+        XCTAssertTrue(BubbleDescription.carries("Jordan, lunch at 1, ok?, 12:07 PM", text: " lunch at 1, ok? ", fromMe: false),
+                      "commas in the text, and the text trimmed")
+        XCTAssertTrue(BubbleDescription.carries("Your iMessage, cafe\u{301} at 5, 9:38 AM", text: "caf\u{E9} at 5", fromMe: true),
+                      "compared as NFC")
+    }
+
+    func testDescriptionCarriesFailsClosed() {
+        XCTAssertFalse(BubbleDescription.carries("Kim, Jordan, see you, 12:07 PM", text: "see you", fromMe: false),
+                       "a sender with a comma never matches")
+        XCTAssertFalse(BubbleDescription.carries("Your iMessage, photo.heic, Image · 2 MB, 9:38 AM", text: "photo.heic",
+                                                 fromMe: true), "an attachment adds its kind and size")
+        XCTAssertFalse(BubbleDescription.carries("Your iMessage, see you at 5, Yesterday", text: "see you at 5", fromMe: true),
+                       "no minute")
+        XCTAssertFalse(BubbleDescription.carries("Your iMessage, 9:38 AM", text: "9:38 AM", fromMe: true), "no text part")
+        XCTAssertFalse(BubbleDescription.carries("Your iMessage, , 9:38 AM", text: "", fromMe: true), "empty text")
+        XCTAssertFalse(BubbleDescription.carries("Your iMessage, see you, 9:38 AM", text: "see you", fromMe: false),
+                       "an own prefix isn't a sender")
+        XCTAssertFalse(BubbleDescription.carries("", text: "see you", fromMe: true))
+    }
+
     func testDescriptionWithoutAMinuteGivesNoMinute() {
         XCTAssertEqual(BubbleDescription.parse("Your iMessage, hi").minute, "")
         XCTAssertEqual(BubbleDescription.parse("Your iMessage, hi, Yesterday").minute, "")
