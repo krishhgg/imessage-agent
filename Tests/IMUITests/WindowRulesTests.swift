@@ -79,6 +79,28 @@ final class WindowRulesTests: XCTestCase {
         XCTAssertEqual(WindowRules.decide(Make.state(hidden: true, ax: 2, anySpace: -1)), .busyMessagesOpen)
     }
 
+    func testHiddenWithTheWindowMessagesNeverShowsProceeds() {
+        // Live on macOS 26.2 (research/live-tests/2026-11-07-sends.md, test 2): hidden, AX lists the chat window, and
+        // the full window list has it plus a 500 x 500 window on no Space. Only the chat window is on a Space.
+        let state = Make.state(hidden: true, ax: 1, anySpace: 2, onSpace: 1)
+        XCTAssertEqual(WindowRules.decide(state), .proceed)
+        XCTAssertTrue(WindowRules.allowsHiddenAction(state))
+        // A second window that is on a Space is still busy, and so is a second AX window.
+        XCTAssertEqual(WindowRules.decide(Make.state(hidden: true, ax: 1, anySpace: 2, onSpace: 2)), .busyMessagesOpen)
+        XCTAssertEqual(WindowRules.decide(Make.state(hidden: true, ax: 2, anySpace: 3, onSpace: 1)), .busyMessagesOpen)
+        XCTAssertEqual(WindowRules.decide(Make.state(hidden: true, ax: 1, anySpace: 2, onSpace: -1)), .proceed,
+                       "an unknown count doesn't raise AX's one window")
+    }
+
+    func testTheBusyOrQuitTestIgnoresTheSpaceCount() {
+        // Not hidden and no AX window: the busy-or-quit test reads the count on every Space, which still has the
+        // window on no Space, so the bridge never quits on the Space lookup's word.
+        let state = Make.state(hidden: false, ax: 0, onScreen: 0, anySpace: 1, onSpace: 0)
+        XCTAssertEqual(WindowRules.decide(state), .busyMessagesOpen)
+        XCTAssertEqual(WindowRules.busyResult(for: state), .messagesOpen)
+        XCTAssertEqual(WindowRules.decide(Make.state(hidden: true, ax: 0, anySpace: 1, onSpace: 0)), .quitAndRelaunch)
+    }
+
     func testNoWindowNotFrontmostQuitsAndRelaunches() {
         XCTAssertEqual(WindowRules.decide(Make.state(hidden: false, ax: 0)), .quitAndRelaunch)
         XCTAssertEqual(WindowRules.decide(Make.state(hidden: true, ax: 0)), .quitAndRelaunch)

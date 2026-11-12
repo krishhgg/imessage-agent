@@ -24,7 +24,12 @@ public enum WindowDecision: Hashable, Sendable {
 ///   another Space isn't in use.
 /// - A window that isn't hidden (even minimized or on another Space): `busyMessagesOpen` with the ⌘H fix.
 /// - Hidden with more than one window: `busyMessagesOpen`. The count is the larger of AX's and the real windows on
-///   every Space, since AX misses a window on another Space. An unknown count on every Space (-1) doesn't raise it.
+///   some Space (`spaceWindowCount`), since AX misses a window on another Space. The count leaves out the 500 x 500
+///   window Messages never shows, which is on no Space; counted, it made every hidden action busy. An unknown count
+///   (-1) doesn't raise it.
+///
+/// Only that test uses `spaceWindowCount`. The busy-or-quit test keeps `allSpacesWindowCount`, so a Space lookup
+/// that misses a real window can't quit Messages while the user has it open on another Space.
 /// - Hidden with one window: `proceed`.
 ///
 /// Unknown counts fail closed. An AX window count of -1 (no Accessibility grant, or AX failed) or a nonzero
@@ -41,12 +46,12 @@ public enum WindowRules {
             return .quitAndRelaunch
         }
         if !state.isHidden { return .busyMessagesOpen }
-        if max(state.axWindowCount, state.allSpacesWindowCount) > 1 { return .busyMessagesOpen }
+        if max(state.axWindowCount, state.spaceWindowCount) > 1 { return .busyMessagesOpen }
         return .proceed
     }
 
     /// True only when `decide` says `proceed`: Messages hidden, not frontmost, one AX window, none on screen and no
-    /// more than one real window on every Space.
+    /// more than one real window on any Space.
     /// Read-only. The last check before a hidden row press or named action, after `prepare` may have waited.
     public static func allowsHiddenAction(_ state: MessagesAppState) -> Bool {
         decide(state) == .proceed

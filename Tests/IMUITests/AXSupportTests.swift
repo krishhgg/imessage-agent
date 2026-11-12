@@ -468,9 +468,52 @@ final class AXSupportTests: XCTestCase {
     // MARK: - Real windows on every Space
 
     /// One window-server entry, as `CGWindowListCopyWindowInfo` gives it.
-    private func windowInfo(pid: pid_t, layer: Int = 0, _ rect: CGRect) -> [String: Any] {
-        [kCGWindowOwnerPID as String: NSNumber(value: pid), kCGWindowLayer as String: NSNumber(value: layer),
-         kCGWindowBounds as String: rect.dictionaryRepresentation]
+    private func windowInfo(pid: pid_t, layer: Int = 0, id: Int? = nil, _ rect: CGRect) -> [String: Any] {
+        var info: [String: Any] = [kCGWindowOwnerPID as String: NSNumber(value: pid),
+                                   kCGWindowLayer as String: NSNumber(value: layer),
+                                   kCGWindowBounds as String: rect.dictionaryRepresentation]
+        if let id { info[kCGWindowNumber as String] = NSNumber(value: id) }
+        return info
+    }
+
+    func testTheSpaceWindowCountDropsTheWindowMessagesNeverShows() {
+        // The live list on macOS 26.2 (research/live-tests/2026-11-07-sends.md, test 2): four strips, the 500 x 500
+        // window at the bottom-left corner on no Space, and the 660 x 667 chat window on Space 1.
+        let pid: pid_t = 4242
+        let strips = (0..<4).map { windowInfo(pid: pid, id: 10 + $0, CGRect(x: 0, y: 0, width: 1512, height: 33)) }
+        let helper = windowInfo(pid: pid, id: 20, CGRect(x: 0, y: 482, width: 500, height: 500))
+        let chat = windowInfo(pid: pid, id: 30, CGRect(x: 840, y: 190, width: 660, height: 667))
+        let live: [Int: Int] = [10: 0, 11: 0, 12: 0, 13: 0, 20: 0, 30: 1]
+        let list = strips + [helper, chat]
+        XCTAssertEqual(LiveMessagesApp.realWindowCount(pid: pid, in: list), 2, "the size floor alone keeps the helper")
+        XCTAssertEqual(LiveMessagesApp.spaceWindowCount(pid: pid, in: list, spaces: { live[$0] }), 1)
+        XCTAssertEqual(LiveMessagesApp.spaceWindowCount(pid: pid, in: list, spaces: { _ in 2 }), 2,
+                       "the strips stay out under the size floor whatever the lookup says")
+        XCTAssertEqual(LiveMessagesApp.spaceWindowCount(pid: pid, in: nil, spaces: { live[$0] }), -1)
+        XCTAssertEqual(LiveMessagesApp.spaceWindowCount(pid: pid, in: [], spaces: { live[$0] }), 0)
+    }
+
+    func testAWindowTheSpaceLookupCantPlaceStillCounts() {
+        let pid: pid_t = 4242
+        let helper = windowInfo(pid: pid, id: 20, CGRect(x: 0, y: 482, width: 500, height: 500))
+        let noID = windowInfo(pid: pid, CGRect(x: 0, y: 482, width: 500, height: 500))
+        XCTAssertEqual(LiveMessagesApp.spaceWindowCount(pid: pid, in: [helper], spaces: { _ in nil }), 1,
+                       "no lookup counts every real window, as before")
+        XCTAssertEqual(LiveMessagesApp.spaceWindowCount(pid: pid, in: [noID], spaces: { _ in 0 }), 1,
+                       "no window id counts")
+        XCTAssertEqual(LiveMessagesApp.spaceWindowCount(pid: 77, in: [helper], spaces: { _ in 1 }), 0, "another pid")
+    }
+
+    func testTheSpaceLookupPutsNoWindowOnASpaceForAnIDThatDoesntExist() {
+        // The private function is looked up at run time. Where it exists, a window id nobody owns is on no Space.
+        if let count = WindowSpaces.count(of: Int(Int32.max)) { XCTAssertEqual(count, 0) }
+    }
+
+    func testTheAppStateDefaultsTheSpaceCountToTheCountOnEverySpace() {
+        let state = MessagesAppState(isRunning: true, pid: 1, isFrontmost: false, isHidden: true, axWindowCount: 1,
+                                     onScreenWindowCount: 0, allSpacesWindowCount: 2)
+        XCTAssertEqual(state.spaceWindowCount, 2)
+        XCTAssertEqual(MessagesAppState.notRunning.spaceWindowCount, 0)
     }
 
     func testTheRealWindowCountDropsTheMenuBarStrips() {
