@@ -1,0 +1,45 @@
+{
+ "chat": {
+  "isGroup": false,
+  "label": "Dad",
+  "rowid": 9
+ },
+ "fromByte": 0,
+ "message": {
+  "agentSent": false,
+  "attachments": [
+   {
+    "guid": "4CFD9F41-6467-441F-91C0-52B068179B02",
+    "kind": "file",
+    "mimeType": "application/pdf",
+    "onDisk": true,
+    "rowid": 9011,
+    "totalBytes": 348211,
+    "transferName": "Insurance_Renewal_2026.pdf",
+    "transferState": 5,
+    "uti": "com.adobe.pdf"
+   }
+  ],
+  "chatRowID": 9,
+  "dateDeliveredNs": 0,
+  "dateEditedNs": 0,
+  "dateNs": 797357722412107000,
+  "dateReadNs": 797363158412107000,
+  "edited": false,
+  "errorCode": 0,
+  "fromMe": false,
+  "guid": "3F02693A-8E92-4F2D-A43C-77ADD6FF3DB8",
+  "isRead": true,
+  "partCount": 2,
+  "partUnsent": false,
+  "reactions": [],
+  "rowid": 40677,
+  "senderHandle": "+14155550102",
+  "senderName": "Dad",
+  "service": "iMessage",
+  "stickers": [],
+  "text": "Car insurance renewal, check page 2 and sign",
+  "unsent": false
+ },
+ "totalBytes": 44
+}

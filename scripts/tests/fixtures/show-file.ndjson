@@ -1,0 +1,2 @@
+{"group":false,"id":7,"label":"Me","type":"chat"}
+{"att":[{"bytes":2400000,"h":3024,"id":9901,"kind":"photo","name":"IMG_0001.HEIC","onDisk":true,"state":5,"uti":"public.heic","w":4032}],"chat":7,"date":"2026-11-06T06:41:00Z","delivered":815640064000000000,"from":"You","guid":"G202","id":202,"me":true,"ns":815640060000000000,"offset":0,"text":"","total":0,"type":"message"}

@@ -1,0 +1,20 @@
+chat 9 Dad · 12 of 157 · times PST
+-- Apr 1
+40645 10:50 You: Not bad
+40646 10:51 You: 🙏
+-- Apr 4
+40662 10:15 Dad: Good luck tomorrow
+40663 11:11 You: Thanks Dad [😂Dad]
+-- Apr 7
+40675 20:44 Dad: Tax documents are ready, sign them when you come home
+40676 20:47 You: Ok will do Friday
+-- Apr 8
+40677 09:15 Dad: Car insurance renewal, check page 2 and sign [file a9011 Insurance_Renewal_2026.pdf 348KB]
+40678 09:40 You: Will sign tonight
+-- Apr 9
+40685 16:14 Dad: Happy Diwali!
+40686 16:15 You: Happy Holi Papa!
+-- May 16
+40811 12:37 Dad: Your mother says you are not calling enough
+40812 12:38 You: 😅 I'll call tonight
+more: imessage read 9 --before 40645

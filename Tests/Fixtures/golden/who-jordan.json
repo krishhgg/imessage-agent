@@ -1,0 +1,30 @@
+{
+ "contacts": [
+  {
+   "chats": [
+    {
+     "isGroup": true,
+     "label": "Jordan, Taylor",
+     "rowid": 19
+    },
+    {
+     "isGroup": false,
+     "label": "Jordan Kim",
+     "rowid": 23
+    }
+   ],
+   "firstName": "Jordan",
+   "handles": [
+    {
+     "id": "jordan.kim@example.com",
+     "services": [
+      "iMessage"
+     ]
+    }
+   ],
+   "lastName": "Kim",
+   "shortName": "Jordan"
+  }
+ ],
+ "query": "Jordan"
+}

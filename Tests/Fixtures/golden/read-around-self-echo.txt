@@ -1,0 +1,25 @@
+chat 2 You (notes) · 12 of 40 · times PST
+-- Sep 2 2025
+40001 10:08 You: Cabin check-in after 4pm, lockbox on the porch
+-- Sep 14 2025
+40042 19:06 You: Return library books by Sunday
+-- Sep 15 2025
+40048 17:19 You: Call insurance about the claim
+-- Oct 15 2025
+40107 13:58 You: Book dentist cleaning
+-- Oct 18 2025
+40116 08:59 You: Flight confirmation XK7P2Q
+-- Nov 3 2025
+40178 14:48 You: Buy: milk, eggs, spinach, coffee
+-- Nov 14 2025
+40206 13:04 You: Parking level 3, spot C14
+-- Nov 15 2025
+40210 11:38 You: Book dentist cleaning
+-- Dec 7 2025
+40271 14:54 You: Idea: weekly family call on Sundays
+-- Dec 10 2025
+40276 15:27 You: Parking level 3, spot C14
+-- Dec 26 2025
+40323 11:58 You: Flight confirmation XK7P2Q
+-- Jan 6
+40366 16:59 You: Call insurance about the claim

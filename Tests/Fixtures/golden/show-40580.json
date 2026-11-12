@@ -1,0 +1,46 @@
+{
+ "chat": {
+  "isGroup": false,
+  "label": "Mom",
+  "rowid": 7
+ },
+ "fromByte": 0,
+ "message": {
+  "agentSent": false,
+  "attachments": [
+   {
+    "guid": "969E87CD-4086-4AF4-AAF1-8D8598F10AE1",
+    "kind": "voice",
+    "mimeType": "audio/x-caf",
+    "onDisk": true,
+    "rowid": 9008,
+    "totalBytes": 11734,
+    "transcript": "Hi beta, call me when you get a chance, it is about Sunday. Papa wants to know if you are bringing the car.",
+    "transferName": "Audio Message.caf",
+    "transferState": 5,
+    "uti": "com.apple.coreaudio-format"
+   }
+  ],
+  "chatRowID": 7,
+  "dateDeliveredNs": 0,
+  "dateEditedNs": 0,
+  "dateNs": 795230411457860000,
+  "dateReadNs": 795234514457860000,
+  "edited": false,
+  "errorCode": 0,
+  "fromMe": false,
+  "guid": "D7F70CF3-83E2-46CC-84E8-197029B244D1",
+  "isRead": true,
+  "partCount": 1,
+  "partUnsent": false,
+  "reactions": [],
+  "rowid": 40580,
+  "senderHandle": "+14155550101",
+  "senderName": "Mom",
+  "service": "iMessage",
+  "stickers": [],
+  "text": "",
+  "unsent": false
+ },
+ "totalBytes": 0
+}

@@ -1,0 +1,352 @@
+[
+ {
+  "case": "chats",
+  "command": "imessage chats",
+  "verb": "chats"
+ },
+ {
+  "case": "chats-n5",
+  "command": "imessage chats -n 5",
+  "verb": "chats"
+ },
+ {
+  "case": "chats-n3",
+  "command": "imessage chats -n 3",
+  "verb": "chats"
+ },
+ {
+  "case": "chats-unread",
+  "command": "imessage chats --unread",
+  "verb": "chats"
+ },
+ {
+  "case": "chats-unread-n2",
+  "command": "imessage chats --unread -n 2",
+  "verb": "chats"
+ },
+ {
+  "case": "unread-c2",
+  "command": "imessage unread -c 2",
+  "verb": "unread"
+ },
+ {
+  "case": "unread-c4",
+  "command": "imessage unread -c 4",
+  "verb": "unread"
+ },
+ {
+  "case": "unread-c0",
+  "command": "imessage unread -c 0",
+  "verb": "unread"
+ },
+ {
+  "case": "read-12",
+  "command": "imessage read 12",
+  "verb": "read"
+ },
+ {
+  "case": "read-mom-n10",
+  "command": "imessage read Mom -n 10",
+  "verb": "read"
+ },
+ {
+  "case": "read-23-n10",
+  "command": "imessage read 23 -n 10",
+  "verb": "read"
+ },
+ {
+  "case": "read-19-n10",
+  "command": "imessage read 19 -n 10",
+  "verb": "read"
+ },
+ {
+  "case": "read-31",
+  "command": "imessage read 31",
+  "verb": "read"
+ },
+ {
+  "case": "read-56",
+  "command": "imessage read 56",
+  "verb": "read"
+ },
+ {
+  "case": "read-2-n40",
+  "command": "imessage read 2 -n 40",
+  "verb": "read"
+ },
+ {
+  "case": "read-12-n200",
+  "command": "imessage read 12 -n 200",
+  "verb": "read"
+ },
+ {
+  "case": "read-9-before-41000",
+  "command": "imessage read 9 --before 41000",
+  "verb": "read"
+ },
+ {
+  "case": "read-7-after-41500",
+  "command": "imessage read 7 --after 41500",
+  "verb": "read"
+ },
+ {
+  "case": "read-12-since",
+  "command": "imessage read 12 --since 2026-10-30T01:30",
+  "verb": "read"
+ },
+ {
+  "case": "read-around-multiline-long",
+  "command": "imessage read 7 --around 40458 -n 12",
+  "verb": "read"
+ },
+ {
+  "case": "read-around-link-single-row",
+  "command": "imessage read 12 --around 41434 -n 12",
+  "verb": "read"
+ },
+ {
+  "case": "read-around-link-two-rows",
+  "command": "imessage read 19 --around 40659 -n 12",
+  "verb": "read"
+ },
+ {
+  "case": "read-around-link-bare",
+  "command": "imessage read 2 --around 40930 -n 12",
+  "verb": "read"
+ },
+ {
+  "case": "read-around-failed-send",
+  "command": "imessage read 9 --around 41162 -n 12",
+  "verb": "read"
+ },
+ {
+  "case": "read-around-offloaded-photo",
+  "command": "imessage read 7 --around 40051 -n 12",
+  "verb": "read"
+ },
+ {
+  "case": "read-around-pdf-caption",
+  "command": "imessage read 9 --around 40677 -n 12",
+  "verb": "read"
+ },
+ {
+  "case": "read-around-photo-caption",
+  "command": "imessage read 12 --around 41428 -n 12",
+  "verb": "read"
+ },
+ {
+  "case": "read-around-placed-sticker",
+  "command": "imessage read 12 --around 41436 -n 12",
+  "verb": "read"
+ },
+ {
+  "case": "read-around-sticker",
+  "command": "imessage read 12 --around 40528 -n 12",
+  "verb": "read"
+ },
+ {
+  "case": "read-around-emoji-tapbacks",
+  "command": "imessage read 12 --around 41472 -n 12",
+  "verb": "read"
+ },
+ {
+  "case": "read-around-edited-twice",
+  "command": "imessage read 23 --around 40779 -n 12",
+  "verb": "read"
+ },
+ {
+  "case": "read-around-unsent-partial",
+  "command": "imessage read 12 --around 41232 -n 12",
+  "verb": "read"
+ },
+ {
+  "case": "read-around-unsent-legacy",
+  "command": "imessage read 23 --around 40908 -n 12",
+  "verb": "read"
+ },
+ {
+  "case": "read-around-unsent-incoming",
+  "command": "imessage read 12 --around 41483 -n 12",
+  "verb": "read"
+ },
+ {
+  "case": "read-around-voice",
+  "command": "imessage read 7 --around 40580 -n 12",
+  "verb": "read"
+ },
+ {
+  "case": "read-around-thread-reply",
+  "command": "imessage read 12 --around 41419 -n 12",
+  "verb": "read"
+ },
+ {
+  "case": "read-around-reply-part-1",
+  "command": "imessage read 12 --around 41432 -n 12",
+  "verb": "read"
+ },
+ {
+  "case": "read-around-group-rename",
+  "command": "imessage read 12 --around 40016 -n 12",
+  "verb": "read"
+ },
+ {
+  "case": "read-around-group-add",
+  "command": "imessage read 19 --around 40473 -n 12",
+  "verb": "read"
+ },
+ {
+  "case": "read-around-group-remove",
+  "command": "imessage read 19 --around 40829 -n 12",
+  "verb": "read"
+ },
+ {
+  "case": "read-around-group-leave",
+  "command": "imessage read 19 --around 41144 -n 12",
+  "verb": "read"
+ },
+ {
+  "case": "read-around-sms-fallback",
+  "command": "imessage read 7 --around 40258 -n 12",
+  "verb": "read"
+ },
+ {
+  "case": "read-around-rcs-tapback",
+  "command": "imessage read 31 --around 41001 -n 12",
+  "verb": "read"
+ },
+ {
+  "case": "read-around-two-photos",
+  "command": "imessage read 12 --around 40945 -n 12",
+  "verb": "read"
+ },
+ {
+  "case": "read-around-zwj",
+  "command": "imessage read 12 --around 41489 -n 12",
+  "verb": "read"
+ },
+ {
+  "case": "read-around-nfd",
+  "command": "imessage read 23 --around 41069 -n 12",
+  "verb": "read"
+ },
+ {
+  "case": "read-around-devanagari",
+  "command": "imessage read 7 --around 41204 -n 12",
+  "verb": "read"
+ },
+ {
+  "case": "read-around-tapback-target-a",
+  "command": "imessage read 12 --around 41418 -n 12",
+  "verb": "read"
+ },
+ {
+  "case": "read-around-long-body-2",
+  "command": "imessage read 12 --around 41266 -n 12",
+  "verb": "read"
+ },
+ {
+  "case": "read-around-self-echo",
+  "command": "imessage read 2 --around 40042 -n 12",
+  "verb": "read"
+ },
+ {
+  "case": "show-40927",
+  "command": "imessage show 40927",
+  "verb": "show"
+ },
+ {
+  "case": "show-40458",
+  "command": "imessage show 40458",
+  "verb": "show"
+ },
+ {
+  "case": "show-41489",
+  "command": "imessage show 41489",
+  "verb": "show"
+ },
+ {
+  "case": "show-41069",
+  "command": "imessage show 41069",
+  "verb": "show"
+ },
+ {
+  "case": "show-41558",
+  "command": "imessage show 41558",
+  "verb": "show"
+ },
+ {
+  "case": "show-40016",
+  "command": "imessage show 40016",
+  "verb": "show"
+ },
+ {
+  "case": "show-41434",
+  "command": "imessage show 41434",
+  "verb": "show"
+ },
+ {
+  "case": "show-40677",
+  "command": "imessage show 40677",
+  "verb": "show"
+ },
+ {
+  "case": "show-41232",
+  "command": "imessage show 41232",
+  "verb": "show"
+ },
+ {
+  "case": "show-40580",
+  "command": "imessage show 40580",
+  "verb": "show"
+ },
+ {
+  "case": "who-mom",
+  "command": "imessage who Mom",
+  "verb": "who"
+ },
+ {
+  "case": "who-dad",
+  "command": "imessage who Dad",
+  "verb": "who"
+ },
+ {
+  "case": "who-priya",
+  "command": "imessage who Priya",
+  "verb": "who"
+ },
+ {
+  "case": "who-arjun",
+  "command": "imessage who Arjun",
+  "verb": "who"
+ },
+ {
+  "case": "who-jordan",
+  "command": "imessage who Jordan",
+  "verb": "who"
+ },
+ {
+  "case": "who-jordan-kim",
+  "command": "imessage who Jordan Kim",
+  "verb": "who"
+ },
+ {
+  "case": "who-taylor",
+  "command": "imessage who Taylor",
+  "verb": "who"
+ },
+ {
+  "case": "who-sam",
+  "command": "imessage who Sam",
+  "verb": "who"
+ },
+ {
+  "case": "who-chris",
+  "command": "imessage who Chris",
+  "verb": "who"
+ },
+ {
+  "case": "who-meera-desai",
+  "command": "imessage who meera desai",
+  "verb": "who"
+ }
+]

@@ -1,0 +1,30 @@
+{
+ "contacts": [
+  {
+   "chats": [
+    {
+     "isGroup": false,
+     "label": "Dad",
+     "rowid": 9
+    },
+    {
+     "isGroup": true,
+     "label": "Family 🏡",
+     "rowid": 12
+    }
+   ],
+   "firstName": "Sunil",
+   "handles": [
+    {
+     "id": "+14155550102",
+     "services": [
+      "iMessage"
+     ]
+    }
+   ],
+   "lastName": "Desai",
+   "shortName": "Dad"
+  }
+ ],
+ "query": "Dad"
+}

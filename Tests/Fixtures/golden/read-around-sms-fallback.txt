@@ -1,0 +1,19 @@
+chat 7 Mom · 12 of 303 · times PST
+-- Nov 13 2025
+40205 18:03 Mom: Will do
+-- Nov 19 2025
+40223 21:05 Mom: Weather says rain Sunday, take an umbrella
+40224 22:12 You: Ok ma
+-- Nov 28 2025
+40253 22:02 Mom: Call me when you are free
+40254 22:03 You: In a meeting, will call at 2
+40255 22:04 Mom: Ok beta
+-- Dec 2 2025
+40258 07:41 Mom: Phone not working on wifi, sending as text
+40259 07:45 You: Ok got it
+40260 07:46 Mom: Will call later
+-- Dec 6 2025
+40264 11:15 Mom: Weather says rain Sunday, take an umbrella
+40265 11:17 You: Ok ma
+40266 11:19 Mom: lol
+more: imessage read 7 --before 40205

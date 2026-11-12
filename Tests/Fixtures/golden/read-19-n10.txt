@@ -1,0 +1,16 @@
+chat 19 group: Jordan, Taylor, You · 10 of 196 · times PST
+-- Oct 30
+41527 19:46 Jordan: ㅋㅋㅋ that was so bad
+41528 19:52 You: never again
+41529 20:05 Taylor: we said that last time
+-- Sat Oct 31
+41533 21:34 Jordan: ㅋㅋㅋ that was so bad
+41534 22:42 You: never again
+41535 22:43 Taylor: we said that last time
+-- Sun Nov 1
+41543 19:15 Jordan: who won last week
+41544 19:16 Taylor: me obviously
+41545 19:18 Jordan: we don't talk about it
+-- Yesterday Thu Nov 5
+41557 21:00 Taylor: trivia next thursday?
+more: imessage read 19 --before 41527

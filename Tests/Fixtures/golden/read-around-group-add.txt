@@ -1,0 +1,17 @@
+chat 19 group: Jordan, Taylor, You · 12 of 196 · times PST
+-- Feb 2
+40451 12:34 Taylor: who is bringing snacks
+40452 12:45 You: I'll bring ramen
+40453 12:45 Chris: legend
+-- Feb 10
+40470 16:52 Taylor: who is bringing snacks
+40471 16:53 You: I'll bring a salad
+40472 17:08 Chris: legend
+40473 20:00 * Jordan added +1 (707) 555-0131
+40474 20:01 +1 (707) 555-0131: hi everyone! thanks for the add
+-- Feb 28
+40518 18:39 Taylor: who won last week [👍Jordan]
+40519 18:40 +1 (707) 555-0131: me obviously
+40520 18:48 Chris: we don't talk about it
+40522 22:31 +1 (707) 555-0131: who won last week
+more: imessage read 19 --before 40451

@@ -1,0 +1,2 @@
+{"group":false,"id":7,"label":"Me","type":"chat"}
+{"chat":7,"date":"2026-11-06T06:40:00Z","delivered":815640002000000000,"from":"You","guid":"G101","id":101,"me":true,"ns":815640000000000000,"offset":0,"react":[{"by":"Ann","emoji":"👍","kind":"like","part":0},{"by":"You","emoji":"❤️","kind":"heart","part":0}],"text":"hi","total":2,"type":"message"}

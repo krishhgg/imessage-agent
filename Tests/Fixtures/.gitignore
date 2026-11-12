@@ -1,0 +1,7 @@
+# Swift build output
+make-fixture/.build/
+make-fixture/.swiftpm/
+# SQLite side files
+chat.db-journal
+chat.db-wal
+chat.db-shm

@@ -1,0 +1,25 @@
+{
+ "contacts": [
+  {
+   "chats": [
+    {
+     "isGroup": true,
+     "label": "Jordan, Taylor",
+     "rowid": 19
+    }
+   ],
+   "firstName": "Taylor",
+   "handles": [
+    {
+     "id": "+12125550188",
+     "services": [
+      "iMessage"
+     ]
+    }
+   ],
+   "lastName": "Brooks",
+   "shortName": "Taylor"
+  }
+ ],
+ "query": "Taylor"
+}

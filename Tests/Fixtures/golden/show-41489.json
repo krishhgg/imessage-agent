@@ -1,0 +1,33 @@
+{
+ "chat": {
+  "isGroup": true,
+  "label": "Family 🏡",
+  "rowid": 12
+ },
+ "fromByte": 0,
+ "message": {
+  "agentSent": false,
+  "attachments": [],
+  "chatRowID": 12,
+  "dateDeliveredNs": 0,
+  "dateEditedNs": 0,
+  "dateNs": 814719641584118000,
+  "dateReadNs": 814721808584118000,
+  "edited": false,
+  "errorCode": 0,
+  "fromMe": false,
+  "guid": "D669F973-12A8-4AE5-8ACA-EAA2CE06D12A",
+  "isRead": true,
+  "partCount": 1,
+  "partUnsent": false,
+  "reactions": [],
+  "rowid": 41489,
+  "senderHandle": "+14155550101",
+  "senderName": "Mom",
+  "service": "iMessage",
+  "stickers": [],
+  "text": "👨‍👩‍👧‍👦❤️🇮🇳",
+  "unsent": false
+ },
+ "totalBytes": 39
+}
