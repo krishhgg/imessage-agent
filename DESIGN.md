@@ -87,7 +87,7 @@ Within scope and rate limits, actions go through without asking.
 - 1 send per 20 s per chat, 30 per chat per day, 100 per day.
 - At most 3 consecutive agent sends to a chat with no inbound message in between. Echo rows the bridge sent never count as inbound.
 
-**Storage.** The allowlist is a 0600 file. The bridge also keeps its hash in a Keychain item it created. If the file changes outside the bridge, or the store or hash is missing or unreadable, nothing is allowed until the user re-approves chats. The Keychain item's access list names only the bridge's designated requirement. The foreground-mode setting lives in the same store, and `allow --foreground` and `revoke --foreground` raise the dialog that changes it. This is tamper detection, not tamper proofing.
+**Storage.** The allowlist is a 0600 file. The bridge also keeps its hash in a Keychain item it created. If the file changes outside the bridge, or the store or hash is missing or unreadable, nothing is allowed until the user re-approves chats. The Keychain item's access list names only the bridge's designated requirement. The login keychain also ties the item to the exact build of a self-signed app, so after every update the bridge can't read the hash and the allowlist starts empty until the user approves chats again. The new build replaces the item with no Keychain prompt (research/live-tests/2026-11-06.md). The foreground-mode setting lives in the same store, and `allow --foreground` and `revoke --foreground` raise the dialog that changes it. This is tamper detection, not tamper proofing.
 
 **Honest limit, stated in the README.** These rules stop a confused or prompt-injected agent that goes through the CLI. They don't stop a hostile program running as the same user, including an agent with unrestricted shell access. The README explains what Grok Bot's "always allow" for Shell means.
 
@@ -116,6 +116,7 @@ Design rule: reads, search, sends, files, `wait` and `changes` never show the Me
 
 **Window rules** (S3b):
 - If Messages isn't running, the bridge launches it with `/usr/bin/open -g -j -b com.apple.MobileSMS`. In S3b that gave one hidden window with the transcript and composer in the one cold launch and the three relaunches that used it.
+- If the screen is locked, AX reaches no Messages window, so UI actions return `busy: screen locked` with `fix: unlock the Mac and retry`, and nothing is launched or quit. This rule comes first. Sends still work (docs/BUILD-PLAN.md entry 52).
 - If Messages is frontmost, with or without a window, the user has it. UI actions return `busy: Messages is open`.
 - If Messages has no window and isn't frontmost, the UI action, while holding the queue (section 3), quits Messages through Apple Events, waits up to 10 s for it to exit and relaunches it the same way, which took about 2 s and stayed hidden in 3 of 3 S3b runs. If Messages doesn't exit, or there is no single hidden window 10 s after the relaunch, UI actions return `no_hidden_window`. It never uses Window > Messages or `imessage://`, because both put a window on screen in S3 and S3b.
 - If Messages has a window and isn't hidden, the user may be using it, even if the window is minimized or on another Space. UI actions then return `busy: Messages is open`, with `fix: hide Messages (⌘H) and retry`. They never hide the user's window or switch the user's chat. Sends still work.
@@ -311,7 +312,7 @@ Each run counts every call, skill load, retry and Grok Bot approval card. Tokens
 
 ## Not in v1
 
-- A SIP-off tier. A README sentence says private APIs exist and that this repo doesn't call them.
+- A SIP-off tier. A README sentence says private Messages APIs exist and that this repo doesn't call them. The one private call it makes is read-only and outside Messages: `CGSCopySpacesForWindows`, looked up at run time to count Messages' windows on a Space (BUILD-PLAN entry 51).
 - MCP.
 - The push relay. It comes in v1.1, behind S4.
 - Remote approval.
