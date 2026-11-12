@@ -208,7 +208,13 @@ final class ScriptedAX: MessagesAXDriving {
     func press(row: AXRef, finalCheck: AXFinalCheck) throws {
         try finalCheck()
     }
-    func loadedBubbles() throws -> [BubbleInfo] { [] }
+    var bubbles: [BubbleInfo] = []
+    var failBubbles = false
+
+    func loadedBubbles() throws -> [BubbleInfo] {
+        if failBubbles { throw Failure() }
+        return bubbles
+    }
 
     func perform(action: String, on bubble: AXRef, finalCheck: AXFinalCheck) throws {
         beforePerformRevalidation?()

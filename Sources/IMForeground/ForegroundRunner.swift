@@ -260,6 +260,13 @@ final class ForegroundRunner {
             } catch {
                 return .abortedCheck(ForegroundCheck.databaseRead)
             }
+            do {
+                if ParentBubbleMatch.showsBare(parent: parent, in: try env.ax.loadedBubbles()) {
+                    return ParentBubbleMatch.bareParent
+                }
+            } catch {
+                return .abortedCheck(ForegroundCheck.axRead)
+            }
             // While Messages is hidden the item can read Reply to Message… (S3). Either title shows it exists, and
             // after t_front only the exact Reply to Last Message… item is waited for and pressed.
             do {
@@ -860,6 +867,16 @@ final class ForegroundRunner {
 /// (DESIGN.md section 4, Message and step 4). Bodies compare as `TextNorm.matchKey`, as IMUI's targeting does, so
 /// whitespace at either end of the chat.db body doesn't fail the check.
 public enum ParentBubbleMatch {
+    /// Step 1's refusal when the parent shows as a bare group (`showsBare`). Nothing has been pressed.
+    static let bareParent = ActionResult(.unsupported, fix: "send the reply unthreaded")
+
+    /// True when the newest loaded bubble from the parent's side that shows text is a bare group. Messages 26 shows a
+    /// text with a detected date or time that way, with no text view (live test, 2026-11-11). Step 4 matches the
+    /// thread view's parent by its text view, so such a reply would fail after typing. Step 1 refuses it instead.
+    public static func showsBare(parent: MessageTargetInfo, in bubbles: [BubbleInfo]) -> Bool {
+        bubbles.last(where: { $0.fromMe == parent.fromMe && $0.showsText })?.isBareGroup == true
+    }
+
     public static func matches(_ bubble: BubbleInfo, parent: MessageTargetInfo,
                                timeZone: TimeZone = .current) -> Bool {
         guard bubble.fromMe == parent.fromMe else { return false }

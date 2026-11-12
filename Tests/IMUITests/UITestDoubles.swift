@@ -344,9 +344,23 @@ enum Make {
     }
 
     static func bubble(_ id: UInt64, fromMe: Bool = true, text: String = "on my way", minute: String = "",
-                       hasText: Bool = true, actions: [String] = UINames.classicTapbacks) -> BubbleInfo {
+                       hasText: Bool = true, actions: [String] = UINames.classicTapbacks,
+                       description: String = "", bare: Bool = false) -> BubbleInfo {
         BubbleInfo(ref: AXRef(id: id), fromMe: fromMe, text: text, minuteLabel: minute, hasTextBubble: hasText,
-                   actionNames: actions)
+                   actionNames: actions, axDescription: description, isBareGroup: bare)
+    }
+
+    /// A text bubble Messages shows as a bare group, because it detected a date or time in it (live, 2026-11-11).
+    static func dateBubble(_ id: UInt64, fromMe: Bool = true, text: String, minute: String,
+                           sender: String = "Jordan") -> BubbleInfo {
+        bubble(id, fromMe: fromMe, text: "", minute: minute, hasText: false,
+               description: "\(fromMe ? "Your iMessage" : sender), \(text), \(minute)", bare: true)
+    }
+
+    /// A file attachment as S2 recorded it: an `AXButton` with no text view, so not bare.
+    static func fileBubble(_ id: UInt64, fromMe: Bool = true, name: String, minute: String) -> BubbleInfo {
+        bubble(id, fromMe: fromMe, text: "", minute: minute, hasText: false,
+               description: "\(fromMe ? "Your iMessage" : "Jordan"), \(name), Text Document · 23 bytes, \(minute)")
     }
 
     static func row(_ id: UInt64, _ description: String, selected: Bool? = false) -> ConversationRowInfo {

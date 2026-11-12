@@ -91,6 +91,75 @@ final class AXSupportTests: XCTestCase {
         XCTAssertFalse(BubbleDescription.parse("Your iMessageX, hi, 1:00 PM").fromMe)
     }
 
+    func testDescriptionCarriesTheTextOfADateBubble() {
+        // The live bubble from 2026-11-11: a detected date, so no text view, and the text only in the description.
+        let live = "Your iMessage, imessage-agent live test 2026-11-11: send after re-approval (heart target), 4:33\u{202F}PM"
+        XCTAssertTrue(BubbleDescription.carries(live, text: "imessage-agent live test 2026-11-11: send after re-approval (heart target)",
+                                                fromMe: true))
+        XCTAssertFalse(BubbleDescription.carries(live, text: "imessage-agent live test 2026-11-11", fromMe: true))
+        XCTAssertFalse(BubbleDescription.carries(live, text: "imessage-agent live test 2026-11-11: send after re-approval (heart target)",
+                                                 fromMe: false), "direction must match")
+        XCTAssertTrue(BubbleDescription.carries("Your iMessage, lunch at 1, ok?, 12:07 PM", text: " lunch at 1, ok? ",
+                                                fromMe: true), "the own prefix is fixed, so the text may hold commas")
+        XCTAssertTrue(BubbleDescription.carries("Jordan, lunch at 1, 12:07 PM", text: "lunch at 1", fromMe: false))
+        XCTAssertTrue(BubbleDescription.carries("Your iMessage, cafe\u{301} at 5, 9:38 AM", text: "caf\u{E9} at 5", fromMe: true),
+                      "compared as NFC")
+    }
+
+    func testDescriptionCarriesFailsClosed() {
+        XCTAssertFalse(BubbleDescription.carries("Kim, Jordan, see you, 12:07 PM", text: "see you", fromMe: false),
+                       "a sender with a comma never matches")
+        XCTAssertFalse(BubbleDescription.carries("Kim, Jordan, see you, 12:07 PM", text: "Jordan, see you", fromMe: false),
+                       "nor does a text with a comma from anyone else, since the split can't be told")
+        XCTAssertFalse(BubbleDescription.carries("Jordan, lunch at 1, ok?, 12:07 PM", text: "lunch at 1, ok?", fromMe: false))
+        XCTAssertFalse(BubbleDescription.carries("Your iMessage, photo.heic, Image · 2 MB, 9:38 AM", text: "photo.heic",
+                                                 fromMe: true), "an attachment adds its kind and size")
+        XCTAssertFalse(BubbleDescription.carries("Your iMessage, photo.heic, Image · 2 MB, 9:38 AM",
+                                                 text: "photo.heic, Image · 2 MB", fromMe: true),
+                       "nor does a text equal to an attachment's kind and size match one")
+        XCTAssertFalse(BubbleDescription.carries("Your iMessage, s2-a8734a42.txt, Text Document · 23 bytes, 9:38 AM",
+                                                 text: "s2-a8734a42.txt, Text Document · 23 bytes", fromMe: true))
+        XCTAssertFalse(BubbleDescription.carries("Your iMessage, photo.heic, Image · 2 MB , 9:38 AM",
+                                                 text: "photo.heic, Image · 2 MB", fromMe: true),
+                       "both checks see the trimmed text")
+        XCTAssertTrue(BubbleDescription.carries("Your iMessage, lunch · 2 people, 9:38 AM", text: "lunch · 2 people",
+                                                fromMe: true), "a middle dot alone isn't an attachment")
+        XCTAssertTrue(BubbleDescription.carries("Your iMessage, at 5 · 2 MB, 9:38 AM", text: "at 5 · 2 MB", fromMe: true),
+                      "nor is a size without a kind after a comma")
+        XCTAssertFalse(BubbleDescription.carries("Your iMessage, see you at 5, Yesterday", text: "see you at 5", fromMe: true),
+                       "no minute")
+        XCTAssertFalse(BubbleDescription.carries("Your iMessage, 9:38 AM", text: "9:38 AM", fromMe: true), "no text part")
+        XCTAssertFalse(BubbleDescription.carries("Your iMessage, , 9:38 AM", text: "", fromMe: true), "empty text")
+        XCTAssertFalse(BubbleDescription.carries("Your iMessage, see you, 9:38 AM", text: "see you", fromMe: false),
+                       "an own prefix isn't a sender")
+        XCTAssertFalse(BubbleDescription.carries("", text: "see you", fromMe: true))
+        XCTAssertFalse(BubbleDescription.carries("Jordan, hi, 9:38 AM", text: "hi", fromMe: true),
+                       "a sender isn't an own prefix")
+        XCTAssertFalse(BubbleDescription.carries("Your iMessage, a\u{00A0}b, 9:38 AM", text: "a b", fromMe: true),
+                       "the text compares as a text view's does, with no space folding")
+        XCTAssertTrue(BubbleDescription.carries("Your iMessage, a b, 9:38\u{202F}AM", text: "a b", fromMe: true))
+    }
+
+    func testABareGroupIsAnAXGroupWithNoChildrenAndNoTextView() throws {
+        struct ReadFailed: Error {}
+        XCTAssertTrue(BubbleDescription.isBareGroup(hasTextView: false, role: { "AXGroup" }, childCount: { 0 }),
+                      "the live date bubble, 2026-11-11")
+        XCTAssertFalse(BubbleDescription.isBareGroup(hasTextView: false, role: { "AXGroup" }, childCount: { 1 }),
+                       "a group with children, such as one holding an edit field")
+        XCTAssertFalse(BubbleDescription.isBareGroup(hasTextView: false, role: { "AXButton" }, childCount: {
+            XCTFail("children read for a button"); return 0
+        }), "the file attachment S2 recorded")
+        XCTAssertFalse(BubbleDescription.isBareGroup(hasTextView: false, role: { "AXLink" }, childCount: { 0 }),
+                       "a link preview, as in S3")
+        XCTAssertFalse(BubbleDescription.isBareGroup(hasTextView: true, role: {
+            XCTFail("role read with a text view"); return "AXGroup"
+        }, childCount: { 0 }), "a plain text bubble")
+        XCTAssertThrowsError(try BubbleDescription.isBareGroup(hasTextView: false, role: { throw ReadFailed() },
+                                                               childCount: { 0 }))
+        XCTAssertThrowsError(try BubbleDescription.isBareGroup(hasTextView: false, role: { "AXGroup" },
+                                                               childCount: { throw ReadFailed() }))
+    }
+
     func testDescriptionWithoutAMinuteGivesNoMinute() {
         XCTAssertEqual(BubbleDescription.parse("Your iMessage, hi").minute, "")
         XCTAssertEqual(BubbleDescription.parse("Your iMessage, hi, Yesterday").minute, "")

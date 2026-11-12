@@ -231,8 +231,8 @@ public final class ChatTargeter: ChatTargeting {
 
     /// With `rowid`, the bound message is left out of both sides: loaded bubbles with its direction, body and minute
     /// are dropped, and one signature row with its direction and body is dropped. When the bound row leaves the
-    /// signature empty, no other text bubble may be loaded. Any read error, a group chat, a bound row in another
-    /// conversation or an empty signature is false.
+    /// signature empty, no other bubble that shows text (`BubbleInfo.showsText`) may be loaded. Any read error, a
+    /// group chat, a bound row in another conversation or an empty signature is false.
     public func verifySelected(_ chat: ResolvedChat, excluding rowid: Int64?) -> Bool {
         guard let expected = selectionExpectation(chat, excluding: rowid) else { return false }
         return verifySelected(expected)
@@ -256,11 +256,11 @@ public final class ChatTargeter: ChatTargeting {
     public func verifySelected(_ expected: SelectionExpectation) -> Bool {
         if expected.chat.isGroup || expected.chat.canonical.isGroup { return false }
         let signature = expected.signature
-        guard var bubbles = try? ax.loadedBubbles().filter(\.hasTextBubble) else { return false }
+        guard var bubbles = try? ax.loadedBubbles() else { return false }
         guard let bound = expected.bound else { return !signature.isEmpty && Self.newestMatch(bubbles, signature) }
         let minute = builder().minuteLabel(forNanos: bound.dateNs)
         let key = TextNorm.matchKey(bound.body)
-        bubbles.removeAll { $0.fromMe == bound.fromMe && TextNorm.matchKey($0.text) == key && $0.minuteLabel == minute }
+        bubbles.removeAll { $0.minuteLabel == minute && $0.shows(bound.body, fromMe: bound.fromMe) }
         let candidates = signature.indices.filter {
             signature[$0].fromMe == bound.fromMe && TextNorm.matchKey(signature[$0].body) == key
         }
@@ -268,7 +268,7 @@ public final class ChatTargeter: ChatTargeting {
         return candidates.contains { index in
             var rest = signature
             rest.remove(at: index)
-            return rest.isEmpty ? bubbles.isEmpty : Self.newestMatch(bubbles, rest)
+            return rest.isEmpty ? !bubbles.contains(where: \.showsText) : Self.newestMatch(bubbles, rest)
         }
     }
 
@@ -287,11 +287,7 @@ public final class ChatTargeter: ChatTargeting {
         let bubbles: [BubbleInfo]
         do { bubbles = try ax.loadedBubbles() } catch { return .refused(UIResults.axFailure(error)) }
         let minute = builder().minuteLabel(forNanos: target.dateNs)
-        let key = TextNorm.matchKey(target.body)
-        let matches = bubbles.filter {
-            $0.hasTextBubble && $0.fromMe == target.fromMe && TextNorm.matchKey($0.text) == key
-                && $0.minuteLabel == minute
-        }
+        let matches = bubbles.filter { $0.minuteLabel == minute && $0.shows(target.body, fromMe: target.fromMe) }
         guard let bubble = matches.first else { return .refused(ActionResult(.notLoaded)) }
         guard matches.count == 1 else { return .refused(ActionResult(.ambiguous(.target))) }
         return .found(bubble)
@@ -318,12 +314,16 @@ public final class ChatTargeter: ChatTargeting {
         BubbleDescription.normalizeSpaces(a) == BubbleDescription.normalizeSpaces(b)
     }
 
-    /// The newest `signature.count` loaded text bubbles, newest first, equal the signature by direction and body.
+    /// The newest `signature.count` loaded bubbles that show text (`BubbleInfo.showsText`), newest first, equal the
+    /// signature by direction and body. A bare group is a text with a detected date or time, so it must show its
+    /// row like any text bubble, and one that doesn't refuses the match. Other bubbles, such as attachments, are
+    /// skipped as before.
     static func newestMatch(_ bubbles: [BubbleInfo], _ signature: [SignatureRow]) -> Bool {
-        let text = bubbles.filter(\.hasTextBubble)
+        let text = bubbles.filter(\.showsText)
         guard !signature.isEmpty, text.count >= signature.count else { return false }
-        let newest = text.suffix(signature.count).reversed().map { SignatureKey(fromMe: $0.fromMe, text: $0.text) }
-        return newest == signature.map(SignatureKey.init)
+        return zip(text.suffix(signature.count).reversed(), signature).allSatisfy { bubble, row in
+            bubble.shows(row.body, fromMe: row.fromMe)
+        }
     }
 
     /// The conversation rows, read again once the list has loaded when no row matches `description` and the list is
