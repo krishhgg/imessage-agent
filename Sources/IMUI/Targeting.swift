@@ -322,8 +322,7 @@ public final class ChatTargeter: ChatTargeting {
         let text = bubbles.filter(\.showsText)
         guard !signature.isEmpty, text.count >= signature.count else { return false }
         return zip(text.suffix(signature.count).reversed(), signature).allSatisfy { bubble, row in
-            bubble.hasTextBubble ? SignatureKey(fromMe: bubble.fromMe, text: bubble.text) == SignatureKey(row)
-                : bubble.shows(row.body, fromMe: row.fromMe)
+            bubble.shows(row.body, fromMe: row.fromMe)
         }
     }
 

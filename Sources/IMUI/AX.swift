@@ -279,12 +279,14 @@ enum BubbleDescription {
     /// "<own prefix>, <text>, <minute>": the prefix is fixed, so `text` may hold ", ". Anyone else's is
     /// "<sender>, <text>, <minute>", and the sender is a name with no fixed end, so that form counts only with
     /// exactly three components. A sender or a text with ", " in it could be split another way, so it never
-    /// matches. Spaces compare as in `normalizeSpaces`, and the text as in `TextNorm.matchKey`.
+    /// matches. Spaces in the minute compare as in `normalizeSpaces`, and the text as in `TextNorm.matchKey`, as a
+    /// text view's text does.
     static func carries(_ description: String, text: String, fromMe: Bool) -> Bool {
-        let wanted = TextNorm.matchKey(normalizeSpaces(text))
+        let wanted = TextNorm.matchKey(text)
         guard !wanted.isEmpty else { return false }
-        let full = normalizeSpaces(description.precomposedStringWithCanonicalMapping)
-        guard let last = full.range(of: ", ", options: .backwards), isMinute(String(full[last.upperBound...])),
+        let full = description.precomposedStringWithCanonicalMapping
+        guard let last = full.range(of: ", ", options: .backwards),
+              isMinute(normalizeSpaces(String(full[last.upperBound...]))),
               let first = full.range(of: ", "), first.upperBound <= last.lowerBound else { return false }
         let sender = String(full[..<first.lowerBound])
         let body = String(full[first.upperBound..<last.lowerBound])

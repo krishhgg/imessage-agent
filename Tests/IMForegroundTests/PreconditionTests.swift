@@ -376,6 +376,39 @@ final class PreconditionTests: XCTestCase {
         assertNothingActivated(h)
     }
 
+    func testAReplyWhoseParentShowsAsADateBubbleIsUnsupported() {
+        let h = Harness()
+        // The parent, "dinner at 7 tomorrow", as Messages 26 shows a text with a detected date: a bare group.
+        h.ax.bubbles = [BubbleInfo(ref: AXRef(id: 51), fromMe: true, text: "on my way", minuteLabel: "12:09 AM",
+                                   hasTextBubble: true, actionNames: []),
+                        BubbleInfo(ref: AXRef(id: 52), fromMe: false, text: "", minuteLabel: "12:10 AM",
+                                   hasTextBubble: false, actionNames: [],
+                                   axDescription: "Jordan, dinner at 7 tomorrow, 12:10 AM", isBareGroup: true)]
+        let outcome = h.runReply()
+        XCTAssertEqual(outcome.result, ParentBubbleMatch.bareParent)
+        assertNothingActivated(h)
+    }
+
+    func testAReplyPassesStep1WhenOnlyAnOlderIncomingBubbleIsBare() {
+        let h = Harness()
+        let file = BubbleInfo(ref: AXRef(id: 53), fromMe: false, text: "", minuteLabel: "12:11 AM",
+                              hasTextBubble: false, actionNames: [],
+                              axDescription: "Jordan, IMG_0001.heic, Image · 2 MB, 12:11 AM")
+        h.ax.bubbles = [BubbleInfo(ref: AXRef(id: 51), fromMe: false, text: "", minuteLabel: "12:08 AM",
+                                   hasTextBubble: false, actionNames: [],
+                                   axDescription: "Jordan, lunch at 1, 12:08 AM", isBareGroup: true),
+                        Harness.parentBubble(for: h.parent), file]
+        XCTAssertEqual(h.runReply().result.code, .submitted, "the newest is plain text, then a skipped attachment")
+    }
+
+    func testReplyBubbleReadErrorFailsClosed() {
+        let h = Harness()
+        h.ax.failBubbles = true
+        let outcome = h.runReply()
+        XCTAssertEqual(outcome.result.code, .aborted(.check("AX read")))
+        assertNothingActivated(h)
+    }
+
     func testReplyMenuItemReadErrorFailsClosed() {
         let h = Harness()
         h.ax.failMenu = true

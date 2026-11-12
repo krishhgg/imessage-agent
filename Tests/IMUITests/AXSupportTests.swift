@@ -121,6 +121,9 @@ final class AXSupportTests: XCTestCase {
         XCTAssertFalse(BubbleDescription.carries("Your iMessage, see you, 9:38 AM", text: "see you", fromMe: false),
                        "an own prefix isn't a sender")
         XCTAssertFalse(BubbleDescription.carries("", text: "see you", fromMe: true))
+        XCTAssertFalse(BubbleDescription.carries("Your iMessage, a\u{00A0}b, 9:38 AM", text: "a b", fromMe: true),
+                       "the text compares as a text view's does, with no space folding")
+        XCTAssertTrue(BubbleDescription.carries("Your iMessage, a b, 9:38\u{202F}AM", text: "a b", fromMe: true))
     }
 
     func testDescriptionWithoutAMinuteGivesNoMinute() {

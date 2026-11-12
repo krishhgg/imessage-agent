@@ -1084,6 +1084,10 @@ final class TargetingTests: XCTestCase {
         rig.ax.bubbles = { [Make.bubble(51, fromMe: true, text: "on my way", minute: "12:10 AM"),
                             Make.fileBubble(52, fromMe: false, name: "IMG_0001.heic", minute: "12:20 AM")] }
         XCTAssertTrue(rig.targeter().verifySelected(Make.chat(), excluding: 77), "an attachment is skipped as before")
+        // While the bound bubble is being edited it holds an edit field and no text view, so it isn't bare.
+        rig.ax.bubbles = { [Make.bubble(51, fromMe: true, text: "", minute: "12:10 AM", hasText: false,
+                                        description: "Your iMessage, on my way, 12:10 AM")] }
+        XCTAssertTrue(rig.targeter().verifySelected(Make.chat(), excluding: 77), "a bubble being edited is skipped")
     }
 
     func testTwoLoadedMatchesAreAmbiguous() {
